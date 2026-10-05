@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="潛能教室">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1D6F8F">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>省三國小潛能教室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: the same squared exercise-book page as the lessons; one shelf of material cards per subject. */
+:root{
+  --paper:#F2F5F8; --grid:#E2E9F0; --card:#FFFFFF; --ink:#1D2A3A; --mute:#566577; --line:#CCD6E0;
+  --accent:#1D6F8F; --accent-soft:#E0EFF5; --on-accent:#FFFFFF;
+  --math:#2F6FB8; --chinese:#B0436F; --special:#3E7D2F; --other:#7A5C3E;
+  --display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"Atkinson Hyperlegible","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#121920; --grid:#1A232C; --card:#1A242F; --ink:#E6EDF4; --mute:#9DAEBF; --line:#33424F;
+  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#121920; --grid:#1A232C; --card:#1A242F; --ink:#E6EDF4; --mute:#9DAEBF; --line:#33424F;
+  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:20px;-webkit-text-size-adjust:100%}
+body{margin:0;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--body);line-height:1.6;-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom,0px)}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+h1,h2{font-family:var(--display);text-wrap:balance;line-height:1.3;margin:0}
+
+.top{background:var(--card);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top-in{max-width:1200px;margin:0 auto;padding:.9rem 16px;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.mark{width:2.6rem;height:2.6rem;border-radius:10px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:1.35rem;flex:none}
+.top h1{font-size:1.7rem}
+.top p{margin:0;color:var(--mute);font-size:.9rem}
+
+main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3rem}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.tab{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:.35rem 1.1rem;min-height:2.6rem;font-weight:700}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.shelf{margin-bottom:1.8rem}
+.shelf-head{display:flex;align-items:baseline;gap:.7rem;margin-bottom:.7rem}
+.shelf-head h2{font-size:1.4rem;color:var(--c)}
+.shelf-head span{color:var(--mute);font-size:.85rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;min-height:100%}
+.card-head{background:var(--c);color:#fff;padding:.75rem 1rem;display:flex;gap:.8rem;align-items:center}
+.card-grade{font-family:var(--num);font-weight:700;font-size:1.9rem;line-height:1}
+.card-title{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1.3}
+.card-body{padding:.8rem 1rem 1rem;display:flex;flex-direction:column;gap:.45rem;flex:1}
+.card-meta{display:flex;gap:.4rem;flex-wrap:wrap}
+.pill{font-size:.75rem;border:1.5px solid var(--line);border-radius:999px;padding:.05rem .6rem;color:var(--mute)}
+.card-desc{font-size:.9rem;color:var(--mute);margin:0}
+.go{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.9rem;border-radius:12px;background:var(--c);color:#fff;font-weight:700;padding:.4rem 1rem}
+.go svg{width:1.1em;height:1.1em}
+.card:hover .go{filter:brightness(1.08)}
+.empty{border:2px dashed var(--line);border-radius:16px;padding:1rem 1.2rem;color:var(--mute);background:var(--card)}
+
+.help{margin-top:1rem;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1rem 1.2rem}
+.help h2{font-size:1.15rem;margin-bottom:.4rem}
+.help ol{margin:.2rem 0 0;padding-left:1.4rem}
+.help li{margin:.2rem 0}
+.foot{color:var(--mute);font-size:.8rem;margin-top:1.4rem}
+@media (max-width:640px){html{font-size:18px}.top h1{font-size:1.45rem}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="mark" aria-hidden="true">學</div>
+    <div><h1 id="site-title"></h1><p id="site-sub"></p></div>
+  </div>
+</header>
+<main>
+  <nav class="tabs" id="tabs" aria-label="科目"></nav>
+  <div id="shelves"></div>
+  <section class="help">
+    <h2>把潛能教室放到 iPad 主畫面</h2>
+    <ol>
+      <li>用 Safari 打開這一頁。</li>
+      <li>點上方的「分享」按鈕（方框加向上的箭頭）。</li>
+      <li>選「加入主畫面」，再按「新增」。</li>
+    </ol>
+    <p class="card-desc" style="margin-top:.5rem">每一份教材也可以分開加入主畫面。學習進度存在這台 iPad 上，下次打開會接著做。</p>
+  </section>
+  <p class="foot" id="foot"></p>
+</main>
+<script>
+/* ===== 老師只要改這裡 =====
+   新增教材：在 MATERIALS 加一行，path 要和 GitHub 上的 repository 名稱一樣，最後加「/」。
+   還沒做好的教材可以先寫 ready:false，會顯示「準備中」。 */
+const SITE={title:'省三國小潛能教室',sub:'每天進步一點點，自己學也做得到！'};
+const SUBJECTS=[
+  {id:'math',name:'數學',color:'var(--math)'},
+  {id:'chinese',name:'語文',color:'var(--chinese)'},
+  {id:'special',name:'特殊需求',color:'var(--special)'}
+];
+const MATERIALS=[
+  {subject:'math',grade:'6上',title:'六上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'最大公因數、分數除法、比與比值、圓面積、速率、比例尺……每關分「我看・我懂・我做・我會」四小步。',path:'math-g6a/',ready:true}
+];
+/* ========================= */
+
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+document.getElementById('site-title').textContent=SITE.title;
+document.getElementById('site-sub').textContent=SITE.sub;
+document.title=SITE.title;
+let filter='all';
+try{filter=localStorage.getItem('portal-filter')||'all';}catch(e){}
+function card(m,s){
+  const inner=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>
+    <div class="card-body"><div class="card-meta">${(m.tags||[]).map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+    <p class="card-desc">${m.desc||''}</p>
+    ${m.ready?`<span class="go">開始學習${ARROW}</span>`:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
+  return m.ready?`<a class="card" href="${m.path}" style="--c:${s.color}">${inner}</a>`:`<div class="card" style="--c:${s.color};opacity:.7">${inner}</div>`;
+}
+function render(){
+  document.getElementById('tabs').innerHTML=[{id:'all',name:'全部'},...SUBJECTS].map(s=>`<button class="tab" type="button" data-f="${s.id}" aria-pressed="${s.id===filter}">${s.name}</button>`).join('');
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;try{localStorage.setItem('portal-filter',filter);}catch(e){}render();});
+  document.getElementById('shelves').innerHTML=SUBJECTS.filter(s=>filter==='all'||filter===s.id).map(s=>{
+    const list=MATERIALS.filter(m=>m.subject===s.id);
+    return `<section class="shelf" style="--c:${s.color}"><div class="shelf-head"><h2>${s.name}</h2><span>${list.filter(m=>m.ready).length} 份教材</span></div>
+      ${list.length?`<div class="cards">${list.map(m=>card(m,s)).join('')}</div>`:'<div class="empty">教材準備中，之後會放在這裡。</div>'}</section>`;
+  }).join('');
+}
+render();
+document.getElementById('foot').textContent=`${SITE.title}・共 ${MATERIALS.filter(m=>m.ready).length} 份教材`;
+</script>
+</body>
+</html>
