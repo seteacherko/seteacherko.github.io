@@ -21,6 +21,7 @@
   --paper:#F2F5F8; --grid:#E2E9F0; --card:#FFFFFF; --ink:#1D2A3A; --mute:#566577; --line:#CCD6E0;
   --accent:#1D6F8F; --accent-soft:#E0EFF5; --on-accent:#FFFFFF;
   --math:#2F6FB8; --chinese:#B0436F; --special:#3E7D2F; --other:#7A5C3E;
+  --star:#C98A00;
   --display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --num:"Atkinson Hyperlegible","Noto Sans TC","PingFang TC",system-ui,sans-serif;
@@ -28,11 +29,11 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#121920; --grid:#1A232C; --card:#1A242F; --ink:#E6EDF4; --mute:#9DAEBF; --line:#33424F;
-  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; color-scheme:dark;
+  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; --star:#F0C24F; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --paper:#121920; --grid:#1A232C; --card:#1A242F; --ink:#E6EDF4; --mute:#9DAEBF; --line:#33424F;
-  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; color-scheme:dark;
+  --accent:#5DB6D3; --accent-soft:#18323D; --on-accent:#0B1A21; --star:#F0C24F; color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -71,6 +72,15 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
 .go svg{width:1.1em;height:1.1em}
 .card:hover .go{filter:brightness(1.08)}
 .prog{display:grid;gap:.3rem}.pbar{height:.55rem;background:var(--grid);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--c);border-radius:99px}.prog-t{font-size:.8rem;color:var(--mute)}
+.star-line{display:flex;align-items:baseline;gap:.3rem;flex-wrap:wrap}
+.star-n{color:var(--star);font-family:var(--num);font-weight:700;font-size:1.15rem}
+.badge-pill{margin-left:auto;border:2px solid var(--star);border-radius:999px;padding:0 .6rem;font-size:.75rem;font-weight:700}
+.star-total{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:.8rem 1.2rem;margin-bottom:1rem}
+.st-big{font-family:var(--num);font-weight:700;font-size:2rem;color:var(--star)}
+.st-big small{font-size:.9rem;color:var(--mute)}
+.st-rows{display:flex;gap:.5rem;flex-wrap:wrap;flex:1}
+.st-chip{border:2px solid var(--c);border-radius:999px;padding:.1rem .8rem;font-size:.9rem;font-family:var(--num);font-weight:700}
+.st-chip b{color:var(--c);margin-right:.2rem}
 .empty{border:2px dashed var(--line);border-radius:16px;padding:1rem 1.2rem;color:var(--mute);background:var(--card)}
 
 .help{margin-top:1rem;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1rem 1.2rem}
@@ -89,7 +99,7 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
   </div>
 </header>
 <main>
-  <nav class="tabs" id="tabs" aria-label="科目"></nav>
+ <nav class="tabs" id="tabs" aria-label="科目"></nav>
   <div id="shelves"></div>
   <section class="help">
     <h2>把潛能教室放到 iPad 主畫面</h2>
@@ -113,6 +123,7 @@ const SUBJECTS=[
   {id:'special',name:'特殊需求',color:'var(--special)'}
 ];
 const MATERIALS=[
+  {subject:'math',grade:'1上',title:'一上數學小步走',tags:['翰林','9 單元','互動教學＋評量'],desc:'10 以內的數、比長短、順序與多少、分與合、認識形狀、10 以內的加減法、30 以內的數、時間。題目會自動唸出來，每關分「我看・我懂・我做・我會」四小步。',path:'math-g1a/',key:'math1a-v1',ready:true},
   {subject:'math',grade:'3上',title:'三上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'10000 以內的數、四位數加減、毫米、乘法、角、面積、除法、公升和毫升、分數。每關分「我看・我懂・我做・我會」四小步。',path:'math-g3a/',key:'math3a-v1',ready:true},
   {subject:'math',grade:'5上',title:'五上數學小步走',tags:['翰林','10 單元','基礎／進階兩種模式'],desc:'折線圖、因數倍數、平面圖形、立體形體、四則運算、分數加減、面積、乘以幾分之一、扇形。程度好的學生可以用進階模式：確認重點後直接挑戰。',path:'math-g5a/',key:'math5a-v1',ready:true},
   {subject:'math',grade:'6上',title:'六上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'最大公因數、分數除法、比與比值、圓面積、速率、比例尺……每關分「我看・我懂・我做・我會」四小步。',path:'math-g6a/',key:'math6a-v1',ready:true}
@@ -126,11 +137,18 @@ document.title=SITE.title;
 let filter='all';
 try{filter=localStorage.getItem('portal-filter')||'all';}catch(e){}
 /* progress saved by each material on this iPad (same github.io address, so it can be read here) */
+function sumOf(m){if(!m.key)return null;try{return (JSON.parse(localStorage.getItem(m.key)||'{}')||{}).sum||null;}catch(e){return null;}}
 function progBlock(m){
-  if(!m.key)return '';let s=null;try{s=(JSON.parse(localStorage.getItem(m.key)||'{}')||{}).sum;}catch(e){}
+  if(!m.key)return '';const s=sumOf(m);
   if(!s)return '<div class="prog"><span class="prog-t">還沒開始</span></div>';
   const q=s.units.filter(x=>x.last).length;
-  return `<div class="prog"><div class="pbar"><i style="width:${s.pct}%"></i></div><span class="prog-t">完成 ${s.pct}%・評量做過 ${q} / ${s.units.length} 個單元</span></div>`;
+  const star=s.maxStars?`<div class="star-line"><span class="star-n">★ ${s.stars||0}</span><span class="prog-t"> 顆星</span>${s.badge?`<span class="badge-pill">${s.badge}</span>`:''}</div>`:'';
+  return `<div class="prog">${star}<div class="pbar"><i style="width:${s.pct}%"></i></div><span class="prog-t">完成 ${s.pct}%・評量做過 ${q} / ${s.units.length} 個單元</span></div>`;
+}
+/* stars from every grade on this iPad, shown at the top */
+function starTotal(){
+  const rows=MATERIALS.filter(m=>m.ready&&m.key).map(m=>({m,s:sumOf(m)}));const tot=rows.reduce((a,r)=>a+((r.s&&r.s.stars)||0),0);
+  return `<section class="star-total"><div class="st-big">★ ${tot}<small> 顆星</small></div><div class="st-rows">${rows.map(r=>`<span class="st-chip" style="--c:var(--${r.m.subject})"><b>${r.m.grade}</b><span class="star-n" style="font-size:1em">★ ${(r.s&&r.s.stars)||0}</span></span>`).join('')}</div><span class="prog-t">所有年級加起來的星星（這台 iPad）</span></section>`;
 }
 function card(m,s){
   const inner=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>
