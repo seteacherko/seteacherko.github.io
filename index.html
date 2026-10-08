@@ -71,6 +71,19 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
 .go{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.9rem;border-radius:12px;background:var(--c);color:#fff;font-weight:700;padding:.4rem 1rem}
 .go svg{width:1.1em;height:1.1em}
 .card:hover .go{filter:brightness(1.08)}
+.card-link{color:inherit;text-decoration:none}
+.card-acts{margin-top:auto;display:flex;flex-direction:column;gap:.5rem}
+.card-acts .go{margin-top:0;text-decoration:none}
+.drill{border:2px solid var(--c);border-radius:12px;background:var(--card)}
+.drill>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.7rem;font-weight:700;color:var(--c);padding:.3rem 1rem}
+.drill>summary::-webkit-details-marker{display:none}
+.drill>summary::after{content:"▾";font-size:.9em;transition:transform .15s}
+.drill[open]>summary::after{transform:rotate(180deg)}
+.drill-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem;padding:0 .5rem .55rem}
+.drill-links a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;min-height:3.2rem;border-radius:10px;background:color-mix(in srgb,var(--c) 12%,var(--card));color:var(--ink);text-decoration:none;font-weight:700;text-align:center;padding:.3rem}
+.drill-links a small{font-weight:400;color:var(--mute);font-size:.75rem}
+.drill-links a:hover{background:color-mix(in srgb,var(--c) 22%,var(--card))}
+.later{margin-top:1.8rem}
 .prog{display:grid;gap:.3rem}.pbar{height:.55rem;background:var(--grid);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--c);border-radius:99px}.prog-t{font-size:.8rem;color:var(--mute)}
 .star-line{display:flex;align-items:baseline;gap:.3rem;flex-wrap:wrap}
 .star-n{color:var(--star);font-family:var(--num);font-weight:700;font-size:1.15rem}
@@ -110,6 +123,7 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
     </ol>
     <p class="card-desc" style="margin-top:.5rem">每一份教材也可以分開加入主畫面。學習進度存在這台 iPad 上，下次打開會接著做。</p>
   </section>
+  <div id="later" class="later"></div>
   <p class="foot" id="foot"></p>
 </main>
 <script>
@@ -124,6 +138,7 @@ const SUBJECTS=[
 ];
 const MATERIALS=[
   {subject:'math',grade:'1上',title:'一上數學小步走',tags:['翰林','9 單元','互動教學＋評量'],desc:'10 以內的數、比長短、順序與多少、分與合、認識形狀、10 以內的加減法、30 以內的數、時間。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g1a/',key:'math1a-v1',ready:true},
+  {subject:'math',grade:'10',title:'十的分解合成',tags:['十格板','加減練習','不分年級'],desc:'用十格板看 10 以內的數怎麼分、怎麼合。探索模式自己動手分一分；練習模式每回合 10 題，可以關掉十格板、開限時，看看是不是不用數手指也算得出來。',path:'math-ten/',ready:true},
   {subject:'math',grade:'2上',title:'二上數學小步走',tags:['康軒','10 單元','互動教學＋評量'],desc:'200 以內的數、直式加減、量長度、加減關係、面積比較、兩步驟加減、2～9 的乘法、幾時幾分、容量與重量。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g2a/',key:'math2a-v1',ready:true},
   {subject:'math',grade:'3上',title:'三上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'10000 以內的數、四位數加減、毫米、乘法、角、面積、除法、公升和毫升、分數。每關分「我看・我懂・我做・我會」四小步。',path:'math-g3a/',key:'math3a-v1',ready:true},
   {subject:'math',grade:'5上',title:'五上數學小步走',tags:['翰林','10 單元','基礎／進階兩種模式'],desc:'折線圖、因數倍數、平面圖形、立體形體、四則運算、分數加減、面積、乘以幾分之一、扇形。程度好的學生可以用進階模式：確認重點後直接挑戰。',path:'math-g5a/',key:'math5a-v1',ready:true},
@@ -152,21 +167,27 @@ function starTotal(){
   return `<section class="star-total"><div class="st-big">★ ${tot}<small> 顆星</small></div><div class="st-rows">${rows.map(r=>`<span class="st-chip" style="--c:var(--${r.m.subject})"><b>${r.m.grade}</b><span class="star-n" style="font-size:1em">★ ${(r.s&&r.s.stars)||0}</span></span>`).join('')}</div><span class="prog-t">所有年級加起來的星星（這台 iPad）</span></section>`;
 }
 function card(m,s){
-  const inner=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>
-    <div class="card-body"><div class="card-meta">${(m.tags||[]).map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+  const head=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>`;
+  /* 年級教材（有 key 的）多一個「計算練功房」：直接到那一份教材的九九乘法或加減法特訓 */
+  const drill=m.key?`<details class="drill"><summary>計算練功房</summary><div class="drill-links"><a href="${m.path}#times">九九乘法<small>背誦精熟</small></a><a href="${m.path}#addsub">加減法特訓<small>闖關練速度</small></a><a href="math-ten/">十的分解合成<small>十格板</small></a></div></details>`:'';
+  const body=`<div class="card-body"><div class="card-meta">${(m.tags||[]).map(t=>`<span class="pill">${t}</span>`).join('')}</div>
     <p class="card-desc">${m.desc||''}</p>
     ${progBlock(m)}
-    ${m.ready?`<span class="go">開始學習${ARROW}</span>`:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
-  return m.ready?`<a class="card" href="${m.path}" style="--c:${s.color}">${inner}</a>`:`<div class="card" style="--c:${s.color};opacity:.7">${inner}</div>`;
+    ${m.ready?`<div class="card-acts"><a class="go" href="${m.path}">開始學習${ARROW}</a>${drill}</div>`:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
+  return m.ready?`<div class="card" style="--c:${s.color}"><a class="card-link" href="${m.path}">${head}</a>${body}</div>`:`<div class="card" style="--c:${s.color};opacity:.7">${head}${body}</div>`;
 }
 function render(){
   document.getElementById('tabs').innerHTML=[{id:'all',name:'全部'},...SUBJECTS].map(s=>`<button class="tab" type="button" data-f="${s.id}" aria-pressed="${s.id===filter}">${s.name}</button>`).join('');
   document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;try{localStorage.setItem('portal-filter',filter);}catch(e){}render();});
-  document.getElementById('shelves').innerHTML=SUBJECTS.filter(s=>filter==='all'||filter===s.id).map(s=>{
+  const shelf=s=>{
     const list=MATERIALS.filter(m=>m.subject===s.id);
     return `<section class="shelf" style="--c:${s.color}"><div class="shelf-head"><h2>${s.name}</h2><span>${list.filter(m=>m.ready).length} 份教材</span></div>
       ${list.length?`<div class="cards">${list.map(m=>card(m,s)).join('')}</div>`:'<div class="empty">教材準備中，之後會放在這裡。</div>'}</section>`;
-  }).join('');
+  };
+  /* 還沒有教材的科目，放到頁面最下面（「放到 iPad 主畫面」說明的下面）；有教材了就會自動回到上面 */
+  const shown=SUBJECTS.filter(s=>filter==='all'||filter===s.id),has=s=>MATERIALS.some(m=>m.subject===s.id&&m.ready);
+  document.getElementById('shelves').innerHTML=shown.filter(s=>has(s)||filter!=='all').map(shelf).join('');
+  document.getElementById('later').innerHTML=filter==='all'?shown.filter(s=>!has(s)).map(shelf).join(''):'';
 }
 render();
 document.getElementById('foot').textContent=`${SITE.title}・共 ${MATERIALS.filter(m=>m.ready).length} 份教材`;
