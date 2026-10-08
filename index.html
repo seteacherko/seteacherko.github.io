@@ -74,6 +74,10 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
 .card-link{color:inherit;text-decoration:none}
 .card-acts{margin-top:auto;display:flex;flex-direction:column;gap:.5rem}
 .card-acts .go{margin-top:0;text-decoration:none}
+.card-acts.two{flex-direction:row}.card-acts.two .go{flex:1}
+.go-alt{background:var(--card)!important;color:var(--c)!important;border:2px solid var(--c)}
+.dk-go{margin-top:auto;border:0;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+.dk-grades[hidden]{display:none!important}.dk-grades{display:flex}
 .drill{border:2px solid var(--c);border-radius:12px;background:var(--card)}
 .drill>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.7rem;font-weight:700;color:var(--c);padding:.3rem 1rem}
 .drill>summary::-webkit-details-marker{display:none}
@@ -84,6 +88,16 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
 .drill-links a small{font-weight:400;color:var(--mute);font-size:.75rem}
 .drill-links a:hover{background:color-mix(in srgb,var(--c) 22%,var(--card))}
 .later{margin-top:1.8rem}
+.dk-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.dk-card{display:flex;flex-direction:column;gap:.5rem;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:1rem;text-decoration:none;color:var(--ink)}
+.dk-link:hover{border-color:var(--c)}
+.dk-top{display:flex;gap:.8rem;align-items:center}
+.dk-top b{display:block;font-size:1.15rem}.dk-top small{color:var(--mute);font-size:.85rem}
+.dk-ic{width:3rem;height:3rem;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;font-weight:700;font-size:1.4rem;font-family:var(--num)}
+.dk-pick{margin:.2rem 0 0;font-size:.85rem;color:var(--mute)}
+.dk-grades{display:flex;flex-wrap:wrap;gap:.45rem}
+.dk-g{min-width:3.4rem;min-height:2.6rem;display:grid;place-items:center;border-radius:10px;border:2px solid var(--c);color:var(--c);font-weight:700;text-decoration:none;font-family:var(--num)}
+.dk-g:hover{background:var(--c);color:#fff}
 .prog{display:grid;gap:.3rem}.pbar{height:.55rem;background:var(--grid);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--c);border-radius:99px}.prog-t{font-size:.8rem;color:var(--mute)}
 .star-line{display:flex;align-items:baseline;gap:.3rem;flex-wrap:wrap}
 .star-n{color:var(--star);font-family:var(--num);font-weight:700;font-size:1.15rem}
@@ -96,10 +110,11 @@ main{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.2rem 3re
 .st-chip b{color:var(--c);margin-right:.2rem}
 .empty{border:2px dashed var(--line);border-radius:16px;padding:1rem 1.2rem;color:var(--mute);background:var(--card)}
 
-.help{margin-top:1rem;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1rem 1.2rem}
-.help h2{font-size:1.15rem;margin-bottom:.4rem}
-.help ol{margin:.2rem 0 0;padding-left:1.4rem}
-.help li{margin:.2rem 0}
+.help{margin-top:1.4rem;background:transparent;border:1px dashed var(--line);border-radius:11px;padding:.5rem .8rem;font-size:11px;line-height:1.5;color:var(--mute)}
+.help h2{font-size:11px;font-weight:700;margin:0 0 .15rem;color:var(--mute)}
+.help ol{margin:0;padding-left:1.2rem}
+.help li{margin:0}
+.help .card-desc{font-size:11px!important;margin-top:.15rem!important}
 .foot{color:var(--mute);font-size:.8rem;margin-top:1.4rem}
 @media (max-width:640px){html{font-size:18px}.top h1{font-size:1.45rem}}
 </style>
@@ -137,12 +152,12 @@ const SUBJECTS=[
   {id:'special',name:'特殊需求',color:'var(--special)'}
 ];
 const MATERIALS=[
-  {subject:'math',grade:'1上',title:'一上數學小步走',tags:['翰林','9 單元','互動教學＋評量'],desc:'10 以內的數、比長短、順序與多少、分與合、認識形狀、10 以內的加減法、30 以內的數、時間。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g1a/',key:'math1a-v1',ready:true},
-  {subject:'math',grade:'10',title:'十的分解合成',tags:['十格板','加減練習','不分年級'],desc:'用十格板看 10 以內的數怎麼分、怎麼合。探索模式自己動手分一分；練習模式每回合 10 題，可以關掉十格板、開限時，看看是不是不用數手指也算得出來。',path:'math-ten/',ready:true},
-  {subject:'math',grade:'2上',title:'二上數學小步走',tags:['康軒','10 單元','互動教學＋評量'],desc:'200 以內的數、直式加減、量長度、加減關係、面積比較、兩步驟加減、2～9 的乘法、幾時幾分、容量與重量。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g2a/',key:'math2a-v1',ready:true},
-  {subject:'math',grade:'3上',title:'三上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'10000 以內的數、四位數加減、毫米、乘法、角、面積、除法、公升和毫升、分數。每關分「我看・我懂・我做・我會」四小步。',path:'math-g3a/',key:'math3a-v1',ready:true},
-  {subject:'math',grade:'5上',title:'五上數學小步走',tags:['翰林','10 單元','基礎／進階兩種模式'],desc:'折線圖、因數倍數、平面圖形、立體形體、四則運算、分數加減、面積、乘以幾分之一、扇形。程度好的學生可以用進階模式：確認重點後直接挑戰。',path:'math-g5a/',key:'math5a-v1',ready:true},
-  {subject:'math',grade:'6上',title:'六上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'最大公因數、分數除法、比與比值、圓面積、速率、比例尺……每關分「我看・我懂・我做・我會」四小步。',path:'math-g6a/',key:'math6a-v1',ready:true}
+  {subject:'math',grade:'1上',color:'#C2570C',title:'一上數學小步走',tags:['翰林','9 單元','互動教學＋評量'],desc:'10 以內的數、比長短、順序與多少、分與合、認識形狀、10 以內的加減法、30 以內的數、時間。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g1a/',key:'math1a-v1',ready:true},
+  {subject:'math',grade:'10',color:'#3F7D6B',title:'十的分解合成',tags:['十格板','加減練習','不分年級'],desc:'用十格板看 10 以內的數怎麼分、怎麼合。探索模式自己動手分一分；練習模式每回合 10 題，可以關掉十格板、開限時，看看是不是不用數手指也算得出來。',path:'math-ten/',ready:true},
+  {subject:'math',grade:'2上',color:'#6A4BA8',title:'二上數學小步走',tags:['康軒','10 單元','互動教學＋評量'],desc:'200 以內的數、直式加減、量長度、加減關係、面積比較、兩步驟加減、2～9 的乘法、幾時幾分、容量與重量。有注音和自動朗讀，每關分「我看・我懂・我做・我會」四小步。',path:'math-g2a/',key:'math2a-v1',ready:true},
+  {subject:'math',grade:'3上',color:'#A3345A',title:'三上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'10000 以內的數、四位數加減、毫米、乘法、角、面積、除法、公升和毫升、分數。每關分「我看・我懂・我做・我會」四小步。',path:'math-g3a/',key:'math3a-v1',ready:true},
+  {subject:'math',grade:'5上',color:'#2E6B3F',title:'五上數學小步走',tags:['翰林','10 單元','基礎／進階兩種模式'],desc:'折線圖、因數倍數、平面圖形、立體形體、四則運算、分數加減、面積、乘以幾分之一、扇形。程度好的學生可以用進階模式：確認重點後直接挑戰。',path:'math-g5a/',key:'math5a-v1',ready:true},
+  {subject:'math',grade:'6上',color:'#1D6F8F',title:'六上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'最大公因數、分數除法、比與比值、圓面積、速率、比例尺……每關分「我看・我懂・我做・我會」四小步。',path:'math-g6a/',key:'math6a-v1',ready:true}
 ];
 /* ========================= */
 
@@ -168,13 +183,13 @@ function starTotal(){
 }
 function card(m,s){
   const head=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>`;
-  /* 年級教材（有 key 的）多一個「計算練功房」：直接到那一份教材的九九乘法或加減法特訓 */
-  const drill=m.key?`<details class="drill"><summary>計算練功房</summary><div class="drill-links"><a href="${m.path}#times">九九乘法<small>背誦精熟</small></a><a href="${m.path}#addsub">加減法特訓<small>闖關練速度</small></a><a href="math-ten/">十的分解合成<small>十格板</small></a></div></details>`:'';
+  /* 年級教材：「學習」到教材首頁、「評量」到學習紀錄（每個單元都有「去做評量」）；其他教材只有一個「開始學習」 */
+  const acts=m.key?`<div class="card-acts two"><a class="go" href="${m.path}">學習${ARROW}</a><a class="go go-alt" href="${m.path}#progress">評量${ARROW}</a></div>`:`<div class="card-acts"><a class="go" href="${m.path}">開始學習${ARROW}</a></div>`;
   const body=`<div class="card-body"><div class="card-meta">${(m.tags||[]).map(t=>`<span class="pill">${t}</span>`).join('')}</div>
     <p class="card-desc">${m.desc||''}</p>
     ${progBlock(m)}
-    ${m.ready?`<div class="card-acts"><a class="go" href="${m.path}">開始學習${ARROW}</a>${drill}</div>`:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
-  return m.ready?`<div class="card" style="--c:${s.color}"><a class="card-link" href="${m.path}">${head}</a>${body}</div>`:`<div class="card" style="--c:${s.color};opacity:.7">${head}${body}</div>`;
+    ${m.ready?acts:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
+  return m.ready?`<div class="card" style="--c:${m.color||s.color}"><a class="card-link" href="${m.path}">${head}</a>${body}</div>`:`<div class="card" style="--c:${m.color||s.color};opacity:.7">${head}${body}</div>`;
 }
 function render(){
   document.getElementById('tabs').innerHTML=[{id:'all',name:'全部'},...SUBJECTS].map(s=>`<button class="tab" type="button" data-f="${s.id}" aria-pressed="${s.id===filter}">${s.name}</button>`).join('');
@@ -186,8 +201,23 @@ function render(){
   };
   /* 還沒有教材的科目，放到頁面最下面（「放到 iPad 主畫面」說明的下面）；有教材了就會自動回到上面 */
   const shown=SUBJECTS.filter(s=>filter==='all'||filter===s.id),has=s=>MATERIALS.some(m=>m.subject===s.id&&m.ready);
-  document.getElementById('shelves').innerHTML=shown.filter(s=>has(s)||filter!=='all').map(shelf).join('');
+  /* 計算練功房捷徑：放在數學下面。每張卡只有一個「進入」：
+     九九乘法、加減法特訓的進度存在各年級教材裡，所以會進到這台 iPad 最近用過的那個年級；還沒用過任何年級時，才請學生先選年級 */
+  const grades=MATERIALS.filter(m=>m.subject==='math'&&m.ready&&m.key);
+  const gchips=hash=>`<div class="dk-grades" hidden><p class="dk-pick">先選你的年級：</p>${grades.map(m=>`<a class="dk-g" style="--c:${m.color}" href="${m.path}#${hash}">${m.grade}</a>`).join('')}</div>`;
+  const drillShelf=(filter==='all'||filter==='math')?`<section class="shelf drill-shelf" style="--c:var(--math)"><div class="shelf-head"><h2>計算練功房捷徑</h2><span>選一個開始練習</span></div>
+    <div class="dk-cards">
+      <div class="dk-card"><div class="dk-top"><span class="dk-ic">×</span><div><b>九九乘法精熟</b><small>順序・亂序・乘數挖空・小測驗</small></div></div>${gchips('times')}<button class="go dk-go" type="button" data-drill="times">進入${ARROW}</button></div>
+      <div class="dk-card"><div class="dk-top"><span class="dk-ic">±</span><div><b>加減法特訓</b><small>闖關練速度，連續答對有獎勵</small></div></div>${gchips('addsub')}<button class="go dk-go" type="button" data-drill="addsub">進入${ARROW}</button></div>
+      <div class="dk-card" style="--c:#3F7D6B"><div class="dk-top"><span class="dk-ic">10</span><div><b>十的分解合成</b><small>用十格板分一分、合一合</small></div></div><a class="go dk-go" href="math-ten/">進入${ARROW}</a></div>
+    </div></section>`:'';
+  const ordered=shown.filter(s=>has(s)||filter!=='all');
+  document.getElementById('shelves').innerHTML=ordered.map(s=>shelf(s)+(s.id==='math'?drillShelf:'')).join('');
   document.getElementById('later').innerHTML=filter==='all'?shown.filter(s=>!has(s)).map(shelf).join(''):'';
+  document.querySelectorAll('[data-drill]').forEach(b=>b.onclick=()=>{
+    const recent=grades.map(m=>({m,t:(sumOf(m)||{}).t||0})).filter(x=>x.t).sort((a,b)=>b.t-a.t)[0];
+    if(recent){location.href=recent.m.path+'#'+b.dataset.drill;return;}
+    const g=b.parentElement.querySelector('.dk-grades');g.hidden=false;b.hidden=true;});
 }
 render();
 document.getElementById('foot').textContent=`${SITE.title}・共 ${MATERIALS.filter(m=>m.ready).length} 份教材`;
