@@ -201,13 +201,14 @@ function render(){
   /* 還沒有教材的科目，放到頁面最下面（「放到 iPad 主畫面」說明的下面）；有教材了就會自動回到上面 */
   const shown=SUBJECTS.filter(s=>filter==='all'||filter===s.id),has=s=>MATERIALS.some(m=>m.subject===s.id&&m.ready);
   /* 計算練功房捷徑：放在數學下面。每張卡只有一個「進入」：
-     九九乘法、加減法特訓的進度存在各年級教材裡，所以會進到這台 iPad 最近用過的那個年級；還沒用過任何年級時，才請學生先選年級 */
+     九九乘法的進度存在各年級教材裡，所以會進到這台 iPad 最近用過的那個年級；還沒用過任何年級時，才請學生先選年級。
+     加減特訓站和十的分解合成是獨立教材（MATH-ADDSUB、MATH-TEN），直接連過去 */
   const grades=MATERIALS.filter(m=>m.subject==='math'&&m.ready&&m.key);
   const gchips=hash=>`<div class="dk-grades" hidden><p class="dk-pick">先選你的年級：</p>${grades.map(m=>`<a class="dk-g" style="--c:${m.color}" href="${m.path}#${hash}">${m.grade}</a>`).join('')}</div>`;
   const drillShelf=(filter==='all'||filter==='math')?`<section class="shelf drill-shelf" style="--c:var(--math)"><div class="shelf-head"><h2>計算練功房捷徑</h2><span>選一個開始練習</span></div>
     <div class="dk-cards">
       <div class="dk-card"><div class="dk-top"><span class="dk-ic">×</span><div><b>九九乘法精熟</b><small>順序・亂序・乘數挖空・小測驗</small></div></div>${gchips('times')}<button class="go dk-go" type="button" data-drill="times">進入${ARROW}</button></div>
-      <div class="dk-card"><div class="dk-top"><span class="dk-ic">±</span><div><b>加減法特訓</b><small>闖關練速度，連續答對有獎勵</small></div></div>${gchips('addsub')}<button class="go dk-go" type="button" data-drill="addsub">進入${ARROW}</button></div>
+      <div class="dk-card" style="--c:#1F8A93"><div class="dk-top"><span class="dk-ic">±</span><div><b>加減特訓站</b><small>二到四位數直式加減・回合練習・學習紀錄</small></div></div><a class="go dk-go" href="MATH-ADDSUB/">進入${ARROW}</a></div>
       <div class="dk-card" style="--c:#3F7D6B"><div class="dk-top"><span class="dk-ic">10</span><div><b>十的分解合成</b><small>用十格板分一分、合一合</small></div></div><a class="go dk-go" href="MATH-TEN/">進入${ARROW}</a></div>
     </div></section>`:'';
   const ordered=shown.filter(s=>has(s)||filter!=='all');
