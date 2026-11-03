@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>構音問題評估</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+<style>
+/* 版面：上方工作列＋左「刺激卡（給學生看）」右「判讀面板（給老師看）」；窄螢幕上下堆疊 */
+:root{
+  --paper:#EEF3F2; --surface:#FFFFFF; --sunk:#F6F9F8; --ink:#17262E; --muted:#5A6B73; --line:#D3DEDD;
+  --teal:#0E6E66; --teal-ink:#FFFFFF; --teal-soft:#DCEFEC;
+  --zhu:#C2410C; --zhu-soft:#FCE9DF;
+  --ok:#157A3C; --ok-soft:#DDF2E4; --warn:#A35A06; --warn-soft:#FBEFD9; --bad:#B42318; --bad-soft:#FBE3E0; --none:#8A989E;
+  --f-word:"LXGW WenKai TC","Kaiti TC","BiauKai","DFKai-SB","Noto Serif TC",serif;
+  --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0F1719; --surface:#172225; --sunk:#1C292C; --ink:#E5EEEE; --muted:#9AAEB2; --line:#2C3D41;
+  --teal:#3FB8AA; --teal-ink:#06201D; --teal-soft:#183A37;
+  --zhu:#F2894E; --zhu-soft:#3A2418;
+  --ok:#5CCB84; --ok-soft:#173424; --warn:#E9A94B; --warn-soft:#3A2B14; --bad:#F2796D; --bad-soft:#3E1D1A; --none:#6F8086;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --paper:#0F1719; --surface:#172225; --sunk:#1C292C; --ink:#E5EEEE; --muted:#9AAEB2; --line:#2C3D41;
+  --teal:#3FB8AA; --teal-ink:#06201D; --teal-soft:#183A37;
+  --zhu:#F2894E; --zhu-soft:#3A2418;
+  --ok:#5CCB84; --ok-soft:#173424; --warn:#E9A94B; --warn-soft:#3A2B14; --bad:#F2796D; --bad-soft:#3E1D1A; --none:#6F8086;
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.55em .7em;width:100%}
+h1,h2,h3{text-wrap:balance;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.55em 1.1em;font-weight:500;display:inline-flex;align-items:center;gap:.4em;min-height:44px}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- 設定頁 ---------- */
+.setup-head{display:grid;gap:6px;margin-bottom:22px}
+.setup-head h1{font-family:var(--f-word);font-size:clamp(2rem,4.4vw,2.9rem);font-weight:700;letter-spacing:.04em}
+.setup-head h1 span{color:var(--zhu);font-size:.5em;vertical-align:.5em;margin-left:.3em;letter-spacing:.2em}
+.setup-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media (max-width:820px){.setup-grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:14px;align-content:start}
+.panel h2{font-size:1.05rem}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fields label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
+.fields .full{grid-column:1/-1}
+.toggles{display:grid;gap:8px}
+.tg{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--sunk)}
+.tg input{width:22px;height:22px;accent-color:var(--teal);flex:none}
+.tg small{display:block;color:var(--muted);font-size:.8rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:10px;min-width:44px;height:44px;font-size:1.25rem;font-weight:700;display:inline-grid;place-items:center;padding:0 8px}
+.chip[aria-pressed="true"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.sr-status{padding:12px 14px;border-radius:12px;font-size:.92rem}
+.sr-status.ok{background:var(--ok-soft);color:var(--ok)}
+.sr-status.bad{background:var(--warn-soft);color:var(--warn)}
+.resume{background:var(--zhu-soft);border-radius:12px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+
+/* ---------- 評估頁 ---------- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.bar .in{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bar .who{font-weight:700;min-width:0}
+.bar .who small{font-weight:400;color:var(--muted);margin-left:.4em}
+.prog{flex:1 1 200px;display:grid;gap:4px;min-width:160px}
+.prog .track{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.prog .fill{height:100%;background:var(--teal);width:0;transition:width .3s}
+.prog .lbl{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;margin-top:18px}
+@media (max-width:860px){.stage{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;display:grid;gap:16px;justify-items:center;align-content:center;min-height:440px;position:relative}
+.card .sec{position:absolute;top:16px;left:18px}
+.pic{font-size:clamp(5rem,15vw,8.5rem);line-height:1.1}
+.word{font-family:var(--f-word);font-size:clamp(3rem,9vw,5.4rem);font-weight:700;letter-spacing:.08em;text-align:center;line-height:1.5}
+.word.sentence{font-size:clamp(2.2rem,6.5vw,3.8rem)}
+.word.vowel{font-size:clamp(6rem,20vw,10rem);color:var(--zhu);font-family:var(--f-word)}
+.word rt{font-family:var(--f-ui);font-size:.3em;color:var(--zhu);letter-spacing:0;font-weight:500}
+.word.blur{filter:blur(14px);opacity:.25;user-select:none}
+.mic-wrap{display:grid;justify-items:center;gap:8px}
+.mic{width:116px;height:116px;border-radius:50%;border:none;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;position:relative;box-shadow:0 6px 18px -8px var(--teal)}
+.mic svg{width:46px;height:46px}
+.mic.on{background:var(--zhu)}
+.mic.on::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:3px solid var(--zhu);animation:pulse 1.2s ease-out infinite}
+@keyframes pulse{from{transform:scale(.9);opacity:1}to{transform:scale(1.25);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mic.on::after{animation:none}}
+.mic:disabled{background:var(--none);box-shadow:none}
+.mic-hint{color:var(--muted);font-size:.92rem;min-height:1.5em;text-align:center}
+.interim{font-family:var(--f-word);font-size:1.6rem;min-height:1.6em;color:var(--muted)}
+
+.judge{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px;display:grid;gap:14px;align-content:start}
+.tgt{display:flex;gap:12px;align-items:center}
+.tgt .big{font-size:2.4rem;font-weight:700;color:var(--zhu);background:var(--zhu-soft);border-radius:14px;min-width:64px;height:64px;display:grid;place-items:center;padding:0 10px;font-family:var(--f-word)}
+.tgt .meta{font-size:.9rem;color:var(--muted)}
+.tgt .meta b{color:var(--ink);font-weight:500}
+.heard{background:var(--sunk);border-radius:14px;padding:12px 14px;display:grid;gap:4px;min-height:84px}
+.heard .t{font-family:var(--f-word);font-size:1.7rem}
+.heard .z{color:var(--zhu);font-size:.95rem}
+.heard .alts{font-size:.8rem;color:var(--muted)}
+.heard .empty{color:var(--muted);font-size:.92rem;align-self:center}
+.auto{font-size:.92rem;padding:10px 12px;border-radius:12px;display:flex;gap:8px;align-items:flex-start}
+.auto.ok{background:var(--ok-soft);color:var(--ok)}
+.auto.err{background:var(--bad-soft);color:var(--bad)}
+.auto.none{background:var(--warn-soft);color:var(--warn)}
+.auto .pill{font-weight:700;white-space:nowrap}
+.vbtns{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.vbtns button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px;font-weight:500;min-height:52px;display:grid;gap:0;justify-items:center;font-size:.95rem}
+.vbtns button small{font-size:.7rem;color:var(--muted);font-weight:400}
+.vbtns button[aria-pressed="true"][data-v="ok"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.vbtns button[aria-pressed="true"]:not([data-v="ok"]){background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.vbtns.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.picker{display:grid;gap:6px}
+.picker .lbl{font-size:.82rem;color:var(--muted)}
+.picker .chips .chip{min-width:40px;height:40px;font-size:1.05rem}
+.picker .chip[aria-pressed="true"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.note{min-height:44px}
+.nav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.nav .btn.primary{flex:1;justify-content:center;font-size:1.05rem}
+.kbd{font-size:.75rem;color:var(--muted)}
+.warnline{font-size:.82rem;color:var(--warn)}
+
+/* 題目總覽 */
+.drawer{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 40%,transparent);z-index:20;display:grid;justify-items:end}
+.drawer .sheet{background:var(--surface);width:min(460px,100%);height:100%;overflow:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:grid;gap:14px;align-content:start}
+.ov-group{display:grid;gap:6px}
+.ov-group h3{font-size:.85rem;color:var(--muted);font-weight:500}
+.ov-grid{display:flex;flex-wrap:wrap;gap:5px}
+.ov{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:4px 8px;font-size:.9rem;font-family:var(--f-word);min-height:36px}
+.ov.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.ov.bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.ov.cur{outline:3px solid var(--teal)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+
+/* ---------- 結果頁 ---------- */
+.report{display:grid;gap:20px}
+.rep-head{display:grid;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.rep-head h1{font-family:var(--f-word);font-size:clamp(1.8rem,4vw,2.4rem);letter-spacing:.06em}
+.info{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:.95rem}
+.info span b{font-weight:500;color:var(--muted);margin-right:.35em}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:2px}
+.tile .n{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .n small{font-size:.5em;color:var(--muted);font-weight:400}
+.tile .k{font-size:.82rem;color:var(--muted)}
+.sect{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px}
+.sect h2{font-size:1.1rem;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.sect h2 small{font-size:.8rem;color:var(--muted);font-weight:400}
+.mastery{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.ms{border-radius:10px;padding:6px 4px;text-align:center;border:1px solid var(--line)}
+.ms b{display:block;font-size:1.4rem;font-family:var(--f-word)}
+.ms span{font-size:.75rem;font-variant-numeric:tabular-nums}
+.ms.m3{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.ms.m2{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.ms.m1{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.ms.m0{color:var(--none)}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;vertical-align:middle}
+th{background:var(--sunk);font-weight:500;white-space:nowrap}
+td.ph{font-weight:700;color:var(--zhu);font-size:1.15rem;background:var(--sunk);font-family:var(--f-word)}
+td.w{font-family:var(--f-word);font-size:1.05rem;white-space:nowrap}
+td.mk{min-width:58px;font-weight:700}
+td.mk.ok{color:var(--ok)}
+td.mk.bad{color:var(--bad);background:var(--bad-soft)}
+td.mk.na{color:var(--none);font-weight:400}
+td.left{text-align:left}
+.proc{display:grid;gap:8px}
+.proc-row{display:grid;grid-template-columns:minmax(0,170px) 46px minmax(0,1fr);gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line)}
+.proc-row b{font-weight:700}
+.proc-row .c{font-variant-numeric:tabular-nums;color:var(--bad);font-weight:700}
+.proc-row .ex{color:var(--muted);font-size:.9rem;min-width:0}
+@media (max-width:560px){.proc-row{grid-template-columns:1fr 40px}.proc-row .ex{grid-column:1/-1}}
+.summary-box{min-height:160px;line-height:1.8}
+.foot-actions{display:flex;gap:10px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:30;font-size:.92rem}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  :root{--paper:#fff;--surface:#fff;--sunk:#f3f3f3;--ink:#000;--muted:#444;--line:#999;--ok:#000;--ok-soft:#fff;--bad:#000;--bad-soft:#eee;--warn:#000;--warn-soft:#fff;--zhu:#000;--zhu-soft:#fff;color-scheme:light}
+  body{font-size:11pt}
+  .noprint,.bar{display:none!important}
+  .wrap{padding:0;max-width:none}
+  .sect,.tile{border-color:#999;break-inside:avoid}
+  .summary-box{border:none;padding:0;min-height:0}
+  textarea{resize:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 設定 ============ -->
+<section id="scr-setup">
+  <div class="wrap">
+    <header class="setup-head">
+      <div class="row" style="justify-content:space-between"><div class="eyebrow">資源班・構音篩檢</div><span class="row"><a class="btn" href="./" style="text-decoration:none;min-height:36px">構音練習室</a><a class="btn" href="../" style="text-decoration:none;min-height:36px">← 首頁</a></span></div>
+      <h1>構音問題評估<span>互動版</span></h1>
+      <p class="muted" style="margin:0;max-width:62ch">學生看圖或看字說出詞語，平板透過語音辨識聽寫後，自動比對聲母並標出替代、省略。每題老師都可以改判，最後產出評估結果表與錯誤型態分析。</p>
+    </header>
+
+    <div id="resumeBox" class="resume" hidden style="margin-bottom:16px">
+      <span id="resumeText">有一份尚未完成的評估。</span>
+      <span class="row"><button class="btn" id="btnDiscard" type="button">捨棄</button><button class="btn primary" id="btnResume" type="button">繼續上次評估</button></span>
+    </div>
+
+    <div class="setup-grid">
+      <div class="panel">
+        <h2>基本資料</h2>
+        <div class="fields">
+          <label>學生<input id="fStudent" autocomplete="off" placeholder="姓名"></label>
+          <label>特師<input id="fTeacher" autocomplete="off" placeholder="評估老師"></label>
+          <label>年級<input id="fGrade" inputmode="numeric" placeholder="例：3"></label>
+          <label>班級<input id="fClass" inputmode="numeric" placeholder="例：2"></label>
+          <label class="full">日期<input id="fDate" type="date"></label>
+        </div>
+        <h2>評估範圍</h2>
+        <div class="toggles">
+          <label class="tg"><input type="checkbox" id="secW" checked><span>一、詞彙（聲母，每音 4 詞）</span></label>
+          <label class="tg"><input type="checkbox" id="secV" checked><span>韻母（16 個單音）</span></label>
+          <label class="tg"><input type="checkbox" id="secS" checked><span>二、短句（6 句）</span></label>
+        </div>
+        <div class="grid" style="display:grid;gap:6px">
+          <div class="row" style="justify-content:space-between"><span class="eyebrow">詞彙要測的聲母（點選可取消，方便複評）</span>
+            <span class="row"><button class="btn ghost" type="button" id="iniAll" style="min-height:34px;padding:.2em .8em">全選</button><button class="btn ghost" type="button" id="iniNone" style="min-height:34px;padding:.2em .8em">全不選</button></span></div>
+          <div class="chips" id="iniChips"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>呈現方式</h2>
+        <div class="toggles">
+          <label class="tg"><input type="checkbox" id="oPic" checked><span>顯示圖片<small>看圖命名，減少識字負擔</small></span></label>
+          <label class="tg"><input type="checkbox" id="oZy" checked><span>國字加注音</span></label>
+          <label class="tg"><input type="checkbox" id="oHide"><span>先遮住文字<small>學生只看圖說，老師點文字可顯示</small></span></label>
+          <label class="tg"><input type="checkbox" id="oAuto"><span>自動判讀正確時跳下一題<small>1.5 秒後自動前進</small></span></label>
+        </div>
+        <div id="srStatus" class="sr-status"></div>
+        <ul class="muted" style="margin:0;padding-left:1.2em;font-size:.88rem;display:grid;gap:4px">
+          <li>語音辨識會把聲音「猜成最像的國字」，有時會把錯誤發音修正成正確詞，所以自動判讀僅供參考，請以老師聽到的為準。</li>
+          <li>建議在安靜環境、平板距離學生約 20–30 公分。</li>
+          <li>快捷鍵（接鍵盤時）：空白鍵＝錄音、← → 換題、1–5＝判定。</li>
+        </ul>
+        <button class="btn primary" id="btnStart" type="button" style="justify-content:center;font-size:1.1rem;min-height:54px">開始評估</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 評估 ============ -->
+<section id="scr-test" hidden>
+  <div class="bar"><div class="in">
+    <div class="who" id="barWho"></div>
+    <div class="prog"><div class="track"><div class="fill" id="progFill"></div></div><div class="lbl" id="progLbl"></div></div>
+    <button class="btn" type="button" id="btnOverview">題目總覽</button>
+    <button class="btn" type="button" id="btnFinish">看結果</button>
+  </div></div>
+  <div class="wrap" style="padding-top:0">
+    <div class="stage">
+      <div class="card">
+        <span class="eyebrow sec" id="secLbl"></span>
+        <div class="pic" id="stimPic" aria-hidden="true"></div>
+        <div class="word" id="stimWord" title="點一下顯示／遮住文字"></div>
+        <div class="interim" id="interim" aria-live="polite"></div>
+        <div class="mic-wrap">
+          <button class="mic" id="btnMic" type="button" aria-label="按下開始錄音">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>
+          </button>
+          <div class="mic-hint" id="micHint">按一下麥克風，請學生說出來</div>
+        </div>
+      </div>
+
+      <div class="judge">
+        <div class="tgt"><div class="big" id="tgtBig"></div><div class="meta" id="tgtMeta"></div></div>
+        <div class="heard" id="heardBox"></div>
+        <div id="autoBox"></div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px">老師判定</div>
+          <div class="vbtns" id="vbtns"></div>
+        </div>
+        <div class="picker" id="picker" hidden>
+          <div class="lbl">學生說成哪個音？</div>
+          <div class="chips" id="pickChips"></div>
+        </div>
+        <input class="note" id="noteIn" placeholder="備註（例：舌位前置、鼻音重、需提示）" autocomplete="off">
+        <div class="nav">
+          <button class="btn" type="button" id="btnPrev">← 上一題</button>
+          <button class="btn primary" type="button" id="btnNext">下一題 →</button>
+        </div>
+        <div class="kbd" id="itemPos"></div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer" id="drawer" hidden>
+    <div class="sheet">
+      <div class="row" style="justify-content:space-between"><h2 style="font-size:1.1rem">題目總覽</h2><button class="btn" type="button" id="btnCloseOv">關閉</button></div>
+      <div class="legend"><span>■ 綠：正確</span><span>■ 紅：有誤</span><span>■ 灰：未評</span></div>
+      <div id="ovBody" style="display:grid;gap:14px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 結果 ============ -->
+<section id="scr-result" hidden>
+  <div class="wrap">
+    <div class="report" id="report"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===== 判讀引擎：拼音→注音、對齊比對、音韻歷程 ===== */
+const INI = ['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s'];
+const INI_ZY = {b:'ㄅ',p:'ㄆ',m:'ㄇ',f:'ㄈ',d:'ㄉ',t:'ㄊ',n:'ㄋ',l:'ㄌ',g:'ㄍ',k:'ㄎ',h:'ㄏ',j:'ㄐ',q:'ㄑ',x:'ㄒ',zh:'ㄓ',ch:'ㄔ',sh:'ㄕ',r:'ㄖ',z:'ㄗ',c:'ㄘ',s:'ㄙ'};
+const FIN_ZY = {'':'',a:'ㄚ',o:'ㄛ',e:'ㄜ','ê':'ㄝ',eh:'ㄝ',ai:'ㄞ',ei:'ㄟ',ao:'ㄠ',ou:'ㄡ',an:'ㄢ',en:'ㄣ',ang:'ㄤ',eng:'ㄥ',er:'ㄦ',ong:'ㄨㄥ',
+  i:'ㄧ',ia:'ㄧㄚ',io:'ㄧㄛ',ie:'ㄧㄝ',iao:'ㄧㄠ',iou:'ㄧㄡ',ian:'ㄧㄢ',in:'ㄧㄣ',iang:'ㄧㄤ',ing:'ㄧㄥ',iong:'ㄩㄥ',
+  u:'ㄨ',ua:'ㄨㄚ',uo:'ㄨㄛ',uai:'ㄨㄞ',uei:'ㄨㄟ',uan:'ㄨㄢ',uen:'ㄨㄣ',uang:'ㄨㄤ',ueng:'ㄨㄥ',
+  v:'ㄩ',ve:'ㄩㄝ',van:'ㄩㄢ',vn:'ㄩㄣ'};
+const YW = {yi:'i',ya:'ia',yo:'io',ye:'ie',yao:'iao',you:'iou',yan:'ian',yin:'in',yang:'iang',ying:'ing',yong:'iong',
+  yu:'v',yue:'ve',yuan:'van',yun:'vn',wu:'u',wa:'ua',wo:'uo',wai:'uai',wei:'uei',wan:'uan',wen:'uen',wang:'uang',weng:'ueng'};
+const TONE = {'1':'','2':'ˊ','3':'ˇ','4':'ˋ','0':'˙','5':'˙'};
+
+function parsePy(raw){
+  let s = String(raw||'').toLowerCase().replace(/ü/g,'v').trim();
+  const m = s.match(/^([a-zê]+)([0-5])?$/);
+  if(!m) return null;
+  let base = m[1], tone = m[2]||'0';
+  let ini = '', fin = base;
+  if(['n','ng','m','hm','hng'].includes(base)) { fin = base==='m'||base==='hm' ? 'u' : (base==='n'?'en':'eng'); }
+  else if(YW[base] !== undefined) fin = YW[base];
+  else {
+    for(const c of INI){ if(base.startsWith(c)){ ini=c; fin=base.slice(c.length); break; } }
+    if('jqx'.includes(ini) && ini && fin.startsWith('u')) fin = 'v'+fin.slice(1);
+    if(['zh','ch','sh','r','z','c','s'].includes(ini) && fin==='i') fin='';
+    if(fin==='iu') fin='iou'; else if(fin==='ui') fin='uei'; else if(fin==='un') fin='uen';
+  }
+  const iz = ini ? INI_ZY[ini] : '';
+  const fz = FIN_ZY[fin] !== undefined ? FIN_ZY[fin] : fin;
+  const t = TONE[tone]||'';
+  const zy = tone==='0'||tone==='5' ? '˙'+iz+fz : iz+fz+t;
+  return { ini: iz, fin: fz, key: iz+'|'+fz, zy };
+}
+
+/* 把辨識文字轉成音節陣列（只取漢字） */
+function textToSyl(text, pyFn){
+  const chars = Array.from(String(text||'')).filter(c=>/\p{Script=Han}/u.test(c));
+  if(!chars.length) return [];
+  let pys = [];
+  try { pys = pyFn(chars.join('')); } catch(e){ pys = []; }
+  return chars.map((c,i)=>({ ch:c, ...(parsePy(pys[i])||{ini:'?',fin:'?',key:'?',zy:'?'}) }));
+}
+function targetSyl(word, py){
+  const chars = Array.from(word), ps = py.split(' ');
+  return chars.map((c,i)=>({ ch:c, ...parsePy(ps[i]) }));
+}
+
+/* 音節對齊（編輯距離） */
+function align(T, P){
+  const n=T.length, m=P.length, INF=1e9;
+  const cost=(a,b)=> a.ch===b.ch||a.key===b.key ? 0 : (a.ini===b.ini ? 0.4 : (a.fin===b.fin ? 0.6 : 1));
+  const D=Array.from({length:n+1},()=>Array(m+1).fill(INF));
+  D[0][0]=0;
+  for(let i=0;i<=n;i++)for(let j=0;j<=m;j++){
+    if(i&&j) D[i][j]=Math.min(D[i][j], D[i-1][j-1]+cost(T[i-1],P[j-1]));
+    if(i) D[i][j]=Math.min(D[i][j], D[i-1][j]+1);
+    if(j) D[i][j]=Math.min(D[i][j], D[i][j-1]+ ((i===0||i===n)?0.2:1)); // 頭尾多說的字（如「這是…」）幾乎不扣
+  }
+  const ops=[]; let i=n,j=m;
+  while(i>0||j>0){
+    if(i&&j && Math.abs(D[i][j]-(D[i-1][j-1]+cost(T[i-1],P[j-1])))<1e-9){ ops.push({t:i-1,p:j-1}); i--; j--; }
+    else if(i && Math.abs(D[i][j]-(D[i-1][j]+1))<1e-9){ ops.push({t:i-1,p:-1}); i--; }
+    else { ops.push({t:-1,p:j-1,edge:(i===0||i===n)}); j--; }
+  }
+  return ops.reverse();
+}
+
+/* 詞彙判讀 */
+function judgeWord(item, heardText, pyFn){
+  const T = targetSyl(item.w, item.py), P = textToSyl(heardText, pyFn);
+  if(!P.length) return { v:'none' };
+  const ops = align(T,P);
+  const byT = {}; ops.forEach(o=>{ if(o.t>=0) byT[o.t]=o; });
+  let v='ok', prod='', note=[], finErr=null;
+  for(const k of item.t){
+    const o=byT[k], ts=T[k];
+    if(!o || o.p<0){ v='omit'; note.push('「'+ts.ch+'」音節沒有說出'); prod='∅'; break; }
+    const ps=P[o.p];
+    if(ps.ch===ts.ch || ps.ini===ts.ini){
+      if(ps.ch!==ts.ch && ps.fin!==ts.fin){ finErr={t:ts.fin,p:ps.fin,ch:ts.ch}; note.push('「'+ts.ch+'」韻母聽起來像 '+ps.zy); }
+      continue;
+    }
+    if(ps.ini===''){ v='omit'; prod='∅'; note.push('「'+ts.ch+'」聲母省略，聽起來像 '+ps.zy); break; }
+    v='sub'; prod=ps.ini; note.push('「'+ts.ch+'」'+ts.zy+' → '+ps.zy); break;
+  }
+  const whole = ops.every(o=> o.t<0 ? o.edge : (o.p>=0 && (T[o.t].ch===P[o.p].ch || T[o.t].key===P[o.p].key)));
+  if(v==='ok' && !whole && !finErr){
+    const others = ops.filter(o=>o.t>=0 && !item.t.includes(o.t) && (o.p<0 || (T[o.t].ch!==P[o.p].ch && T[o.t].key!==P[o.p].key)));
+    if(others.length) note.push('目標音正確；其他字有差異：'+others.map(o=>o.p<0?('「'+T[o.t].ch+'」未說'):(T[o.t].ch+'→'+P[o.p].zy)).join('、'));
+  }
+  return { v, prod, note:note.join('；'), finErr, heardZy:P.map(s=>s.zy).join(' ') };
+}
+
+/* 韻母判讀 */
+const VOWEL_ACCEPT = { 'ㄛ':['ㄛ','ㄨㄛ'], 'ㄝ':['ㄝ'], 'ㄥ':['ㄥ'] };
+const VOWEL_CHARS = { 'ㄝ':['欸','誒'], 'ㄛ':['喔','噢','哦'], 'ㄥ':['嗯','鞥'] };
+const VOWEL_SHAKY = ['ㄛ','ㄝ','ㄥ'];
+function judgeVowel(item, heardText, pyFn){
+  const P = textToSyl(heardText, pyFn);
+  if(!P.length) return { v:'none' };
+  const s = P[0], target = item.w;
+  const acc = VOWEL_ACCEPT[target] || [target];
+  if((VOWEL_CHARS[target]||[]).includes(s.ch) || (s.ini==='' && acc.includes(s.fin))) return { v:'ok', prod:'', note:'', heardZy:s.zy };
+  if(s.ini!=='' && acc.includes(s.fin)) return { v:'add', prod:s.ini, note:'韻母正確，但前面多了聲母 '+s.ini+'（聽起來像 '+s.zy+'）', heardZy:s.zy };
+  return { v:'sub', prod:s.fin||s.ini, note:target+' → '+s.zy, heardZy:s.zy };
+}
+
+/* 短句判讀 */
+function judgeSentence(item, heardText, pyFn){
+  const T = targetSyl(item.w, item.py), P = textToSyl(heardText, pyFn);
+  if(!P.length) return { v:'none' };
+  const ops = align(T,P), errs=[];
+  for(const o of ops){
+    if(o.t<0){ if(!o.edge) errs.push({type:'add', ch:'', p:P[o.p].zy}); continue; }
+    const ts=T[o.t];
+    if(o.p<0){ errs.push({type:'omit', ch:ts.ch, t:ts.zy}); continue; }
+    const ps=P[o.p];
+    if(ps.ch===ts.ch || ps.key===ts.key) continue;
+    if(ps.ini!==ts.ini) errs.push({type: ps.ini===''?'omitIni':'sub', ch:ts.ch, t:ts.zy, p:ps.zy, ti:ts.ini, pi:ps.ini});
+    else errs.push({type:'fin', ch:ts.ch, t:ts.zy, p:ps.zy, tf:ts.fin, pf:ps.fin});
+  }
+  const txt = errs.map(e=> e.type==='omit' ? '「'+e.ch+'」未說' : e.type==='add' ? '多說 '+e.p : '「'+e.ch+'」'+e.t+'→'+e.p).join('、');
+  return { v: errs.length?'err':'ok', errs, note: txt, heardZy:P.map(s=>s.zy).join(' ') };
+}
+
+/* 音韻歷程分類 */
+const G = {
+  stop:'ㄅㄆㄉㄊㄍㄎ', fric:'ㄈㄏㄒㄙㄕㄖ', affr:'ㄐㄑㄗㄘㄓㄔ', velar:'ㄍㄎㄏ', alv:'ㄉㄊㄋㄌ',
+  dent:'ㄗㄘㄙ', retro:'ㄓㄔㄕ', pal:'ㄐㄑㄒ'
+};
+const ASP = {'ㄆ':'ㄅ','ㄊ':'ㄉ','ㄎ':'ㄍ','ㄑ':'ㄐ','ㄘ':'ㄗ','ㄔ':'ㄓ'};
+const UNASP = Object.fromEntries(Object.entries(ASP).map(([a,b])=>[b,a]));
+const PLACE = {'ㄅ':'b','ㄆ':'b','ㄇ':'b','ㄈ':'f','ㄉ':'a','ㄊ':'a','ㄋ':'a','ㄌ':'a','ㄍ':'v','ㄎ':'v','ㄏ':'v','ㄐ':'p','ㄑ':'p','ㄒ':'p','ㄗ':'d','ㄘ':'d','ㄙ':'d','ㄓ':'r','ㄔ':'r','ㄕ':'r','ㄖ':'r'};
+function processes(T, P){
+  const has=(g,x)=>x && G[g].includes(x);
+  if(!P || P==='∅') return ['聲母省略'];
+  const out=[];
+  if('ㄍㄎ'.includes(T) && (has('alv',P)||has('dent',P))) out.push('舌根音前置化');
+  if('ㄉㄊ'.includes(T) && 'ㄍㄎ'.includes(P)) out.push('舌尖音後置化');
+  if((has('fric',T)||has('affr',T)) && has('stop',P)) out.push('塞音化');
+  if(ASP[T]===P) out.push('不送氣化');
+  if(UNASP[T]===P) out.push('送氣化');
+  if(has('retro',T) && has('dent',P)) out.push('捲舌音去捲舌化');
+  if(has('dent',T) && has('retro',P)) out.push('舌尖前音捲舌化');
+  if(T==='ㄖ' && P==='ㄌ') out.push('ㄖ音邊音化');
+  if(has('fric',T) && has('affr',P) && PLACE[T]===PLACE[P]) out.push('擦音塞擦音化');
+  if(has('affr',T) && has('fric',P) && PLACE[T]===PLACE[P]) out.push('塞擦音擦音化');
+  if((has('pal',T) && (has('dent',P)||has('retro',P))) || ((has('dent',T)||has('retro',T)) && has('pal',P))) out.push('舌面音混淆');
+  if((T==='ㄋ'&&P==='ㄌ')||(T==='ㄌ'&&P==='ㄋ')) out.push('鼻音邊音混淆');
+  if((T==='ㄈ'&&P==='ㄏ')||(T==='ㄏ'&&P==='ㄈ')) out.push('ㄈㄏ混淆');
+  if(!out.length) out.push('其他替代');
+  return out;
+}
+function finProcess(t,p){
+  const nas = {'ㄣ':'ㄥ','ㄥ':'ㄣ','ㄢ':'ㄤ','ㄤ':'ㄢ','ㄧㄣ':'ㄧㄥ','ㄧㄥ':'ㄧㄣ','ㄨㄣ':'ㄨㄥ','ㄨㄥ':'ㄨㄣ','ㄧㄢ':'ㄧㄤ','ㄧㄤ':'ㄧㄢ','ㄨㄢ':'ㄨㄤ','ㄨㄤ':'ㄨㄢ'};
+  if(nas[t]===p) return '前後鼻音混淆';
+  return '韻母替代';
+}
+
+if(typeof module!=='undefined') module.exports={parsePy,textToSyl,targetSyl,align,judgeWord,judgeVowel,judgeSentence,processes,finProcess};
+
+</script>
+<script>
+/* ===== 題目資料（依原評估表） ===== */
+const WORDS = [
+ ['ㄅ',[['杯子','bei1 zi0','☕'],['布丁','bu4 ding1','🍮'],['書包','shu1 bao1','🎒'],['鉛筆','qian1 bi3','✏️']]],
+ ['ㄆ',[['蘋果','ping2 guo3','🍎'],['葡萄','pu2 tao2','🍇'],['球拍','qiu2 pai1','🏸'],['燈泡','deng1 pao4','💡']]],
+ ['ㄇ',[['馬','ma3','🐴'],['蜜蜂','mi4 feng1','🐝'],['貓咪','mao1 mi1','🐱'],['帽子','mao4 zi0','🧢']]],
+ ['ㄈ',[['飛機','fei1 ji1','✈️'],['鳳梨','feng4 li2','🍍'],['炒飯','chao3 fan4','🍚'],['衣服','yi1 fu2','👕']]],
+ ['ㄉ',[['大象','da4 xiang4','🐘'],['電話','dian4 hua4','☎️'],['蛋','dan4','🥚'],['笛子','di2 zi0','🪈']]],
+ ['ㄊ',[['兔子','tu4 zi0','🐰'],['拖鞋','tuo1 xie2','🩴'],['棒棒糖','bang4 bang4 tang2','🍭'],['櫻桃','ying1 tao2','🍒']]],
+ ['ㄋ',[['牛奶','niu2 nai3','🥛'],['鬧鐘','nao4 zhong1','⏰'],['電腦','dian4 nao3','💻'],['小鳥','xiao3 niao3','🐦']]],
+ ['ㄌ',[['老鼠','lao3 shu3','🐭'],['蠟筆','la4 bi3','🖍️'],['蟑螂','zhang1 lang2','🪳'],['瓦斯爐','wa3 si1 lu2','🔥']]],
+ ['ㄍ',[['狗','gou3','🐶'],['果汁','guo3 zhi1','🧃'],['烏龜','wu1 gui1','🐢'],['餅乾','bing3 gan1','🍪']]],
+ ['ㄎ',[['可樂','ke3 le4','🥤'],['恐龍','kong3 long2','🦖'],['巧克力','qiao3 ke4 li4','🍫'],['貝殼','bei4 ke2','🐚']]],
+ ['ㄏ',[['花','hua1','🌸'],['蝴蝶','hu2 die2','🦋'],['溜滑梯','liu1 hua2 ti1','🛝'],['水壺','shui3 hu2','🫖']]],
+ ['ㄐ',[['剪刀','jian3 dao1','✂️'],['腳踏車','jiao3 ta4 che1','🚲'],['公雞','gong1 ji1','🐓'],['香蕉','xiang1 jiao1','🍌']]],
+ ['ㄑ',[['企鵝','qi4 e2','🐧'],['籃球','lan2 qiu2','🏀'],['番茄','fan1 qie2','🍅'],['冰淇淋','bing1 qi2 lin2','🍦']]],
+ ['ㄒ',[['西瓜','xi1 gua1','🍉'],['鞋子','xie2 zi0','👟'],['無尾熊','wu2 wei3 xiong2','🐨'],['螃蟹','pang2 xie4','🦀']]],
+ ['ㄗ',[['粽子','zong4 zi0','🫔'],['嘴巴','zui3 ba0','👄'],['香皂','xiang1 zao4','🧼'],['洗澡','xi3 zao3','🛁']]],
+ ['ㄘ',[['蒼蠅','cang1 ying2','🪰'],['草莓','cao3 mei2','🍓'],['洋蔥','yang2 cong1','🧅'],['青菜','qing1 cai4','🥬']]],
+ ['ㄙ',[['掃把','sao4 ba3','🧹'],['三明治','san1 ming2 zhi4','🥪'],['雨傘','yu3 san3','☂️'],['彩色筆','cai3 se4 bi3','🖊️']]],
+ ['ㄓ',[['照相機','zhao4 xiang4 ji1','📷'],['桌子','zhuo1 zi0','🪑'],['小豬','xiao3 zhu1','🐷'],['風箏','feng1 zheng1','🪁']]],
+ ['ㄔ',[['長頸鹿','chang2 jing3 lu4','🦒'],['叉子','cha1 zi0','🍴'],['車子','che1 zi0','🚗'],['湯匙','tang1 chi2','🥄']]],
+ ['ㄕ',[['手錶','shou3 biao3','⌚'],['獅子','shi1 zi0','🦁'],['牙刷','ya2 shua1','🪥'],['故事書','gu4 shi4 shu1','📖']]],
+ ['ㄖ',[['熱狗','re4 gou3','🌭'],['乳牛','ru3 niu2','🐄'],['沐浴乳','mu4 yu4 ru3','🧴'],['機器人','ji1 qi4 ren2','🤖']]],
+];
+const VOWELS = ['ㄧ','ㄨ','ㄩ','ㄚ','ㄛ','ㄜ','ㄝ','ㄞ','ㄟ','ㄠ','ㄡ','ㄢ','ㄣ','ㄤ','ㄥ','ㄦ'];
+const SENTS = [['爸爸跑步','ba4 ba0 pao3 bu4'],['弟弟頭痛','di4 di0 tou2 tong4'],['高高喝可樂','gao1 gao1 he1 ke3 le4'],['謝謝姐姐','xie4 xie0 jie3 jie0'],['媽媽買牛奶','ma1 ma0 mai3 niu2 nai3'],['頭髮飛飛','tou2 fa3 fei1 fei1']];
+const ALL_INI = WORDS.map(r=>r[0]);
+const PICK_INI = ALL_INI.concat(['ㄧ','ㄨ','ㄩ']);
+const PICK_FIN = VOWELS;
+
+/* ===== 拼音函式（辨識文字→拼音） ===== */
+let PY_OK = false;
+function pyFn(text){ return window.pinyinPro.pinyin(text,{toneType:'num',type:'array',v:true}); }
+try{ if(window.pinyinPro){ PY_OK=true; try{ pinyinPro.customPinyin({'車':'chē','車子':'chē zi','腳踏車':'jiǎo tà chē','長頸鹿':'cháng jǐng lù','餅乾':'bǐng gān','蘋果':'píng guǒ'}); }catch(e){} } }catch(e){}
+
+/* ===== 狀態 ===== */
+const KEY='artic-assess-v1';
+let S = null; // {info, opts, items, idx, rec, summary}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const t=localStorage.getItem(KEY); return t?JSON.parse(t):null; }catch(e){ return null; } }
+function clearSave(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+const $=id=>document.getElementById(id);
+function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200); }
+
+function buildItems(sel){
+  const items=[];
+  if(sel.w) WORDS.forEach(([ph,list])=>{ if(!sel.ini.includes(ph)) return; list.forEach(([w,py,pic],k)=>{
+    const syl=targetSyl(w,py); const t=syl.map((s,i)=>s.ini===ph?i:-1).filter(i=>i>=0);
+    items.push({id:'w-'+ph+'-'+k, kind:'w', ph, w, py, pic, t, k}); }); });
+  if(sel.v) VOWELS.forEach(v=>items.push({id:'v-'+v, kind:'v', ph:v, w:v}));
+  if(sel.s) SENTS.forEach(([w,py],k)=>items.push({id:'s-'+k, kind:'s', w, py, k}));
+  return items;
+}
+
+/* ===== 設定頁 ===== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function initSetup(){
+  const today=new Date(); $('fDate').value = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const chips=$('iniChips');
+  chips.innerHTML = ALL_INI.map(p=>`<button type="button" class="chip" aria-pressed="true" data-p="${p}">${p}</button>`).join('');
+  chips.onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true'?'false':'true'); };
+  $('iniAll').onclick=()=>chips.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed','true'));
+  $('iniNone').onclick=()=>chips.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed','false'));
+  const st=$('srStatus');
+  if(!SR){ st.className='sr-status bad'; st.textContent='這個瀏覽器不支援語音辨識（建議 iPad 用 Safari、Android／電腦用 Chrome）。仍可使用：由老師聽判、直接點選判定。'; }
+  else if(!window.isSecureContext){ st.className='sr-status bad'; st.textContent='需要用 https 網址開啟（例如 GitHub Pages）才能使用麥克風。'; }
+  else if(!PY_OK){ st.className='sr-status bad'; st.textContent='注音比對元件沒有載入（請確認網路）。語音仍會聽寫，但無法自動判斷替代音。'; }
+  else { st.className='sr-status ok'; st.textContent='語音辨識可用（國語・臺灣）。第一次按麥克風時，請允許使用麥克風。'; }
+  const old=load();
+  if(old && old.items && old.items.length){
+    const done=Object.values(old.rec||{}).filter(r=>r.v).length;
+    $('resumeText').textContent=`有一份尚未完成的評估：${old.info.student||'（未填姓名）'}，已完成 ${done}／${old.items.length} 題。`;
+    $('resumeBox').hidden=false;
+    $('btnResume').onclick=()=>{ S=old; startTest(); };
+    $('btnDiscard').onclick=()=>{ clearSave(); $('resumeBox').hidden=true; };
+  }
+  $('btnStart').onclick=()=>{
+    const sel={ w:$('secW').checked, v:$('secV').checked, s:$('secS').checked,
+      ini:[...chips.querySelectorAll('.chip[aria-pressed="true"]')].map(b=>b.dataset.p) };
+    const items=buildItems(sel);
+    if(!items.length){ toast('請至少選一個評估範圍'); return; }
+    S={ info:{student:$('fStudent').value.trim(), teacher:$('fTeacher').value.trim(), grade:$('fGrade').value.trim(), cls:$('fClass').value.trim(), date:$('fDate').value},
+        opts:{pic:$('oPic').checked, zy:$('oZy').checked, hide:$('oHide').checked, auto:$('oAuto').checked},
+        items, idx:0, rec:{}, summary:null, ts:Date.now() };
+    save(); startTest();
+  };
+}
+
+/* ===== 評估頁 ===== */
+function show(scr){ ['setup','test','result'].forEach(s=>$('scr-'+s).hidden = s!==scr); window.scrollTo(0,0); }
+function startTest(){ show('test'); renderItem(); }
+function cur(){ return S.items[S.idx]; }
+function recOf(it){ return S.rec[it.id] || (S.rec[it.id]={}); }
+function zyOf(w,py){ return targetSyl(w,py).map(s=>s.zy); }
+function ruby(w,py,on){
+  const chars=Array.from(w); if(!on||!py) return esc(w);
+  const z=zyOf(w,py); return chars.map((c,i)=>`<ruby>${esc(c)}<rt>${esc(z[i])}</rt></ruby>`).join('');
+}
+let textShown=true;
+function renderItem(){
+  stopRec(true);
+  const it=cur(), r=recOf(it);
+  const done=Object.values(S.rec).filter(x=>x.v).length;
+  $('barWho').innerHTML = esc(S.info.student||'學生')+`<small>${S.info.grade?esc(S.info.grade)+'年':''}${S.info.cls?esc(S.info.cls)+'班':''}</small>`;
+  $('progFill').style.width=(done/S.items.length*100)+'%';
+  $('progLbl').textContent=`已判定 ${done}／${S.items.length} 題`;
+  const secName = it.kind==='w'?'一、詞彙':it.kind==='v'?'韻母':'二、短句';
+  $('secLbl').textContent = secName + (it.kind==='w' ? `・${it.ph}（${it.k+1}/4）` : '');
+  const pic=$('stimPic'), word=$('stimWord');
+  pic.hidden = !(it.kind==='w' && S.opts.pic); pic.textContent = it.pic||'';
+  word.className='word'+(it.kind==='s'?' sentence':it.kind==='v'?' vowel':'');
+  word.innerHTML = it.kind==='v' ? esc(it.w) : ruby(it.w, it.py, S.opts.zy);
+  textShown = !(S.opts.hide && it.kind==='w' && S.opts.pic);
+  word.classList.toggle('blur', !textShown);
+  $('interim').textContent='';
+  // 目標
+  if(it.kind==='w'){
+    const syl=targetSyl(it.w,it.py);
+    $('tgtBig').textContent=it.ph;
+    $('tgtMeta').innerHTML=`目標聲母 <b>${it.ph}</b>，在「${it.t.map(i=>esc(syl[i].ch)).join('、')}」<br>標準：${syl.map(s=>s.zy).join(' ')}`;
+  } else if(it.kind==='v'){
+    $('tgtBig').textContent=it.w;
+    $('tgtMeta').innerHTML=`韻母單音 <b>${it.w}</b><br>請學生直接念出這個注音`+(VOWEL_SHAKY.includes(it.w)?'<div class="warnline">此音辨識較不穩定，請老師以耳朵判斷為主</div>':'');
+  } else {
+    $('tgtBig').textContent='句';
+    $('tgtMeta').innerHTML=`短句 ${it.k+1}：<b>${esc(it.w)}</b><br>${zyOf(it.w,it.py).join(' ')}`;
+  }
+  renderHeard(); renderVerdict();
+  $('noteIn').value=r.note||'';
+  $('btnPrev').disabled = S.idx===0;
+  $('btnNext').textContent = S.idx===S.items.length-1 ? '完成，看結果 →' : '下一題 →';
+  $('itemPos').textContent=`第 ${S.idx+1} 題，共 ${S.items.length} 題`;
+  $('btnMic').disabled = !SR;
+  $('micHint').textContent = SR ? '按一下麥克風，請學生說出來' : '此瀏覽器無語音辨識，請老師直接判定';
+}
+function renderHeard(){
+  const it=cur(), r=recOf(it), hb=$('heardBox');
+  if(r.heard==null){ hb.innerHTML='<div class="empty">尚未錄音。也可以不錄音，直接在下方判定。</div>'; $('autoBox').innerHTML=''; return; }
+  hb.innerHTML=`<div class="eyebrow">辨識聽到</div><div class="t">${esc(r.heard)||'（沒有聽到）'}</div>`+
+    (r.auto&&r.auto.heardZy?`<div class="z">${esc(r.auto.heardZy)}</div>`:'')+
+    (r.alts&&r.alts.length>1?`<div class="alts">其他可能：${r.alts.slice(1).map(esc).join('、')}</div>`:'');
+  const a=r.auto||{}; let cls='none', pill='無法判讀', msg='沒有辨識出國字，請再錄一次或由老師判定。';
+  if(a.v==='ok'){ cls='ok'; pill='自動：正確'; msg=a.note||'與目標相符'; }
+  else if(a.v && a.v!=='none'){ cls='err'; pill='自動：'+VNAME[a.v]; msg=a.note||''; }
+  $('autoBox').innerHTML=`<div class="auto ${cls}"><span class="pill">${pill}</span><span>${esc(msg)}</span></div>`;
+}
+const VNAME={ok:'正確',sub:'替代',omit:'省略',dist:'歪曲',add:'添加',err:'有誤'};
+function renderVerdict(){
+  const it=cur(), r=recOf(it), vb=$('vbtns');
+  const opts = it.kind==='s' ? [['ok','正確','1'],['err','有誤','2']] :
+    [['ok','正確','1'],['sub','替代','2'],['omit','省略','3'],['dist','歪曲','4'],['add','添加','5']];
+  vb.className='vbtns'+(it.kind==='s'?' two':'');
+  vb.innerHTML=opts.map(([v,n,k])=>`<button type="button" data-v="${v}" aria-pressed="${r.v===v}">${n}<small>${k}</small></button>`).join('');
+  const pk=$('picker');
+  if(it.kind!=='s' && (r.v==='sub'||r.v==='add')){
+    pk.hidden=false;
+    const list = it.kind==='v' && r.v==='sub' ? PICK_FIN : PICK_INI;
+    pk.querySelector('.lbl').textContent = r.v==='add' ? '多加了哪個音？' : '學生說成哪個音？';
+    $('pickChips').innerHTML=list.map(p=>`<button type="button" class="chip" data-p="${p}" aria-pressed="${r.prod===p}">${p}</button>`).join('')+
+      `<button type="button" class="chip" data-p="" aria-pressed="${!r.prod}" style="font-size:.85rem">不確定</button>`;
+  } else pk.hidden=true;
+}
+function setVerdict(v, prod){
+  const it=cur(), r=recOf(it);
+  r.v=v;
+  if(prod!==undefined) r.prod=prod;
+  else if(v==='sub'||v==='add'){ r.prod = (r.auto && r.auto.v===v) ? r.auto.prod : (r.prod||''); }
+  else if(v==='omit') r.prod='∅'; else r.prod='';
+  if(it.kind==='s'){ r.errs = v==='err' ? (r.auto&&r.auto.errs)||[] : []; }
+  r.manual = !(r.auto && r.auto.v===v && (prod===undefined || prod===r.auto.prod));
+  save(); renderVerdict();
+  const done=Object.values(S.rec).filter(x=>x.v).length;
+  $('progFill').style.width=(done/S.items.length*100)+'%'; $('progLbl').textContent=`已判定 ${done}／${S.items.length} 題`;
+}
+$('vbtns').onclick=e=>{ const b=e.target.closest('button'); if(b) setVerdict(b.dataset.v); };
+$('pickChips').onclick=e=>{ const b=e.target.closest('.chip'); if(b) setVerdict(recOf(cur()).v, b.dataset.p); };
+$('noteIn').oninput=e=>{ recOf(cur()).note=e.target.value; save(); };
+$('stimWord').onclick=()=>{ if(cur().kind!=='w') return; textShown=!textShown; $('stimWord').classList.toggle('blur',!textShown); };
+function go(d){ const n=S.idx+d; if(n<0) return; if(n>=S.items.length){ showResult(); return; } S.idx=n; save(); renderItem(); }
+$('btnPrev').onclick=()=>go(-1);
+$('btnNext').onclick=()=>go(1);
+$('btnFinish').onclick=()=>showResult();
+
+/* 語音辨識 */
+let rec=null, recTimer=null, autoTimer=null;
+function stopRec(silent){
+  clearTimeout(recTimer); clearTimeout(autoTimer);
+  if(rec){ try{ rec.onend=null; rec.onresult=null; rec.onerror=null; rec.abort(); }catch(e){} rec=null; }
+  $('btnMic').classList.remove('on');
+  if(!silent) $('micHint').textContent='按一下麥克風，請學生說出來';
+}
+function startRec(){
+  if(!SR) return;
+  if(rec){ try{ rec.stop(); }catch(e){} return; }
+  const it=cur();
+  const r=new SR(); rec=r;
+  r.lang='zh-TW'; r.interimResults=true; r.continuous=false; r.maxAlternatives=5;
+  let finalAlts=null;
+  r.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const res=e.results[i];
+      if(res.isFinal){ finalAlts=[...res].map(a=>a.transcript.trim()).filter(Boolean); }
+      else interim+=res[0].transcript;
+    }
+    $('interim').textContent = interim || (finalAlts?finalAlts[0]:'');
+  };
+  r.onerror=e=>{
+    const m={ 'no-speech':'沒有聽到聲音，請再試一次', 'not-allowed':'麥克風被拒絕，請到瀏覽器設定允許麥克風', 'service-not-allowed':'語音辨識服務未開啟（iPad 請到設定開啟「聽寫」）', 'network':'需要網路連線才能辨識', 'audio-capture':'找不到麥克風' }[e.error] || ('辨識發生問題：'+e.error);
+    $('micHint').textContent=m;
+  };
+  r.onend=()=>{
+    clearTimeout(recTimer); rec=null; $('btnMic').classList.remove('on');
+    if(finalAlts && finalAlts.length){ handleHeard(it, finalAlts); }
+    else if($('micHint').textContent==='正在聽…'){ $('micHint').textContent='沒有聽清楚，請再按一次'; }
+  };
+  try{ r.start(); }catch(e){ rec=null; $('micHint').textContent='無法啟動麥克風'; return; }
+  $('btnMic').classList.add('on'); $('micHint').textContent='正在聽…'; $('interim').textContent='';
+  recTimer=setTimeout(()=>{ try{ r.stop(); }catch(e){} }, it.kind==='s'?9000:6000);
+}
+function handleHeard(it, alts){
+  if(cur()!==it) return;
+  const r=recOf(it); r.heard=alts[0]; r.alts=alts; r.tries=(r.tries||0)+1;
+  let a={v:'none'};
+  if(PY_OK){ try{ a = it.kind==='w' ? judgeWord(it,alts[0],pyFn) : it.kind==='v' ? judgeVowel(it,alts[0],pyFn) : judgeSentence(it,alts[0],pyFn); }catch(e){ a={v:'none'}; } }
+  else if(alts[0].includes(it.w)) a={v:'ok',note:'文字相符'};
+  r.auto=a;
+  $('micHint').textContent = a.v==='none' ? '沒有辨識出國字，請再試一次' : '請確認判定，再按下一題';
+  renderHeard();
+  if(a.v!=='none') setVerdict(a.v, a.prod);
+  if(S.opts.auto && a.v==='ok'){ autoTimer=setTimeout(()=>{ if(cur()===it) go(1); },1500); }
+}
+$('btnMic').onclick=startRec;
+
+/* 總覽 */
+function renderOverview(){
+  const groups=[]; let g=null;
+  S.items.forEach((it,i)=>{ const key=it.kind==='w'?'詞彙・'+it.ph:it.kind==='v'?'韻母':'短句';
+    const gk=it.kind==='w'?'w':it.kind; if(!g||g.k!==gk){ g={k:gk,name:it.kind==='w'?'一、詞彙':key,list:[]}; groups.push(g);} g.list.push([it,i]); });
+  $('ovBody').innerHTML=groups.map(g=>`<div class="ov-group"><h3>${g.name}</h3><div class="ov-grid">${g.list.map(([it,i])=>{
+    const r=S.rec[it.id]||{}; const c=r.v?(r.v==='ok'?'ok':'bad'):'';
+    return `<button type="button" class="ov ${c} ${i===S.idx?'cur':''}" data-i="${i}">${esc(it.kind==='s'?(it.k+1)+'.'+it.w.slice(0,2)+'…':it.w)}</button>`;}).join('')}</div></div>`).join('');
+}
+$('btnOverview').onclick=()=>{ renderOverview(); $('drawer').hidden=false; };
+$('btnCloseOv').onclick=()=>$('drawer').hidden=true;
+$('drawer').onclick=e=>{ if(e.target.id==='drawer') $('drawer').hidden=true; const b=e.target.closest('.ov'); if(b){ S.idx=+b.dataset.i; save(); $('drawer').hidden=true; renderItem(); } };
+
+document.addEventListener('keydown',e=>{
+  if($('scr-test').hidden || !$('drawer').hidden) return;
+  if(e.target.matches('input,textarea')) return;
+  if(e.code==='Space'){ e.preventDefault(); startRec(); }
+  else if(e.key==='ArrowRight') go(1);
+  else if(e.key==='ArrowLeft') go(-1);
+  else if(/^[1-5]$/.test(e.key)){ const b=$('vbtns').querySelectorAll('button')[+e.key-1]; if(b) b.click(); }
+});
+
+/* ===== 結果 ===== */
+function mark(it){
+  const r=S.rec[it.id];
+  if(!r||!r.v) return {txt:'—',cls:'na'};
+  if(r.v==='ok') return {txt:'○',cls:'ok'};
+  if(r.v==='sub') return {txt:(r.prod?'→'+r.prod:'替'),cls:'bad'};
+  if(r.v==='omit') return {txt:'省',cls:'bad'};
+  if(r.v==='dist') return {txt:'歪',cls:'bad'};
+  if(r.v==='add') return {txt:'添'+(r.prod||''),cls:'bad'};
+  if(r.v==='err') return {txt:'×',cls:'bad'};
+  return {txt:'—',cls:'na'};
+}
+function analyze(){
+  const W=S.items.filter(i=>i.kind==='w'), V=S.items.filter(i=>i.kind==='v'), Ss=S.items.filter(i=>i.kind==='s');
+  const ev=l=>l.filter(i=>S.rec[i.id]&&S.rec[i.id].v);
+  const okc=l=>l.filter(i=>S.rec[i.id]&&S.rec[i.id].v==='ok').length;
+  const ph={};
+  W.forEach(i=>{ const r=S.rec[i.id]; const p=ph[i.ph]||(ph[i.ph]={n:0,ok:0,tested:0}); p.n++; if(r&&r.v){p.tested++; if(r.v==='ok')p.ok++;} });
+  const proc={};
+  const add=(name,ex)=>{ const p=proc[name]||(proc[name]={c:0,ex:[]}); p.c++; if(p.ex.length<4 && !p.ex.includes(ex)) p.ex.push(ex); };
+  W.forEach(i=>{ const r=S.rec[i.id]; if(!r||!r.v||r.v==='ok'){ if(r&&r.v==='ok'&&r.auto&&r.auto.finErr&&!r.manual){ const f=r.auto.finErr; add(finProcess(f.t,f.p), `${i.w}（${f.t}→${f.p}）`);} return; }
+    if(r.v==='sub'){ processes(i.ph,r.prod).forEach(n=>add(n, `${i.w}（${i.ph}→${r.prod||'?'}）`)); }
+    else if(r.v==='omit') add('聲母省略', `${i.w}（${i.ph}省略）`);
+    else if(r.v==='dist') add('歪曲（音不準）', `${i.w}（${i.ph}）`);
+    else if(r.v==='add') add('添加', `${i.w}（多${r.prod||'音'}）`); });
+  V.forEach(i=>{ const r=S.rec[i.id]; if(!r||!r.v||r.v==='ok') return;
+    if(r.v==='sub') add(finProcess(i.w,r.prod), `韻母${i.w}→${r.prod||'?'}`);
+    else add('韻母'+VNAME[r.v], `韻母${i.w}`); });
+  Ss.forEach(i=>{ const r=S.rec[i.id]; if(!r||r.v!=='err') return; (r.errs||[]).forEach(e=>{
+    if(e.type==='sub') processes(e.ti,e.pi).forEach(n=>add(n, `短句「${e.ch}」（${e.ti}→${e.pi}）`));
+    else if(e.type==='omitIni') add('聲母省略', `短句「${e.ch}」`);
+    else if(e.type==='omit') add('音節省略', `短句「${e.ch}」`);
+    else if(e.type==='fin') add(finProcess(e.tf,e.pf), `短句「${e.ch}」（${e.tf}→${e.pf}）`); }); });
+  const procList=Object.entries(proc).sort((a,b)=>b[1].c-a[1].c);
+  const lvl=p=>!p.tested?'m0':(p.ok/p.tested>=1?'m3':p.ok/p.tested>=0.5?'m2':'m1');
+  return {W,V,Ss,ev,okc,ph,procList,lvl};
+}
+function autoSummary(A){
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+  const wE=A.ev(A.W).length, wO=A.okc(A.W);
+  const un=[], sh=[];
+  Object.entries(A.ph).forEach(([p,v])=>{ const l=A.lvl(v); if(l==='m1')un.push(p); else if(l==='m2')sh.push(p); });
+  const lines=[];
+  if(A.W.length) lines.push(`詞彙評估 ${wE} 個，正確 ${wO} 個（${pct(wO,wE)}）。`);
+  if(un.length) lines.push(`尚未穩定習得（正確率低於一半）的聲母：${un.join('、')}。`);
+  if(sh.length) lines.push(`表現不穩定（部分正確）的聲母：${sh.join('、')}。`);
+  if(!un.length&&!sh.length&&wE) lines.push('評估的聲母皆能正確發出。');
+  if(A.V.length){ const e=A.ev(A.V).length,o=A.okc(A.V); const bad=A.V.filter(i=>S.rec[i.id]&&S.rec[i.id].v&&S.rec[i.id].v!=='ok').map(i=>i.w); lines.push(`韻母 ${e} 個，正確 ${o} 個`+(bad.length?`，錯誤：${bad.join('、')}。`:'。')); }
+  if(A.Ss.length){ const e=A.ev(A.Ss).length,o=A.okc(A.Ss); lines.push(`短句 ${e} 句，完全正確 ${o} 句。`); }
+  const top=A.procList.filter(([,v])=>v.c>=2).slice(0,3);
+  if(top.length) lines.push(`主要錯誤型態：${top.map(([n,v])=>`${n}（${v.c} 次，如${v.ex[0]}）`).join('；')}。`);
+  else if(A.procList.length) lines.push(`偶發錯誤：${A.procList.slice(0,3).map(([n,v])=>`${n}（${v.ex[0]}）`).join('；')}，次數少，建議複評確認。`);
+  lines.push('建議：');
+  return lines.join('\n');
+}
+function showResult(){
+  stopRec(true); $('drawer').hidden=true;
+  const A=analyze(), I=S.info;
+  if(S.summary==null) S.summary=autoSummary(A);
+  save();
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  const dateTxt = I.date ? (()=>{ const [y,m,d]=I.date.split('-'); return `${+y-1911} 年 ${+m} 月 ${+d} 日`; })() : '';
+  const wE=A.ev(A.W).length, wO=A.okc(A.W), vE=A.ev(A.V).length, vO=A.okc(A.V), sE=A.ev(A.Ss).length, sO=A.okc(A.Ss);
+  const needs=Object.entries(A.ph).filter(([,v])=>['m1','m2'].includes(A.lvl(v))).map(([p])=>p);
+  let h=`<div class="rep-head">
+    <div class="eyebrow">評估結果</div>
+    <h1>構音問題評估表</h1>
+    <div class="info"><span><b>學生</b>${esc(I.student)||'＿＿＿'}</span><span><b>班級</b>${esc(I.grade)||'＿'} 年 ${esc(I.cls)||'＿'} 班</span><span><b>特師</b>${esc(I.teacher)||'＿＿＿'}</span><span><b>日期</b>${dateTxt}</span></div>
+  </div>
+  <div class="tiles">
+    <div class="tile"><span class="k">詞彙正確</span><span class="n">${wO}<small> / ${wE}</small></span><span class="k">${wE?pct(wO,wE)+'%':'未評'}</span></div>
+    <div class="tile"><span class="k">韻母正確</span><span class="n">${vO}<small> / ${vE}</small></span><span class="k">${vE?pct(vO,vE)+'%':'未評'}</span></div>
+    <div class="tile"><span class="k">短句完全正確</span><span class="n">${sO}<small> / ${sE}</small></span><span class="k">${sE?pct(sO,sE)+'%':'未評'}</span></div>
+    <div class="tile"><span class="k">需加強聲母</span><span class="n" style="font-size:1.4rem;font-family:var(--f-word)">${needs.length?needs.join(' '):'無'}</span><span class="k">${needs.length} 個</span></div>
+  </div>`;
+  if(A.W.length){
+    h+=`<div class="sect"><h2>聲母習得情形<small>綠：4/4 全對　黃：一半以上　紅：少於一半</small></h2><div class="mastery">${
+      Object.entries(A.ph).map(([p,v])=>`<div class="ms ${A.lvl(v)}"><b>${p}</b><span>${v.tested?v.ok+'/'+v.tested:'未評'}</span></div>`).join('')}</div></div>`;
+    const rows=WORDS.filter(([p])=>A.ph[p]).map(([p,list])=>`<tr><td class="ph">${p}</td>${list.map((x,k)=>{ const it=S.items.find(i=>i.id==='w-'+p+'-'+k); const m=mark(it); return `<td class="w">${x[0]}</td><td class="mk ${m.cls}">${m.txt}</td>`; }).join('')}</tr>`).join('');
+    h+=`<div class="sect"><h2>一、詞彙</h2><div class="tblwrap"><table><thead><tr><th>聲母</th><th colspan="2">詞 1</th><th colspan="2">詞 2</th><th colspan="2">詞 3</th><th colspan="2">詞 4</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  if(A.V.length){
+    const cell=v=>{ const it=S.items.find(i=>i.id==='v-'+v); const m=mark(it); const r=S.rec[it.id]||{}; return `<td class="ph">${v}</td><td class="mk ${m.cls}">${r.v==='sub'&&r.prod?'→'+r.prod:m.txt}</td>`; };
+    h+=`<div class="sect"><h2>韻母</h2><div class="tblwrap"><table><tbody><tr>${VOWELS.slice(0,8).map(cell).join('')}</tr><tr>${VOWELS.slice(8).map(cell).join('')}</tr></tbody></table></div></div>`;
+  }
+  if(A.Ss.length){
+    h+=`<div class="sect"><h2>二、短句</h2><div class="tblwrap"><table><thead><tr><th>題目</th><th>判定</th><th>學生說成（辨識）</th><th>錯誤</th></tr></thead><tbody>${
+      A.Ss.map(it=>{ const r=S.rec[it.id]||{}; const m=mark(it); return `<tr><td class="w">${it.k+1}. ${it.w}</td><td class="mk ${m.cls}">${m.txt}</td><td class="w">${esc(r.heard||'')}</td><td class="left">${esc(r.v==='err'?(r.auto&&r.auto.note)||'':'')}${r.note?'<br><span class="muted">'+esc(r.note)+'</span>':''}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+  }
+  h+=`<div class="sect"><h2>錯誤型態分析<small>出現 2 次以上較具臨床意義</small></h2>${
+    A.procList.length?`<div class="proc">${A.procList.map(([n,v])=>`<div class="proc-row"><b>${n}</b><span class="c">${v.c} 次</span><span class="ex">${v.ex.map(esc).join('、')}</span></div>`).join('')}</div>`:'<p class="muted" style="margin:0">本次評估沒有記錄到錯誤。</p>'}</div>`;
+  const notes=S.items.filter(i=>S.rec[i.id]&&S.rec[i.id].note);
+  if(notes.length) h+=`<div class="sect"><h2>老師備註</h2><div class="tblwrap"><table><tbody>${notes.map(i=>`<tr><td class="w" style="width:8em">${esc(i.kind==='v'?'韻母'+i.w:i.w)}</td><td class="left">${esc(S.rec[i.id].note)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  h+=`<div class="sect"><h2>綜合說明<small class="noprint">自動產生，可直接修改</small></h2><textarea id="sumBox" class="summary-box">${esc(S.summary)}</textarea></div>
+  <div class="muted" style="font-size:.82rem">標記說明：○ 正確　→ㄉ 替代為ㄉ　省 省略　歪 歪曲　添 添加　× 短句有誤　— 未評。自動判讀依語音辨識結果，已由評估老師確認或修正。</div>
+  <div class="foot-actions noprint">
+    <button class="btn primary" type="button" id="btnPrint">列印／存成 PDF</button>
+    <button class="btn" type="button" id="btnCopy">複製結果文字</button>
+    <button class="btn" type="button" id="btnBack">返回修改</button>
+    <button class="btn ghost" type="button" id="btnNew">新的評估</button>
+  </div>
+  <div id="newConfirm" class="resume noprint" hidden><span>確定要清除這份評估、重新開始嗎？</span><span class="row"><button class="btn" type="button" id="btnNewNo">取消</button><button class="btn primary" type="button" id="btnNewYes">清除並重新開始</button></span></div>`;
+  $('report').innerHTML=h; show('result');
+  const sb=$('sumBox'); const fit=()=>{ sb.style.height='auto'; sb.style.height=(sb.scrollHeight+4)+'px'; }; fit();
+  sb.oninput=()=>{ S.summary=sb.value; save(); fit(); };
+  $('btnPrint').onclick=()=>window.print();
+  $('btnBack').onclick=()=>startTest();
+  $('btnNew').onclick=()=>$('newConfirm').hidden=false;
+  $('btnNewNo').onclick=()=>$('newConfirm').hidden=true;
+  $('btnNewYes').onclick=()=>{ clearSave(); location.reload(); };
+  $('btnCopy').onclick=()=>{
+    const t=plainText(A);
+    const done=()=>toast('已複製，可貼到 Word 或 IEP');
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,()=>fallbackCopy(t,done)); else fallbackCopy(t,done);
+  };
+}
+function fallbackCopy(t,done){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('無法複製，請手動選取'); } ta.remove(); }
+function plainText(A){
+  const I=S.info, L=[];
+  L.push('構音問題評估結果'); L.push(`學生：${I.student}　班級：${I.grade}年${I.cls}班　特師：${I.teacher}　日期：${I.date}`); L.push('');
+  if(A.W.length){ L.push('一、詞彙'); WORDS.filter(([p])=>A.ph[p]).forEach(([p,list])=>{ L.push(p+'　'+list.map((x,k)=>x[0]+' '+mark(S.items.find(i=>i.id==='w-'+p+'-'+k)).txt).join('　')); }); L.push(''); }
+  if(A.V.length){ L.push('韻母'); L.push(VOWELS.map(v=>v+mark(S.items.find(i=>i.id==='v-'+v)).txt).join('　')); L.push(''); }
+  if(A.Ss.length){ L.push('二、短句'); A.Ss.forEach(it=>{ const r=S.rec[it.id]||{}; L.push(`${it.k+1}.${it.w}　${mark(it).txt}${r.v==='err'&&r.auto?'　'+(r.auto.note||''):''}`); }); L.push(''); }
+  if(A.procList.length){ L.push('錯誤型態分析'); A.procList.forEach(([n,v])=>L.push(`${n}：${v.c} 次（${v.ex.join('、')}）`)); L.push(''); }
+  L.push('綜合說明'); L.push(S.summary||'');
+  return L.join('\n');
+}
+
+initSetup();
+</script>
+</body>
+</html>
