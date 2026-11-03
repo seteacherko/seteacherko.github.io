@@ -223,6 +223,9 @@ details summary{cursor:pointer;color:var(--teal)}
 .tip.withmouth{grid-template-columns:minmax(0,1fr)}
 .mouthbtn{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);display:grid;place-items:center;font-size:.8rem;gap:0;line-height:1.1}
 .mouthbtn b{font-size:1.5rem}
+.mictest{padding:10px 14px;border-radius:12px;font-size:.92rem;background:var(--sunk)}
+.mictest.ok{background:var(--ok-soft);color:var(--ok)}
+.mictest.bad{background:var(--warn-soft);color:var(--warn)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:30;font-size:.92rem}
 </style>
 </head>
@@ -254,7 +257,9 @@ details summary{cursor:pointer;color:var(--teal)}
     <label><input type="checkbox" id="sPic" checked>顯示圖片</label>
     <label><input type="checkbox" id="sModel">每題先播示範</label>
     <label><input type="checkbox" id="sAuto" checked>說錯時自動播正確讀音</label>
+    <button class="btn small" type="button" id="btnMicTest">🎤 測試麥克風</button>
   </div>
+  <div id="micTestOut" class="mictest" hidden></div>
   <p class="muted" style="font-size:.82rem;margin:0">卡片下方的數字是這個音最近 10 個詞的「第一次就說對」比例。紀錄存在這台平板的瀏覽器裡，換裝置請用「學習紀錄 → 備份」。</p>
 </div></section>
 
@@ -712,6 +717,47 @@ $('groups').onclick=e=>{
 $('navHome').onclick=()=>{ stopAll(); if(R && R.items.some(i=>i.done)) finishRound(true); show('home'); renderHome(); };
 $('navLog').onclick=()=>{ stopAll(); if(R && R.items.some(i=>i.done)) finishRound(true); show('log'); renderLog(); };
 
+
+/* ===== 語音辨識環境檢查（iPad 常見問題） ===== */
+const UA = navigator.userAgent||'';
+const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+function srEnvProblem(){
+  const SRc = window.SpeechRecognition||window.webkitSpeechRecognition;
+  const standalone = window.navigator.standalone===true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if(IS_IOS && standalone) return '目前是從「主畫面圖示」開啟的，iPad 在這種模式下不能語音辨識。請改用 Safari 直接開啟這個網址。';
+  if(/Line\//i.test(UA)) return '目前是在 LINE 裡面開啟的，不能使用麥克風。請點右下角「⋯」→「用 Safari 開啟」。';
+  if(/FBAN|FBAV|Instagram|MicroMessenger/i.test(UA)) return '目前是在 App 內建瀏覽器開啟的，不能使用麥克風。請改用 Safari 開啟這個網址。';
+  if(IS_IOS && /CriOS|FxiOS|EdgiOS/.test(UA)) return 'iPad 上的 Chrome／Firefox／Edge 不支援語音辨識，請改用 Safari 開啟。';
+  if(!SRc) return '這個瀏覽器不支援語音辨識（iPad 請用 Safari，Android／電腦請用 Chrome）。';
+  if(!window.isSecureContext) return '請用 https 網址開啟（GitHub Pages），才能使用麥克風。';
+  return '';
+}
+function srErrorText(code){
+  const ios=IS_IOS;
+  return ({
+    'not-allowed': ios ? '麥克風被拒絕：請點網址列左邊的「大小」(ㄚA) 圖示 →「網站設定」→ 麥克風選「允許」；或到 設定 → Safari → 麥克風 → 允許。改完重新整理頁面。' : '麥克風被拒絕：請點網址列的鎖頭圖示，允許麥克風後重新整理。',
+    'service-not-allowed': ios ? '語音辨識服務沒有開：請到「設定 → Siri」開啟 Siri（iPad 的網頁語音辨識需要 Siri），並確認「設定 → 一般 → 鍵盤 → 啟用聽寫」已開。學校管理的 iPad 若鎖住 Siri，請洽資訊組。' : '語音辨識服務沒有開啟。',
+    'language-not-supported': '這台裝置沒有國語辨識：請到 設定 → 一般 → 鍵盤，加入「繁體中文」鍵盤與聽寫語言。',
+    'audio-capture': '抓不到麥克風：請關掉其他正在使用麥克風的 App（視訊、錄音）後再試。',
+    'network': '語音辨識需要網路，請確認 Wi-Fi 已連線。',
+    'no-speech': '沒有聽到聲音，請靠近一點再說一次。'
+  })[code] || ('辨識發生問題（代碼：'+code+'）');
+}
+function micTest(out){
+  const SRc = window.SpeechRecognition||window.webkitSpeechRecognition;
+  const env=srEnvProblem(); if(env){ out.className='mictest bad'; out.textContent=env; return; }
+  let r; try{ r=new SRc(); }catch(e){ out.className='mictest bad'; out.textContent='無法建立語音辨識：'+e.message; return; }
+  r.lang='zh-TW'; r.interimResults=true; r.continuous=false;
+  let got='', err='';
+  out.className='mictest'; out.textContent='正在聽…請說「蘋果」';
+  r.onstart=()=>{ out.textContent='麥克風已開啟，請說「蘋果」'; };
+  r.onresult=e=>{ got=[...e.results].map(x=>x[0].transcript).join(''); out.textContent='聽到：'+got; };
+  r.onerror=e=>{ err=e.error; };
+  r.onend=()=>{ if(got){ out.className='mictest ok'; out.textContent='✓ 麥克風和語音辨識都正常，聽到：「'+got+'」'; } else { out.className='mictest bad'; out.textContent= err ? srErrorText(err) : '麥克風有開，但沒有收到辨識結果。請確認「設定 → Siri」已開啟、網路正常，再試一次。'; } };
+  try{ r.start(); }catch(e){ out.className='mictest bad'; out.textContent='無法啟動：'+e.message; }
+  setTimeout(()=>{ try{ r.stop(); }catch(e){} },6000);
+}
+
 /* ===== 嘴型 ===== */
 let MH=null, MH2=null;
 function showMouth(box, target, wrong){ if(MH) MH.stop(); const d=document.createElement('div'); d.className='mouth'; box.prepend(d); MH=MOUTH.mount(d,{target,wrong}); }
@@ -754,7 +800,7 @@ function renderItem(){
   $('hint').textContent = SR? '按麥克風開始說' : '這個瀏覽器不能語音辨識，請老師用右邊按鈕判定';
   if(DB.opts.model) setTimeout(()=>speak(x.w),350);
 }
-function setMic(on){ $('btnMic').disabled=!on||!SR; }
+function setMic(on){ $('btnMic').disabled=!on||!SR||!!srEnvProblem(); }
 
 /* ===== 聲音 ===== */
 let AC=null;
@@ -791,10 +837,10 @@ function startRec(){
   try{ speechSynthesis.cancel(); }catch(e){}
   const x=it(), r=new SR(); rec=r;
   r.lang='zh-TW'; r.interimResults=true; r.continuous=false; r.maxAlternatives=3;
-  let fin=null;
-  r.onresult=e=>{ let inter=''; for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) fin=[...res].map(a=>a.transcript.trim()).filter(Boolean); else inter+=res[0].transcript; } $('hint').textContent=inter?('聽到：'+inter):'正在聽…'; };
-  r.onerror=e=>{ $('hint').textContent={ 'no-speech':'沒有聽到聲音，再按一次麥克風', 'not-allowed':'麥克風被拒絕，請到瀏覽器設定允許', 'service-not-allowed':'語音辨識沒有開啟（iPad 請到設定開啟「聽寫」）', 'network':'需要網路才能辨識' }[e.error]||('辨識問題：'+e.error); };
-  r.onend=()=>{ clearTimeout(recTimer); rec=null; $('btnMic').classList.remove('on'); if(fin&&fin.length) judge(x,fin); else if($('hint').textContent==='正在聽…') $('hint').textContent='沒聽清楚，再按一次麥克風'; };
+  let fin=null, lastInter='';
+  r.onresult=e=>{ let inter=''; for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) fin=[...res].map(a=>a.transcript.trim()).filter(Boolean); else inter+=res[0].transcript; } if(inter) lastInter=inter.trim(); $('hint').textContent=inter?('聽到：'+inter):'正在聽…'; };
+  r.onerror=e=>{ if(e.error==='aborted') return; $('hint').textContent=srErrorText(e.error); };
+  r.onend=()=>{ clearTimeout(recTimer); rec=null; $('btnMic').classList.remove('on'); if(fin&&fin.length) judge(x,fin); else if(lastInter) judge(x,[lastInter]); else if($('hint').textContent==='正在聽…') $('hint').textContent='沒聽清楚，再按一次麥克風'; };
   try{ r.start(); }catch(e){ rec=null; $('hint').textContent='無法啟動麥克風'; return; }
   $('btnMic').classList.add('on'); $('hint').textContent='正在聽…';
   recTimer=setTimeout(()=>{ try{ r.stop(); }catch(e){} },6000);
@@ -999,8 +1045,8 @@ function bindTools(){
 /* ===== 啟動 ===== */
 document.addEventListener('keydown',e=>{ if($('scr-play').hidden||e.target.matches('input,select')) return; if(e.code==='Space'){ e.preventDefault(); startRec(); } else if(e.key==='Enter' && !$('btnNext').hidden){ next(); } });
 loadDB();
-if(!SR){ $('srNotice').hidden=false; $('srNotice').textContent='這個瀏覽器不能語音辨識（iPad 請用 Safari、Android 請用 Chrome）。仍可練習，由老師用「算對／算錯」判定。'; }
-else if(!window.isSecureContext){ $('srNotice').hidden=false; $('srNotice').textContent='請用 https 網址（例如 GitHub Pages）開啟，才能使用麥克風。'; }
+{ const env=srEnvProblem(); if(env){ $('srNotice').hidden=false; $('srNotice').textContent=env+' 目前仍可練習，由老師用「算對／算錯」判定。'; } }
+$('btnMicTest').onclick=()=>{ const o=$('micTestOut'); o.hidden=false; micTest(o); };
 renderStu(); renderHome();
 </script>
 </body>
