@@ -193,6 +193,14 @@ td.left{text-align:left}
 .mictest{padding:10px 14px;border-radius:12px;font-size:.92rem;background:var(--sunk)}
 .mictest.ok{background:var(--ok-soft);color:var(--ok)}
 .mictest.bad{background:var(--warn-soft);color:var(--warn)}
+.ver{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:480px){.ver{grid-template-columns:1fr}}
+.vopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--sunk);cursor:pointer}
+.vopt input{width:20px;height:20px;margin-top:3px;accent-color:var(--teal);flex:none}
+.vopt b{display:block}
+.vopt small{display:block;color:var(--muted);font-size:.8rem;line-height:1.4}
+.vopt:has(input:checked){border-color:var(--teal);background:var(--teal-soft)}
+.estimate{font-size:.92rem;color:var(--teal);font-weight:500;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:30;font-size:.92rem}
 
 @media print{
@@ -213,7 +221,7 @@ td.left{text-align:left}
 <section id="scr-setup">
   <div class="wrap">
     <header class="setup-head">
-      <div class="row" style="justify-content:space-between"><div class="eyebrow">資源班・構音篩檢</div><span class="row"><a class="btn" href="./" style="text-decoration:none;min-height:36px">構音練習室</a><a class="btn" href="../" style="text-decoration:none;min-height:36px">← 首頁</a></span></div>
+      <div class="row" style="justify-content:space-between"><div class="eyebrow">資源班・構音篩檢</div><span class="row"><a class="btn" href="./" style="text-decoration:none;min-height:36px;color:var(--ink)">構音練習室</a><a class="btn" href="../" style="text-decoration:none;min-height:36px;color:var(--ink)">← 首頁</a></span></div>
       <h1>構音問題評估<span>互動版</span></h1>
       <p class="muted" style="margin:0;max-width:62ch">學生看圖或看字說出詞語，平板透過語音辨識聽寫後，自動比對聲母並標出替代、省略。每題老師都可以改判，最後產出評估結果表與錯誤型態分析。</p>
     </header>
@@ -234,11 +242,16 @@ td.left{text-align:left}
           <label class="full">日期<input id="fDate" type="date"></label>
         </div>
         <h2>評估範圍</h2>
-        <div class="toggles">
-          <label class="tg"><input type="checkbox" id="secW" checked><span>一、詞彙（聲母，每音 4 詞）</span></label>
-          <label class="tg"><input type="checkbox" id="secV" checked><span>韻母（16 個單音）</span></label>
-          <label class="tg"><input type="checkbox" id="secS" checked><span>二、短句（6 句）</span></label>
+        <div class="ver" role="radiogroup" aria-label="評估版本">
+          <label class="vopt"><input type="radio" name="ver" id="verShort" value="short" checked><span><b>精簡版</b><small>每個聲母 2 詞＋3 句，約 10–15 分鐘</small></span></label>
+          <label class="vopt"><input type="radio" name="ver" id="verFull" value="full"><span><b>完整版</b><small>原評估表全部題目，約 30 分鐘</small></span></label>
         </div>
+        <div class="toggles">
+          <label class="tg"><input type="checkbox" id="secW" checked><span id="lblW">一、詞彙</span></label>
+          <label class="tg"><input type="checkbox" id="secV"><span id="lblV">韻母（16 個單音）</span></label>
+          <label class="tg"><input type="checkbox" id="secS" checked><span id="lblS">二、短句</span></label>
+        </div>
+        <div class="estimate" id="estimate" aria-live="polite"></div>
         <div class="grid" style="display:grid;gap:6px">
           <div class="row" style="justify-content:space-between"><span class="eyebrow">詞彙要測的聲母（點選可取消，方便複評）</span>
             <span class="row"><button class="btn ghost" type="button" id="iniAll" style="min-height:34px;padding:.2em .8em">全選</button><button class="btn ghost" type="button" id="iniNone" style="min-height:34px;padding:.2em .8em">全不選</button></span></div>
@@ -516,6 +529,10 @@ const WORDS = [
  ['ㄕ',[['手錶','shou3 biao3','⌚'],['獅子','shi1 zi0','🦁'],['牙刷','ya2 shua1','🪥'],['故事書','gu4 shi4 shu1','📖']]],
  ['ㄖ',[['熱狗','re4 gou3','🌭'],['乳牛','ru3 niu2','🐄'],['沐浴乳','mu4 yu4 ru3','🧴'],['機器人','ji1 qi4 ren2','🤖']]],
 ];
+/* 精簡版：每個聲母挑 2 詞（盡量一個在字首、一個在字中），短句挑 3 句 */
+const SHORT = {'ㄅ':[0,2],'ㄆ':[1,3],'ㄇ':[2,3],'ㄈ':[0,3],'ㄉ':[0,1],'ㄊ':[0,3],'ㄋ':[0,2],'ㄌ':[0,1],'ㄍ':[0,2],'ㄎ':[0,3],'ㄏ':[0,3],
+  'ㄐ':[0,3],'ㄑ':[0,1],'ㄒ':[0,3],'ㄗ':[1,3],'ㄘ':[1,2],'ㄙ':[1,2],'ㄓ':[0,2],'ㄔ':[2,3],'ㄕ':[1,2],'ㄖ':[0,1]};
+const SHORT_SENTS = [0,2,3];
 const VOWELS = ['ㄧ','ㄨ','ㄩ','ㄚ','ㄛ','ㄜ','ㄝ','ㄞ','ㄟ','ㄠ','ㄡ','ㄢ','ㄣ','ㄤ','ㄥ','ㄦ'];
 const SENTS = [['爸爸跑步','ba4 ba0 pao3 bu4'],['弟弟頭痛','di4 di0 tou2 tong4'],['高高喝可樂','gao1 gao1 he1 ke3 le4'],['謝謝姐姐','xie4 xie0 jie3 jie0'],['媽媽買牛奶','ma1 ma0 mai3 niu2 nai3'],['頭髮飛飛','tou2 fa3 fei1 fei1']];
 const ALL_INI = WORDS.map(r=>r[0]);
@@ -540,10 +557,11 @@ function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clea
 function buildItems(sel){
   const items=[];
   if(sel.w) WORDS.forEach(([ph,list])=>{ if(!sel.ini.includes(ph)) return; list.forEach(([w,py,pic],k)=>{
+    if(!sel.full && !SHORT[ph].includes(k)) return;
     const syl=targetSyl(w,py); const t=syl.map((s,i)=>s.ini===ph?i:-1).filter(i=>i>=0);
     items.push({id:'w-'+ph+'-'+k, kind:'w', ph, w, py, pic, t, k}); }); });
   if(sel.v) VOWELS.forEach(v=>items.push({id:'v-'+v, kind:'v', ph:v, w:v}));
-  if(sel.s) SENTS.forEach(([w,py],k)=>items.push({id:'s-'+k, kind:'s', w, py, k}));
+  if(sel.s) SENTS.forEach(([w,py],k)=>{ if(!sel.full && !SHORT_SENTS.includes(k)) return; items.push({id:'s-'+k, kind:'s', w, py, k}); });
   return items;
 }
 
@@ -611,14 +629,28 @@ function initSetup(){
     $('btnResume').onclick=()=>{ S=old; startTest(); };
     $('btnDiscard').onclick=()=>{ clearSave(); $('resumeBox').hidden=true; };
   }
-  $('btnStart').onclick=()=>{
-    const sel={ w:$('secW').checked, v:$('secV').checked, s:$('secS').checked,
-      ini:[...chips.querySelectorAll('.chip[aria-pressed="true"]')].map(b=>b.dataset.p) };
+  function currentSel(){ return { full:$('verFull').checked, w:$('secW').checked, v:$('secV').checked, s:$('secS').checked,
+      ini:[...chips.querySelectorAll('.chip[aria-pressed="true"]')].map(b=>b.dataset.p) }; }
+  function updateEstimate(){
+    const sel=currentSel(), full=sel.full;
+    $('lblW').textContent = `一、詞彙（每個聲母 ${full?4:2} 詞）`;
+    $('lblS').textContent = `二、短句（${full?6:3} 句）`;
     const items=buildItems(sel);
+    const nW=items.filter(i=>i.kind==='w').length, nV=items.filter(i=>i.kind==='v').length, nS=items.filter(i=>i.kind==='s').length;
+    const sec=nW*17+nV*9+nS*25, lo=Math.max(1,Math.round(sec/60*0.85)), hi=Math.max(lo+1,Math.round(sec/60*1.15));
+    $('estimate').textContent = items.length ? `共 ${items.length} 題（詞彙 ${nW}${nV?'・韻母 '+nV:''}${nS?'・短句 '+nS:''}），約 ${lo}–${hi} 分鐘` : '請至少選一個評估範圍';
+  }
+  $('verShort').onchange=$('verFull').onchange=()=>{ $('secV').checked=$('verFull').checked; updateEstimate(); };
+  ['secW','secV','secS'].forEach(id=>$(id).addEventListener('change',updateEstimate));
+  chips.addEventListener('click',()=>setTimeout(updateEstimate));
+  $('iniAll').addEventListener('click',()=>setTimeout(updateEstimate)); $('iniNone').addEventListener('click',()=>setTimeout(updateEstimate));
+  updateEstimate();
+  $('btnStart').onclick=()=>{
+    const sel=currentSel(), items=buildItems(sel);
     if(!items.length){ toast('請至少選一個評估範圍'); return; }
     S={ info:{student:$('fStudent').value.trim(), teacher:$('fTeacher').value.trim(), grade:$('fGrade').value.trim(), cls:$('fClass').value.trim(), date:$('fDate').value},
         opts:{pic:$('oPic').checked, zy:$('oZy').checked, hide:$('oHide').checked, auto:$('oAuto').checked},
-        items, idx:0, rec:{}, summary:null, ts:Date.now() };
+        items, idx:0, rec:{}, summary:null, ts:Date.now(), ver: sel.full?'full':'short' };
     save(); startTest();
   };
 }
@@ -642,7 +674,8 @@ function renderItem(){
   $('progFill').style.width=(done/S.items.length*100)+'%';
   $('progLbl').textContent=`已判定 ${done}／${S.items.length} 題`;
   const secName = it.kind==='w'?'一、詞彙':it.kind==='v'?'韻母':'二、短句';
-  $('secLbl').textContent = secName + (it.kind==='w' ? `・${it.ph}（${it.k+1}/4）` : '');
+  const sameP = it.kind==='w' ? S.items.filter(i=>i.kind==='w'&&i.ph===it.ph) : [];
+  $('secLbl').textContent = secName + (it.kind==='w' ? `・${it.ph}（${sameP.indexOf(it)+1}/${sameP.length}）` : '');
   const pic=$('stimPic'), word=$('stimWord');
   pic.hidden = !(it.kind==='w' && S.opts.pic); pic.textContent = it.pic||'';
   word.className='word'+(it.kind==='s'?' sentence':it.kind==='v'?' vowel':'');
@@ -858,7 +891,7 @@ function showResult(){
   const wE=A.ev(A.W).length, wO=A.okc(A.W), vE=A.ev(A.V).length, vO=A.okc(A.V), sE=A.ev(A.Ss).length, sO=A.okc(A.Ss);
   const needs=Object.entries(A.ph).filter(([,v])=>['m1','m2'].includes(A.lvl(v))).map(([p])=>p);
   let h=`<div class="rep-head">
-    <div class="eyebrow">評估結果</div>
+    <div class="eyebrow">評估結果${S.ver==='short'?'・精簡版':S.ver==='full'?'・完整版':''}</div>
     <h1>構音問題評估表</h1>
     <div class="info"><span><b>學生</b>${esc(I.student)||'＿＿＿'}</span><span><b>班級</b>${esc(I.grade)||'＿'} 年 ${esc(I.cls)||'＿'} 班</span><span><b>特師</b>${esc(I.teacher)||'＿＿＿'}</span><span><b>日期</b>${dateTxt}</span></div>
   </div>
@@ -869,10 +902,12 @@ function showResult(){
     <div class="tile"><span class="k">需加強聲母</span><span class="n" style="font-size:1.4rem;font-family:var(--f-word)">${needs.length?needs.join(' '):'無'}</span><span class="k">${needs.length} 個</span></div>
   </div>`;
   if(A.W.length){
-    h+=`<div class="sect"><h2>聲母習得情形<small>綠：4/4 全對　黃：一半以上　紅：少於一半</small></h2><div class="mastery">${
+    h+=`<div class="sect"><h2>聲母習得情形<small>綠：全對　黃：一半以上　紅：少於一半</small></h2><div class="mastery">${
       Object.entries(A.ph).map(([p,v])=>`<div class="ms ${A.lvl(v)}"><b>${p}</b><span>${v.tested?v.ok+'/'+v.tested:'未評'}</span></div>`).join('')}</div></div>`;
-    const rows=WORDS.filter(([p])=>A.ph[p]).map(([p,list])=>`<tr><td class="ph">${p}</td>${list.map((x,k)=>{ const it=S.items.find(i=>i.id==='w-'+p+'-'+k); const m=mark(it); return `<td class="w">${x[0]}</td><td class="mk ${m.cls}">${m.txt}</td>`; }).join('')}</tr>`).join('');
-    h+=`<div class="sect"><h2>一、詞彙</h2><div class="tblwrap"><table><thead><tr><th>聲母</th><th colspan="2">詞 1</th><th colspan="2">詞 2</th><th colspan="2">詞 3</th><th colspan="2">詞 4</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    const byPh=WORDS.filter(([p])=>A.ph[p]).map(([p])=>[p, A.W.filter(i=>i.ph===p)]);
+    const maxN=Math.max(...byPh.map(([,l])=>l.length));
+    const rows=byPh.map(([p,list])=>`<tr><td class="ph">${p}</td>${list.map(it=>{ const m=mark(it); return `<td class="w">${it.w}</td><td class="mk ${m.cls}">${m.txt}</td>`; }).join('')}${'<td></td><td></td>'.repeat(maxN-list.length)}</tr>`).join('');
+    h+=`<div class="sect"><h2>一、詞彙</h2><div class="tblwrap"><table><thead><tr><th>聲母</th>${Array.from({length:maxN},(_,i)=>`<th colspan="2">詞 ${i+1}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
   if(A.V.length){
     const cell=v=>{ const it=S.items.find(i=>i.id==='v-'+v); const m=mark(it); const r=S.rec[it.id]||{}; return `<td class="ph">${v}</td><td class="mk ${m.cls}">${r.v==='sub'&&r.prod?'→'+r.prod:m.txt}</td>`; };
@@ -912,8 +947,8 @@ function showResult(){
 function fallbackCopy(t,done){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('無法複製，請手動選取'); } ta.remove(); }
 function plainText(A){
   const I=S.info, L=[];
-  L.push('構音問題評估結果'); L.push(`學生：${I.student}　班級：${I.grade}年${I.cls}班　特師：${I.teacher}　日期：${I.date}`); L.push('');
-  if(A.W.length){ L.push('一、詞彙'); WORDS.filter(([p])=>A.ph[p]).forEach(([p,list])=>{ L.push(p+'　'+list.map((x,k)=>x[0]+' '+mark(S.items.find(i=>i.id==='w-'+p+'-'+k)).txt).join('　')); }); L.push(''); }
+  L.push('構音問題評估結果'+(S.ver==='short'?'（精簡版）':'')); L.push(`學生：${I.student}　班級：${I.grade}年${I.cls}班　特師：${I.teacher}　日期：${I.date}`); L.push('');
+  if(A.W.length){ L.push('一、詞彙'); WORDS.filter(([p])=>A.ph[p]).forEach(([p])=>{ L.push(p+'　'+A.W.filter(i=>i.ph===p).map(it=>it.w+' '+mark(it).txt).join('　')); }); L.push(''); }
   if(A.V.length){ L.push('韻母'); L.push(VOWELS.map(v=>v+mark(S.items.find(i=>i.id==='v-'+v)).txt).join('　')); L.push(''); }
   if(A.Ss.length){ L.push('二、短句'); A.Ss.forEach(it=>{ const r=S.rec[it.id]||{}; L.push(`${it.k+1}.${it.w}　${mark(it).txt}${r.v==='err'&&r.auto?'　'+(r.auto.note||''):''}`); }); L.push(''); }
   if(A.procList.length){ L.push('錯誤型態分析'); A.procList.forEach(([n,v])=>L.push(`${n}：${v.c} 次（${v.ex.join('、')}）`)); L.push(''); }
