@@ -64,6 +64,8 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .bar .in{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .brand{font-family:var(--f-word);font-weight:700;font-size:1.3rem;letter-spacing:.06em;margin-right:auto;display:flex;gap:8px;align-items:center}
 .brand span{color:var(--zhu)}
+button.brand{background:none;border:none;padding:4px 6px;border-radius:12px;color:var(--ink);cursor:pointer}
+button.brand:hover{background:var(--sunk)}
 .stu{display:flex;gap:6px;align-items:center}
 .stu select{min-width:7em;min-height:38px}
 .starcount{font-weight:700;color:var(--star-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -334,7 +336,7 @@ details summary{cursor:pointer;color:var(--teal)}
 
 <div class="bar"><div class="in">
   <a href="../" class="btn small" aria-label="回潛能教室首頁">← 首頁</a>
-  <div class="brand"><span aria-hidden="true">🏝️</span>構音<span>冒險島</span></div>
+  <button type="button" class="brand" id="brandHome" aria-label="回海圖"><span aria-hidden="true">🏝️</span>構音<span>冒險島</span></button>
   <div class="stu"><label for="stuSel" class="muted" style="font-size:.85rem">學生</label><select id="stuSel"></select><button class="btn small" type="button" id="btnAddStu" aria-label="新增學生">＋</button></div>
   <span class="starcount" id="starCount"></span>
   <button class="btn small" type="button" id="navMap">海圖</button>
@@ -982,6 +984,7 @@ function addStudent(){ const n=$('newStu').value.trim(); if(!n){ toast('請輸�
   const s={id:uid(),name:n}; DB.students.push(s); DB.cur=s.id; saveDB(); $('newStu').value=''; $('addStuBox').hidden=true; renderStu(); renderMap(); toast('已新增 '+n); }
 $('okStu').onclick=addStudent;
 $('newStu').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addStudent(); } });
+$('brandHome').onclick=()=>{ leavePlay(true); $('tModal').hidden=true; goMap(); };
 $('navMap').onclick=()=>{ leavePlay(true); goMap(); };
 $('navLog').onclick=()=>{ leavePlay(true); show('log'); renderLog(); };
 
