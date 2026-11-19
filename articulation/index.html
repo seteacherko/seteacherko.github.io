@@ -164,7 +164,8 @@ h1,h2,h3{text-wrap:balance;margin:0}
 @keyframes mflow{to{stroke-dashoffset:-13}}
 
 /* ===== 遊玩 ===== */
-.playtop{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.playtop{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.playtop .pills{flex:1;justify-content:center}
 .pills{display:flex;gap:6px;flex-wrap:wrap}
 .pill{border-radius:99px;padding:4px 12px;font-size:.88rem;background:var(--sunk);border:1px solid var(--line);color:var(--muted)}
 .pill.cur{background:var(--teal);border-color:var(--teal);color:var(--teal-ink);font-weight:700}
@@ -202,7 +203,9 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .burst{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:7rem;animation:pop .9s ease-out forwards}
 @keyframes pop{0%{transform:scale(.3);opacity:0}40%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.mic.on::after,.burst{animation:none}.burst{opacity:0}}
-.fb{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:16px;display:grid;gap:12px;align-content:start}
+.fb{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:12px}
+#tipBox{display:grid;gap:10px}
+.pic-svg{width:1.15em;height:1.15em;display:block}
 .say{border-radius:16px;padding:12px 14px;display:grid;gap:6px}
 .say.idle{background:var(--sunk);color:var(--muted)}
 .say.ok{background:var(--ok-soft);color:var(--ok)}
@@ -217,7 +220,10 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .compare .z.p{background:var(--bad-soft);color:var(--bad);text-decoration:line-through;text-decoration-thickness:2px}
 .tip{background:var(--zhu-soft);border-radius:14px;padding:12px 14px;display:grid;gap:6px;font-size:1rem}
 .tip b{color:var(--zhu)}
-.teacher{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}
+.teacher{margin-top:auto;display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.gear{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);color:var(--muted);font-size:1.1rem;display:grid;place-items:center;flex:none}
+.gear[aria-expanded="true"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+#btnNext{min-width:220px}
 .navrow{display:flex;gap:10px}
 .navrow .btn.primary{flex:1;font-size:1.05rem;min-height:52px}
 
@@ -293,6 +299,34 @@ details summary{cursor:pointer;color:var(--teal)}
 .mictest{padding:10px 14px;border-radius:12px;font-size:.92rem;background:var(--sunk)}
 .mictest.ok{background:var(--ok-soft);color:var(--ok)}
 .mictest.bad{background:var(--warn-soft);color:var(--warn)}
+.maprow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+/* iPad 橫向：海圖一頁看完、關卡畫面不捲動 */
+@media (min-width:900px) and (orientation:landscape){
+  #scr-map .wrap{padding-block:10px 16px;gap:10px}
+  .maphead h1{font-size:clamp(1.5rem,2.6vw,2rem)}
+  .treasures span{width:36px;height:36px;font-size:1.2rem}
+  body.playing .bar{display:none}
+  #scr-play .wrap{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-block:10px;gap:10px;grid-template-rows:auto minmax(0,1fr)}
+  #scr-play .stage{min-height:0;height:100%}
+  #scr-play .card{min-height:0;height:100%;padding:14px 16px;gap:6px}
+  #scr-play .fb{min-height:0;height:100%;overflow:auto}
+  #tipBox:has(.mouths){grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center}
+  #tipBox:has(.mouth + .mouth){grid-template-columns:1fr}
+  .mouths:has(.mouth + .mouth){grid-template-columns:1fr 1fr}
+  .mouths:has(.mouth + .mouth) .mouth{max-width:none}
+  .pic{font-size:min(6.6rem,14vh)}
+  .word{font-size:min(5rem,10.5vh)}
+  .word.sent{font-size:min(3.3rem,7.5vh)}
+  .mic{width:min(112px,15vh);height:min(112px,15vh)}
+  .round{width:min(72px,10vh);height:min(72px,10vh)}
+  .choice{width:min(150px,24vh);height:min(150px,24vh);font-size:min(4.6rem,13vh)}
+  .say h3{font-size:1.25rem}
+  .done{padding:16px 20px;gap:10px}
+  .done h1{font-size:2rem}
+  .bigstars{font-size:2.4rem}
+  .rlist{grid-template-columns:1fr 1fr;max-width:900px}
+  .treasure{font-size:3.6rem}
+}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:30;font-size:.92rem}
 </style>
 </head>
@@ -330,8 +364,9 @@ details summary{cursor:pointer;color:var(--teal)}
 <!-- 遊玩 -->
 <section id="scr-play" hidden><div class="wrap">
   <div class="playtop">
+    <button class="btn small" type="button" id="btnQuit">← 離開關卡</button>
     <div class="pills" id="pills"></div>
-    <button class="btn small" type="button" id="btnQuit">離開關卡</button>
+    <span class="starcount" id="playStars"></span>
   </div>
   <div class="stage">
     <div class="card" id="card">
@@ -349,18 +384,19 @@ details summary{cursor:pointer;color:var(--teal)}
         <button class="round" type="button" id="btnMouth" aria-label="看嘴型"><b>👄</b>嘴型</button>
       </div>
       <div class="hint" id="hint"></div>
+      <button class="btn primary big" type="button" id="btnNext" hidden>下一題 →</button>
     </div>
     <div class="fb">
       <div id="say" class="say idle"></div>
       <div id="tipBox"></div>
-      <div class="navrow"><button class="btn primary" type="button" id="btnNext" hidden>下一題 →</button></div>
       <div class="teacher" id="teacherTools">
-        <div class="eyebrow">老師調整（辨識不準時使用）</div>
-        <div class="row">
+        <div class="row" id="tBtns" hidden>
+          <span class="eyebrow">老師調整</span>
           <button class="btn small" type="button" id="tOk">算對</button>
           <button class="btn small" type="button" id="tBad">算錯</button>
           <button class="btn small" type="button" id="tSkip">跳過這題</button>
         </div>
+        <button class="gear" type="button" id="tGear" aria-label="老師調整（辨識不準時使用）" aria-expanded="false">⚙</button>
       </div>
     </div>
   </div>
@@ -857,6 +893,37 @@ function micTest(out){
 }
 
 
+/* ===== 沒有表情符號的語詞：自繪插圖（viewBox 0 0 120 120） ===== */
+const PICS = {
+'毛巾':'<rect x="18" y="20" width="84" height="6" rx="3" fill="#8D6E63"/><path d="M30 26h60v70a6 6 0 0 1-6 6H36a6 6 0 0 1-6-6z" fill="#4FC3F7"/><path d="M30 26h60v14H30z" fill="#29B6F6"/><rect x="30" y="80" width="60" height="6" fill="#fff" opacity=".85"/><rect x="30" y="90" width="60" height="3" fill="#fff" opacity=".85"/>',
+'風車':'<line x1="60" y1="50" x2="60" y2="112" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/><path d="M60 48 L60 12 L84 30Z" fill="#EF5350"/><path d="M60 48 L96 48 L78 72Z" fill="#42A5F5"/><path d="M60 48 L60 84 L36 66Z" fill="#FFCA28"/><path d="M60 48 L24 48 L42 24Z" fill="#66BB6A"/><circle cx="60" cy="48" r="5" fill="#fff" stroke="#555" stroke-width="2"/>',
+'粉筆':'<g transform="rotate(-20 60 66)"><rect x="20" y="40" width="80" height="14" rx="4" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="2"/><rect x="20" y="62" width="80" height="14" rx="4" fill="#F48FB1" stroke="#C2185B" stroke-width="1.5"/><rect x="20" y="84" width="80" height="14" rx="4" fill="#FFF176" stroke="#F9A825" stroke-width="1.5"/></g>',
+'髮夾':'<rect x="18" y="70" width="84" height="9" rx="4.5" fill="#90A4AE"/><path d="M60 56 L22 34 Q12 56 22 78 Z" fill="#EC407A"/><path d="M60 56 L98 34 Q108 56 98 78 Z" fill="#EC407A"/><path d="M60 56 L30 44 Q26 56 30 68Z M60 56 L90 44 Q94 56 90 68Z" fill="#F48FB1"/><circle cx="60" cy="56" r="10" fill="#C2185B"/>',
+'豆腐':'<ellipse cx="60" cy="92" rx="50" ry="13" fill="#CFD8DC"/><path d="M28 50 L60 38 L92 50 L92 82 L60 94 L28 82Z" fill="#FFFDE7" stroke="#D7CCC8" stroke-width="2"/><path d="M28 50 L60 62 L92 50 M60 62 V94" fill="none" stroke="#D7CCC8" stroke-width="2"/><circle cx="52" cy="50" r="3" fill="#66BB6A"/><circle cx="66" cy="48" r="3" fill="#66BB6A"/><circle cx="60" cy="54" r="3" fill="#66BB6A"/>',
+'泥土':'<path d="M8 104 Q60 40 112 104Z" fill="#8D6E63"/><circle cx="38" cy="90" r="3.5" fill="#5D4037"/><circle cx="70" cy="82" r="3.5" fill="#5D4037"/><circle cx="86" cy="94" r="3.5" fill="#5D4037"/><circle cx="54" cy="96" r="3" fill="#5D4037"/><path d="M60 72 V48" stroke="#43A047" stroke-width="4" stroke-linecap="round"/><path d="M60 56 Q46 42 38 48 Q48 60 60 56Z M60 52 Q74 38 82 44 Q72 56 60 52Z" fill="#66BB6A"/>',
+'路燈':'<circle cx="80" cy="34" r="24" fill="#FFF59D" opacity=".55"/><path d="M44 110 V26 Q44 14 56 14 H74" fill="none" stroke="#546E7A" stroke-width="6" stroke-linecap="round"/><path d="M66 16 H96 L89 32 H73Z" fill="#455A64"/><ellipse cx="81" cy="33" rx="9" ry="4" fill="#FFEB3B"/><rect x="34" y="106" width="20" height="8" rx="2" fill="#546E7A"/>',
+'蓋子':'<path d="M16 80 Q60 28 104 80Z" fill="#B0BEC5" stroke="#78909C" stroke-width="3"/><rect x="10" y="78" width="100" height="9" rx="4.5" fill="#78909C"/><rect x="48" y="38" width="24" height="11" rx="5.5" fill="#455A64"/><path d="M34 66 Q46 54 58 50" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>',
+'蝌蚪':'<path d="M58 62 Q76 46 90 60 Q102 72 114 56" fill="none" stroke="#37474F" stroke-width="7" stroke-linecap="round"/><ellipse cx="42" cy="62" rx="27" ry="21" fill="#37474F"/><circle cx="32" cy="55" r="5.5" fill="#fff"/><circle cx="31" cy="55" r="2.8" fill="#000"/><path d="M12 96 q10 -6 20 0 t20 0 M60 104 q10 -6 20 0 t20 0" stroke="#4FC3F7" stroke-width="3" fill="none" stroke-linecap="round"/>',
+'黑板':'<rect x="8" y="18" width="104" height="72" rx="4" fill="#8D6E63"/><rect x="14" y="24" width="92" height="60" fill="#2E7D32"/><path d="M24 42 h22 M24 56 h34 M24 70 h16 M70 40 l14 14 M84 40 l-14 14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><rect x="18" y="90" width="84" height="6" fill="#6D4C41"/><path d="M56 96 L44 116 M64 96 L76 116" stroke="#6D4C41" stroke-width="4" stroke-linecap="round"/>',
+'夾子':'<g transform="rotate(-30 60 62)"><rect x="50" y="12" width="11" height="96" rx="4" fill="#D7A86E"/><rect x="61" y="12" width="11" height="96" rx="4" fill="#C8955A"/><circle cx="61" cy="66" r="9" fill="none" stroke="#90A4AE" stroke-width="4"/></g>',
+'蜻蜓':'<ellipse cx="36" cy="44" rx="30" ry="9" fill="#B3E5FC" transform="rotate(-15 36 44)"/><ellipse cx="84" cy="44" rx="30" ry="9" fill="#B3E5FC" transform="rotate(15 84 44)"/><ellipse cx="38" cy="60" rx="26" ry="8" fill="#81D4FA" transform="rotate(12 38 60)"/><ellipse cx="82" cy="60" rx="26" ry="8" fill="#81D4FA" transform="rotate(-12 82 60)"/><rect x="56" y="40" width="8" height="72" rx="4" fill="#1E88E5"/><circle cx="54" cy="36" r="7" fill="#0D47A1"/><circle cx="66" cy="36" r="7" fill="#0D47A1"/>',
+'桌子':'<rect x="10" y="42" width="100" height="13" rx="3" fill="#A1887F"/><rect x="16" y="55" width="11" height="54" rx="2" fill="#8D6E63"/><rect x="93" y="55" width="11" height="54" rx="2" fill="#8D6E63"/><rect x="38" y="55" width="8" height="40" fill="#795548" opacity=".55"/><rect x="74" y="55" width="8" height="40" fill="#795548" opacity=".55"/><rect x="62" y="30" width="26" height="12" rx="2" fill="#5C6BC0"/>',
+'珍珠':'<rect x="6" y="20" width="108" height="96" rx="16" fill="#3949AB"/><g fill="#FFF8EE" stroke="#D9CFC0" stroke-width="1.5"><circle cx="99" cy="47" r="7"/><circle cx="95" cy="60" r="7"/><circle cx="86" cy="71" r="7"/><circle cx="74" cy="78" r="7"/><circle cx="60" cy="80" r="7"/><circle cx="46" cy="78" r="7"/><circle cx="34" cy="71" r="7"/><circle cx="25" cy="60" r="7"/><circle cx="21" cy="47" r="7"/><circle cx="60" cy="98" r="11"/></g><circle cx="56" cy="94" r="3.5" fill="#fff"/>',
+'枕頭':'<path d="M16 38 Q60 22 104 38 Q112 60 104 84 Q60 100 16 84 Q8 60 16 38Z" fill="#E3F2FD" stroke="#64B5F6" stroke-width="3"/><path d="M38 54 Q60 64 82 54" stroke="#90CAF9" stroke-width="3" fill="none" stroke-linecap="round"/>',
+'竹筍':'<path d="M60 10 L90 100 H30Z" fill="#C5A572"/><path d="M60 10 L75 56 L60 49 L45 56Z" fill="#9CCC65"/><path d="M40 72 L60 62 L80 72 M35 88 L60 77 L85 88" fill="none" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/><rect x="26" y="98" width="68" height="9" rx="4.5" fill="#A1887F"/>',
+'廚房':'<rect x="12" y="60" width="96" height="50" rx="4" fill="#ECEFF1" stroke="#90A4AE" stroke-width="2"/><rect x="12" y="56" width="96" height="8" fill="#90A4AE"/><rect x="20" y="72" width="36" height="30" rx="2" fill="#CFD8DC"/><rect x="64" y="72" width="36" height="30" rx="2" fill="#CFD8DC"/><circle cx="50" cy="87" r="2.5" fill="#78909C"/><circle cx="70" cy="87" r="2.5" fill="#78909C"/><rect x="28" y="36" width="38" height="20" rx="3" fill="#607D8B"/><rect x="24" y="33" width="46" height="5" rx="2" fill="#455A64"/><path d="M38 28 q-4 -6 0 -12 M48 28 q-4 -6 0 -12 M58 28 q-4 -6 0 -12" stroke="#B0BEC5" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M78 50 h22 M92 50 v-16" stroke="#455A64" stroke-width="4" stroke-linecap="round"/><ellipse cx="86" cy="50" rx="10" ry="4" fill="#455A64"/>',
+'船長':'<circle cx="60" cy="68" r="30" fill="#FFCCBC"/><path d="M30 76 Q60 116 90 76 Q84 98 60 102 Q36 98 30 76Z" fill="#8D6E63"/><path d="M24 48 Q60 12 96 48 Z" fill="#FAFAFA" stroke="#90A4AE" stroke-width="2"/><rect x="22" y="44" width="76" height="10" rx="5" fill="#263238"/><path d="M60 24 v13 M53 32 q7 7 14 0" stroke="#FFC107" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="50" cy="66" r="3.2" fill="#333"/><circle cx="70" cy="66" r="3.2" fill="#333"/>',
+'山洞':'<path d="M4 108 L42 28 L60 50 L78 24 L116 108Z" fill="#8D9DA6"/><path d="M38 108 Q38 64 61 64 Q84 64 84 108Z" fill="#263238"/><path d="M42 28 L51 46 L36 44Z M78 24 L87 42 L71 40Z" fill="#fff" opacity=".9"/><path d="M4 108 H116" stroke="#6D7B82" stroke-width="4"/>',
+'肉圓':'<path d="M12 66 H108 Q102 108 60 108 Q18 108 12 66Z" fill="#E0E0E0" stroke="#9E9E9E" stroke-width="2"/><ellipse cx="60" cy="60" rx="35" ry="23" fill="#F3E3CF" stroke="#D7B899" stroke-width="2"/><path d="M33 58 Q60 40 87 58 Q74 70 60 66 Q44 70 33 58Z" fill="#E53935" opacity=".85"/><circle cx="52" cy="54" r="2.8" fill="#43A047"/><circle cx="66" cy="52" r="2.8" fill="#43A047"/><circle cx="60" cy="58" r="2.4" fill="#43A047"/>',
+'讓開':'<circle cx="38" cy="28" r="11" fill="#42A5F5"/><path d="M38 40 V72 M38 50 L24 64 M38 50 L54 58 M38 72 L28 98 M38 72 L50 98" stroke="#42A5F5" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M62 74 H104 M90 60 L104 74 L90 88" stroke="#E53935" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
+'粽子':'<path d="M60 12 L106 98 H14Z" fill="#7CB342" stroke="#558B2F" stroke-width="3" stroke-linejoin="round"/><path d="M60 12 L60 98 M60 12 L36 98" stroke="#558B2F" stroke-width="2" opacity=".55"/><path d="M28 70 Q60 84 94 66" stroke="#D7CCC8" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M62 78 L68 112" stroke="#D7CCC8" stroke-width="4" stroke-linecap="round"/>',
+'餐桌':'<rect x="8" y="58" width="104" height="12" rx="3" fill="#EF5350"/><rect x="8" y="70" width="104" height="6" fill="#C62828"/><rect x="16" y="76" width="9" height="36" fill="#8D6E63"/><rect x="95" y="76" width="9" height="36" fill="#8D6E63"/><ellipse cx="32" cy="54" rx="17" ry="5" fill="#fff" stroke="#BDBDBD"/><ellipse cx="88" cy="54" rx="17" ry="5" fill="#fff" stroke="#BDBDBD"/><path d="M48 52 a12 10 0 0 0 24 0z" fill="#FFB74D"/><path d="M54 42 q-3 -5 0 -10 M66 42 q-3 -5 0 -10" stroke="#B0BEC5" stroke-width="3" fill="none" stroke-linecap="round"/>',
+'蔥油餅':'<ellipse cx="60" cy="72" rx="52" ry="30" fill="#D9984A"/><ellipse cx="60" cy="66" rx="52" ry="30" fill="#F4C27A"/><path d="M60 66 m-32 0 a32 18 0 1 1 64 0 a24 13 0 1 1 -48 0 a15 8 0 1 1 30 0" fill="none" stroke="#D9984A" stroke-width="2.5"/><g fill="#43A047"><circle cx="36" cy="58" r="3"/><circle cx="52" cy="48" r="3"/><circle cx="76" cy="52" r="3"/><circle cx="88" cy="70" r="3"/><circle cx="64" cy="80" r="3"/><circle cx="40" cy="76" r="3"/></g>',
+'酸梅':'<circle cx="42" cy="72" r="21" fill="#8E244D"/><circle cx="78" cy="72" r="21" fill="#A0305A"/><circle cx="60" cy="48" r="21" fill="#7B1E44"/><circle cx="53" cy="41" r="5" fill="#fff" opacity=".35"/><circle cx="35" cy="65" r="4" fill="#fff" opacity=".3"/><path d="M60 28 Q72 12 86 18 Q76 32 60 28Z" fill="#558B2F"/>',
+'絲瓜':'<path d="M24 30 Q18 18 30 16 Q92 40 102 96 Q104 108 92 106 Q58 70 24 30Z" fill="#689F38"/><path d="M30 22 Q82 50 97 102" stroke="#33691E" stroke-width="2.5" fill="none"/><path d="M26 30 Q70 58 92 104" stroke="#33691E" stroke-width="2" fill="none" opacity=".6"/><path d="M28 17 L20 6" stroke="#795548" stroke-width="5" stroke-linecap="round"/>'
+};
+function picHTML(w,emoji){ if(emoji) return esc(emoji); const s=PICS[w]; return s?`<svg class="pic-svg" viewBox="0 0 120 120" aria-hidden="true">${s}</svg>`:''; }
+
 
 /* ===== 島嶼與關卡 ===== */
 const CONTRAST={'ㄅ':'ㄆ','ㄆ':'ㄅ','ㄇ':'ㄅ','ㄈ':'ㄏ','ㄉ':'ㄍ','ㄊ':'ㄉ','ㄋ':'ㄌ','ㄌ':'ㄋ','ㄍ':'ㄉ','ㄎ':'ㄍ','ㄏ':'ㄈ','ㄐ':'ㄗ','ㄑ':'ㄐ','ㄒ':'ㄙ','ㄓ':'ㄗ','ㄔ':'ㄘ','ㄕ':'ㄙ','ㄖ':'ㄌ','ㄗ':'ㄓ','ㄘ':'ㄔ','ㄙ':'ㄕ'};
@@ -883,8 +950,8 @@ function viewFor(ph, stage){ if(stage && ISLANDS[stage.isl].id==='i9') return 'b
 
 /* ===== 資料 ===== */
 const KEY='artic-practice-v1', PIN='9898';
-let DB={students:[],cur:null,sessions:[],opts:{zy:true,pic:true},prog:{}};
-function loadDB(){ try{ const t=localStorage.getItem(KEY); if(t){ const d=JSON.parse(t); DB=Object.assign(DB,d); DB.opts=Object.assign({zy:true,pic:true},d.opts||{}); DB.prog=d.prog||{}; } }catch(e){} }
+let DB={students:[],cur:null,sessions:[],opts:{zy:true,pic:true,autoListen:true},prog:{}};
+function loadDB(){ try{ const t=localStorage.getItem(KEY); if(t){ const d=JSON.parse(t); DB=Object.assign(DB,d); DB.opts=Object.assign({zy:true,pic:true,autoListen:true},d.opts||{}); DB.prog=d.prog||{}; } }catch(e){} }
 function saveDB(){ try{ localStorage.setItem(KEY,JSON.stringify(DB)); }catch(e){ toast('無法儲存紀錄（瀏覽器儲存空間被關閉）'); } }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function curStu(){ return DB.students.find(s=>s.id===DB.cur)||null; }
@@ -902,7 +969,7 @@ function totalStars(){ const P=curStu()?prog():{best:{}}; return Object.values(P
 function nextStage(){ const P=curStu()?prog():{passed:{}}; return STAGES.find(s=>!P.passed[s.id] && stageUnlocked(s)) || null; }
 
 /* ===== 共用 UI ===== */
-function show(s){ ['map','isle','intro','play','done','log'].forEach(x=>$('scr-'+x).hidden=x!==s); window.scrollTo(0,0); }
+function show(s){ ['map','isle','intro','play','done','log'].forEach(x=>$('scr-'+x).hidden=x!==s); document.body.classList.toggle('playing', s==='play'); window.scrollTo(0,0); }
 function renderStu(){
   const sel=$('stuSel');
   sel.innerHTML = DB.students.length ? DB.students.map(s=>`<option value="${s.id}" ${s.id===DB.cur?'selected':''}>${esc(s.name)}</option>`).join('') : '<option value="">（請新增）</option>';
@@ -919,18 +986,25 @@ $('navMap').onclick=()=>{ leavePlay(true); goMap(); };
 $('navLog').onclick=()=>{ leavePlay(true); show('log'); renderLog(); };
 
 /* ===== 海圖 ===== */
-const MAPPOS=[[24,0],[72,1],[30,2],[74,3],[26,4],[70,5],[30,6],[72,7],[44,8]];
+const MAP_V=[[24,0],[72,1],[30,2],[74,3],[26,4],[70,5],[30,6],[72,7],[44,8]];
+const MAP_H=[[16,0],[50,0],[84,0],[84,1],[50,1],[16,1],[16,2],[50,2],[84,2]];
+function mapLayout(){ // 橫向（寬螢幕）：3 排蛇形航線一頁看完；窄螢幕：直向
+  const sea=$('sea'), W=sea.clientWidth||window.innerWidth;
+  if(W>=700){ const top=sea.getBoundingClientRect().top+window.scrollY; const avail=Math.max(480, window.innerHeight-top-30);
+    const rowH=Math.max(160, Math.min(220, (avail-20)/3)); return {pos:MAP_H, rowH, off:rowH/2+18, H:rowH*3+30, horiz:true}; }
+  return {pos:MAP_V, rowH:150, off:120, H:MAP_V.length*150+90, horiz:false};
+}
 function goMap(){ show('map'); renderMap(); }
 function renderMap(){
   const stu=curStu();
   $('mapTitle').textContent = stu ? `${stu.name} 的冒險海圖` : '構音冒險島';
   $('mapEyebrow').textContent = stu ? '點一座島，開始闖關' : '先按上方「＋」新增學生';
   $('treasures').innerHTML = ISLANDS.map((isl,i)=>`<span class="${stu&&islandDone(i)?'got':''}" title="${isl.prizeName}">${isl.prize}</span>`).join('');
-  const sea=$('sea'), rowH=150, H=MAPPOS.length*rowH+60;
-  sea.style.height=(H+30)+'px';
+  const sea=$('sea'), L=mapLayout();
+  sea.style.height=L.H+'px';
   const nx=nextStage();
   sea.innerHTML = `<svg class="route" aria-hidden="true"></svg>` + ISLANDS.map((isl,i)=>{
-    const [x,r]=MAPPOS[i], y=r*rowH+120, un=islandUnlocked(i), dn=stu&&islandDone(i), here= nx && nx.isl===i;
+    const [x,r]=L.pos[i], y=r*L.rowH+L.off, un=islandUnlocked(i), dn=stu&&islandDone(i), here= nx && nx.isl===i;
     const total=STAGES.filter(s=>s.isl===i).length*3;
     return `<button type="button" class="isle ${un?'':'locked'} ${dn?'done':''} ${here?'here':''}" data-i="${i}" style="left:${x}%;top:${y}px;--isle:${isl.color}" aria-label="${isl.name}${un?'':'（未解鎖）'}">
       ${here?'<span class="flag" aria-hidden="true">🚩</span>':''}
@@ -942,11 +1016,15 @@ function renderMap(){
 }
 function drawRoute(){
   const sea=$('sea'), svg=sea.querySelector('svg.route'); if(!svg) return;
-  const W=sea.clientWidth, rowH=150; const pts=MAPPOS.map(([x,r])=>[x/100*W, r*rowH+120]);
-  let d=`M${pts[0][0]},${pts[0][1]}`; for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; const my=(a[1]+b[1])/2; d+=` C${a[0]},${my} ${b[0]},${my} ${b[0]},${b[1]}`; }
+  const W=sea.clientWidth, L=mapLayout(); const pts=L.pos.map(([x,r])=>[x/100*W, r*L.rowH+L.off]);
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i];
+    if(L.horiz && Math.abs(a[0]-b[0])<2){ const bulge=(a[0]>W/2?1:-1)*Math.min(90,W*.1); d+=` C${a[0]+bulge},${a[1]} ${b[0]+bulge},${b[1]} ${b[0]},${b[1]}`; }
+    else if(L.horiz){ const mx=(a[0]+b[0])/2; d+=` C${mx},${a[1]} ${mx},${b[1]} ${b[0]},${b[1]}`; }
+    else { const my=(a[1]+b[1])/2; d+=` C${a[0]},${my} ${b[0]},${my} ${b[0]},${b[1]}`; } }
   svg.setAttribute('viewBox',`0 0 ${W} ${sea.clientHeight}`); svg.innerHTML=`<path d="${d}"/>`;
 }
-window.addEventListener('resize',()=>{ if(!$('scr-map').hidden) drawRoute(); });
+let rzT=null; window.addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(!$('scr-map').hidden) renderMap(); },150); });
 $('sea').onclick=e=>{ const b=e.target.closest('.isle'); if(!b) return;
   if(!curStu()){ toast('請先新增學生'); $('addStuBox').hidden=false; $('newStu').focus(); return; }
   const i=+b.dataset.i; if(!islandUnlocked(i)){ toast('先完成前一座島，才能出航到這裡'); return; } openIsle(i); };
@@ -1034,7 +1112,7 @@ function startStage(st){
   show('play'); renderStep();
 }
 function curItem(){ if(!G) return null; if(G.step===1) return G.follow[G.fi]; if(G.step===2) return G.inReview? G.review[G.ri] : G.say[G.si]; if(G.step===3) return G.sent; return null; }
-function renderPills(){ $('pills').innerHTML=STEPS.map((n,i)=>`<span class="pill ${i===G.step?'cur':i<G.step?'pdone':''}">${i+1} ${n}</span>`).join(''); }
+function renderPills(){ $('playStars').textContent='⭐ '+totalStars(); $('pills').innerHTML=STEPS.map((n,i)=>`<span class="pill ${i===G.step?'cur':i<G.step?'pdone':''}">${i+1} ${n}</span>`).join(''); }
 function renderDots(){
   if(G.step!==2){ $('dots').innerHTML=''; return; }
   $('dots').innerHTML=G.say.map((x,i)=>{ const s=x.done?(x.skip?0:x.first?1:x.pass?2:3):-1; const ic=s===1?'★':s===2?'✓':s===3?'✗':s===0?'–':(i+1); return `<span class="dot ${!G.inReview&&i===G.si?'cur':''} ${s>0?'s'+s:''}">${ic}</span>`; }).join('');
@@ -1047,7 +1125,7 @@ function setMic(on){ $('btnMic').disabled = !on || !SR || !!srEnvProblem(); }
 function renderStep(){
   stopAll(); renderPills(); renderDots();
   $('tipBox').innerHTML=''; $('btnNext').hidden=true; $('choices').hidden=true; $('actions').hidden=false;
-  $('teacherTools').hidden = G.step===0;
+  $('teacherTools').hidden = G.step===0; $('tBtns').hidden=true; $('tGear').setAttribute('aria-expanded','false');
   const st=G.st;
   if(G.step===0){ // 聽聽看
     const q=G.listen[G.li];
@@ -1073,13 +1151,13 @@ function renderStep(){
     $('word').className='word';
     $('tag').innerHTML=`<b>${x.ph}</b><span class="eyebrow">${G.step===1?`跟我說 ${G.fi+1} / ${G.follow.length}`:G.inReview?`複習泡泡 ${G.ri+1} / ${G.review.length}`:`自己說 ${G.si+1} / 5`}</span>`;
     $('banner').textContent = G.step===1 ? '先聽、看嘴型，再跟著說' : G.inReview ? '🫧 複習泡泡：再挑戰一次！' : '';
-    $('pic').hidden=!(DB.opts.pic && x.pic); $('pic').textContent=x.pic||'';
+    $('pic').hidden=!(DB.opts.pic && (x.pic||PICS[x.w])); $('pic').innerHTML=picHTML(x.w,x.pic);
     $('word').innerHTML=ruby(x.w,x.py,x.t);
     setSay('idle', G.step===1? '<span>聽完示範後，按麥克風跟著說。</span>' : '<span>看著卡片，按麥克風大聲唸出來。</span>');
   }
   setMic(true);
   setHint(SR&&!srEnvProblem() ? '按麥克風開始說' : '這台裝置不能語音辨識，請老師用「算對／算錯」判定');
-  if(G.step===1){ showTip(x, null, true); setTimeout(()=>{ if(G && curItem()===x) speak(x.w,.75); },500); }
+  if(G.step===1){ showTip(x, null, true); setTimeout(()=>{ if(G && curItem()===x) modelThenListen(x,.75); },500); }
 }
 function answerListen(b){
   const q=G.listen[G.li]; if(q.answered) return; q.answered=true;
@@ -1150,12 +1228,12 @@ function onWrong(x,a){
       setSay('err',`<h3>聽一聽，跟著說一次</h3>${heard}${cmp}`);
       if(step!==3) showTip(x,a);
       setHint('先聽慢速示範，再按麥克風跟著說');
-      setTimeout(()=>{ if(G && curItem()===x && !x.done) speak(x.w,.55); },600);
+      setTimeout(()=>{ if(G && curItem()===x && !x.done) modelThenListen(x,.55); },600);
     } else {
       setSay('err',`<h3>差一點！再試一次</h3>${heard}${cmp}`);
       if(step!==3) showTip(x,a); else $('tipBox').innerHTML='';
       setHint(step===1||step===3?'先聽正確讀音，再試一次':'看看嘴型，再按麥克風說一次');
-      if(step===1||step===3) setTimeout(()=>{ if(G && curItem()===x && !x.done) speak(x.w, step===3?.7:.6); },600);
+      if(step===1||step===3) setTimeout(()=>{ if(G && curItem()===x && !x.done) modelThenListen(x, step===3?.7:.6); },600);
     }
   } else {
     x.done=true; x.pass=false; x.first=false;
@@ -1172,6 +1250,7 @@ $('tBad').onclick=()=>{ const x=curItem(); if(!x||G.step===0) return; stopAll();
   if(x.done&&x.pass){ x.done=false; x.pass=false; x.first=false; if(G.step===3) x.ok=false; const l=x.tries[x.tries.length-1]; if(l){ l.ok=false; l.v='teacher'; } x.teacher=true; onWrong(x,{v:'teacher'}); }
   else if(!x.done){ x.tries.push({heard:'',zy:'',ok:false,v:'teacher',prod:''}); x.teacher=true; onWrong(x,{v:'teacher'}); } };
 $('tSkip').onclick=()=>{ const x=curItem(); if(!x||G.step===0) return; stopAll(); x.done=true; x.pass=false; x.first=false; if(!G.inReview) x.skip=true; renderDots(); next(); };
+$('tGear').onclick=()=>{ const open=$('tBtns').hidden; $('tBtns').hidden=!open; $('tGear').setAttribute('aria-expanded',String(open)); };
 $('btnListen').onclick=()=>{ const x=curItem(); if(x) speak(x.w,.75); };
 $('btnMouth').onclick=()=>{ const x=curItem(); if(!x) return; if(G.step===3){ const ph=G.st.phs[0]; $('tipBox').innerHTML=`<div class="tip"><div><b>${ph} 怎麼發：</b>${esc(TIPS[ph]||'')}</div></div>`; mountMouths($('tipBox'),ph,null,G.st); return; } if($('tipBox').querySelector('.mouths')) return; showTip(x,null); };
 $('btnQuit').onclick=()=>{ const st=G&&G.st; leavePlay(true); if(st) openIsle(st.isl); else goMap(); };
@@ -1253,7 +1332,12 @@ function stopAll(){
   $('btnMic').classList.remove('on');
   try{ if(HAS_TTS) speechSynthesis.cancel(); }catch(e){}
 }
-function startRec(){
+let autoBlocked=false;
+function canAutoListen(){ return DB.opts.autoListen && !autoBlocked && SR && !srEnvProblem(); }
+function modelThenListen(x,rate){
+  return speak(x.w,rate).then(()=>{ if(!canAutoListen()) return; setTimeout(()=>{ if(G && curItem()===x && !x.done && !rec) startRec(true); },350); });
+}
+function startRec(auto){
   if(!SR||!G) return;
   if(rec){ try{ rec.stop(); }catch(e){} return; }
   try{ if(HAS_TTS) speechSynthesis.cancel(); }catch(e){}
@@ -1262,14 +1346,14 @@ function startRec(){
   r.lang='zh-TW'; r.interimResults=true; r.continuous=false; r.maxAlternatives=3;
   let fin=null, lastInter='';
   r.onresult=e=>{ let inter=''; for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) fin=[...res].map(a=>a.transcript.trim()).filter(Boolean); else inter+=res[0].transcript; } if(inter) lastInter=inter.trim(); setHint(inter?('聽到：'+inter):'正在聽…'); };
-  r.onerror=e=>{ if(e.error==='aborted') return; setHint(srErrorText(e.error)); };
-  r.onend=()=>{ clearTimeout(recTimer); rec=null; $('btnMic').classList.remove('on'); if(fin&&fin.length) judgeHeard(x,fin); else if(lastInter) judgeHeard(x,[lastInter]); else if($('hint').textContent==='正在聽…') setHint('沒聽清楚，再按一次麥克風'); };
-  try{ r.start(); }catch(e){ rec=null; setHint('無法啟動麥克風'); return; }
-  $('btnMic').classList.add('on'); setHint('正在聽…');
+  r.onerror=e=>{ if(e.error==='aborted') return; if(auto && (e.error==='not-allowed'||e.error==='service-not-allowed')){ autoBlocked=true; setHint('按麥克風開始說'); return; } if(auto && e.error==='no-speech'){ setHint('按麥克風再說一次'); return; } setHint(srErrorText(e.error)); };
+  r.onend=()=>{ clearTimeout(recTimer); rec=null; $('btnMic').classList.remove('on'); if(fin&&fin.length) judgeHeard(x,fin); else if(lastInter) judgeHeard(x,[lastInter]); else if(/正在聽/.test($('hint').textContent)) setHint('沒聽清楚，再按一次麥克風'); };
+  try{ r.start(); }catch(e){ rec=null; if(auto){ autoBlocked=true; setHint('按麥克風開始說'); } else setHint('無法啟動麥克風'); return; }
+  $('btnMic').classList.add('on'); setHint(auto?'換你說了，正在聽…':'正在聽…');
   recTimer=setTimeout(()=>{ try{ r.stop(); }catch(e){} }, G.step===3?9000:6000);
 }
-$('btnMic').onclick=startRec;
-document.addEventListener('keydown',e=>{ if($('scr-play').hidden||e.target.matches('input,select')) return; if(e.code==='Space'){ e.preventDefault(); startRec(); } else if(e.key==='Enter' && !$('btnNext').hidden){ next(); } });
+$('btnMic').onclick=()=>startRec(false);
+document.addEventListener('keydown',e=>{ if($('scr-play').hidden||e.target.matches('input,select')) return; if(e.code==='Space'){ e.preventDefault(); startRec(false); } else if(e.key==='Enter' && !$('btnNext').hidden){ next(); } });
 
 /* ===== 老師面板 ===== */
 let tUnlocked=false;
@@ -1291,12 +1375,13 @@ function renderTeacher(){
     <div class="oplist">${ISLANDS.map((isl,i)=>`<label class="op"><span class="e">${isl.em}</span><span class="t">${i+1}. ${isl.name}<small>${isl.sub}・${STAGES.filter(s=>s.isl===i).map(s=>s.kind==='boss'?'魔王':s.label).join('、')}</small></span><input type="checkbox" data-isl="${isl.id}" ${prog().open[isl.id]?'checked':''}></label>`).join('')}</div></div>`
     :'<p class="muted" style="margin:0">先新增學生，才能設定要開啟的島嶼。</p>'}
     <div class="row"><label class="op" style="flex:1"><span class="t">國字加注音</span><input type="checkbox" id="oZy" ${DB.opts.zy?'checked':''}></label><label class="op" style="flex:1"><span class="t">顯示圖片</span><input type="checkbox" id="oPic" ${DB.opts.pic?'checked':''}></label></div>
+    <label class="op"><span class="t">示範播完自動開始聽<small>「跟我說」和說錯後的示範播完，自動開始收音，不用再按麥克風</small></span><input type="checkbox" id="oAuto" ${DB.opts.autoListen?'checked':''}></label>
     <div class="row"><button class="btn small" type="button" id="tMic">🎤 測試麥克風</button></div><div id="tMicOut" class="mictest" hidden></div>
     ${stu?`<div class="row"><button class="btn small danger" type="button" id="tReset">清除 ${esc(stu.name)} 的闖關進度</button></div>
     <div id="tResetC" class="confirm" hidden><span>會清除星星、寶石和解鎖進度（練習紀錄保留），確定嗎？</span><span class="row"><button class="btn small" type="button" id="tResetN">取消</button><button class="btn small danger" type="button" id="tResetY">清除</button></span></div>`:''}`;
   $('tClose').onclick=()=>{ $('tModal').hidden=true; if(!$('scr-map').hidden) renderMap(); if(!$('scr-isle').hidden) renderIsle(); };
   $('tBox').querySelectorAll('[data-isl]').forEach(c=>c.onchange=()=>{ const P=prog(); if(c.checked) P.open[c.dataset.isl]=true; else delete P.open[c.dataset.isl]; saveDB(); });
-  $('oZy').onchange=e=>{ DB.opts.zy=e.target.checked; saveDB(); }; $('oPic').onchange=e=>{ DB.opts.pic=e.target.checked; saveDB(); };
+  $('oZy').onchange=e=>{ DB.opts.zy=e.target.checked; saveDB(); }; $('oPic').onchange=e=>{ DB.opts.pic=e.target.checked; saveDB(); }; $('oAuto').onchange=e=>{ DB.opts.autoListen=e.target.checked; autoBlocked=false; saveDB(); };
   $('tMic').onclick=()=>{ const o=$('tMicOut'); o.hidden=false; micTest(o); };
   if($('tReset')){ $('tReset').onclick=()=>$('tResetC').hidden=false; $('tResetN').onclick=()=>$('tResetC').hidden=true;
     $('tResetY').onclick=()=>{ DB.prog[DB.cur]={best:{},passed:{},gems:{},open:{}}; saveDB(); renderStu(); renderTeacher(); toast('已清除闖關進度'); }; }
