@@ -159,6 +159,7 @@ const MATERIALS=[
   {subject:'math',grade:'5上',color:'#B4631B',title:'面積變形魔法',tags:['平行四邊形・三角形・梯形','動畫','答對才過關'],desc:'用「神奇剪刀」和「複製魔鏡」把圖形變回長方形，看動畫理解平行四邊形、三角形、梯形的面積公式，還有「消失的道路」進階題。每一關答對才能到下一關。',path:'area-magic/',group:'concept',ready:true},
   {subject:'math',grade:'6上',color:'#1D6F8F',title:'六上數學小步走',tags:['康軒','9 單元','互動教學＋評量'],desc:'最大公因數、分數除法、比與比值、圓面積、速率、比例尺……每關分「我看・我懂・我做・我會」四小步。',path:'math-g6a/',key:'math6a-v1',ready:true},
   {subject:'math',grade:'6上',color:'#C9502A',title:'誰是速度之王？',tags:['第 8 單元・認識速率','動畫','答對才過關'],desc:'跟著超級運動會比一比：時間一樣看距離、距離一樣看時間，再學速率＝距離÷時間、秒速・分速・時速，用「魔法山」找出三個公式。每一關答對才能到下一關。',path:'speed-king/',group:'concept',ready:true},
+  {subject:'math',grade:'6A',color:'#D9623F',title:'認識速率',path:'g6a-speed/',group:'interactive',ready:true},
   {subject:'special',grade:'構音',color:'#C2410C',title:'構音冒險島',tags:['9 座島・37 關','語音辨識','嘴型動畫'],desc:'依發音部位設計 9 座島，依序解鎖闖關。每關四步驟：聽聽看、跟我說、自己說、挑戰句；說錯會看嘴型、聽示範再試，拿星星和寶物，並留下學習紀錄。',path:'articulation/',ready:true},
   {subject:'special',grade:'老師',color:'#0E6E66',title:'構音問題評估',tags:['老師使用','詞彙・韻母・短句'],desc:'精簡版約 10–15 分鐘（每個聲母 2 詞＋3 句），也可選完整版。學生看圖說詞，語音辨識自動比對替代、省略，老師逐題確認，最後產出評估結果表與錯誤型態分析，可列印或複製到 IEP。',path:'articulation/assess.html',ready:true}
 ];
@@ -188,8 +189,8 @@ function card(m,s){
   const head=`<div class="card-head"><span class="card-grade">${m.grade}</span><span class="card-title">${m.title}</span></div>`;
   /* 年級教材：「學習」到教材首頁、「評量」到學習紀錄（每個單元都有「去做評量」）；其他教材只有一個「開始學習」 */
   const acts=m.key?`<div class="card-acts two"><a class="go" href="${m.path}">學習${ARROW}</a><a class="go go-alt" href="${m.path}#progress">評量${ARROW}</a></div>`:`<div class="card-acts"><a class="go" href="${m.path}">開始學習${ARROW}</a></div>`;
-  const body=`<div class="card-body"><div class="card-meta">${(m.tags||[]).map(t=>`<span class="pill">${t}</span>`).join('')}</div>
-    <p class="card-desc">${m.desc||''}</p>
+  const body=`<div class="card-body">${m.tags?`<div class="card-meta">${m.tags.map(t=>`<span class="pill">${t}</span>`).join('')}</div>`:''}
+    ${m.desc?`<p class="card-desc">${m.desc}</p>`:''}
     ${progBlock(m)}
     ${m.ready?acts:'<span class="pill" style="margin-top:auto;align-self:flex-start">準備中</span>'}</div>`;
   return m.ready?`<div class="card" style="--c:${m.color||s.color}"><a class="card-link" href="${m.path}">${head}</a>${body}</div>`:`<div class="card" style="--c:${m.color||s.color};opacity:.7">${head}${body}</div>`;
@@ -199,12 +200,12 @@ function render(){
   document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;try{localStorage.setItem('portal-filter',filter);}catch(e){}render();});
   const block=(s,name,note,list)=>`<section class="shelf" style="--c:${s.color}"><div class="shelf-head"><h2>${name}</h2><span>${note||list.filter(m=>m.ready).length+' 份教材'}</span></div>
       ${list.length?`<div class="cards">${list.map(m=>card(m,s)).join('')}</div>`:'<div class="empty">教材準備中，之後會放在這裡。</div>'}</section>`;
-  /* 數學分成三區：數學小步走（各年級課本單元）、動畫概念闖關（group:'concept'）、計算練功房捷徑（在下面 drillShelf） */
+  /* 數學分成四區：數學小步走（各年級課本單元）、動畫概念闖關（group:'concept'）、互動學習（group:'interactive'，卡片名稱用「6A＋單元名稱」，不放說明）、計算練功房捷徑（在下面 drillShelf） */
   const shelf=s=>{
     const list=MATERIALS.filter(m=>m.subject===s.id);
     if(s.id!=='math')return block(s,s.name,'',list);
-    const steps=list.filter(m=>m.group!=='concept'),concept=list.filter(m=>m.group==='concept');
-    return block(s,'數學小步走','各年級課本單元・我看・我懂・我做・我會',steps)+(concept.length?block(s,'動畫概念闖關','看動畫弄懂公式・答對才過關',concept):'');
+    const steps=list.filter(m=>!m.group),concept=list.filter(m=>m.group==='concept'),inter=list.filter(m=>m.group==='interactive');
+    return block(s,'數學小步走','各年級課本單元・我看・我懂・我做・我會',steps)+(concept.length?block(s,'動畫概念闖關','看動畫弄懂公式・答對才過關',concept):'')+(inter.length?block(s,'互動學習','動畫教學・答對才往下・有學習紀錄',inter):'');
   };
   /* 還沒有教材的科目，放到頁面最下面（「放到 iPad 主畫面」說明的下面）；有教材了就會自動回到上面 */
   const shown=SUBJECTS.filter(s=>filter==='all'||filter===s.id),has=s=>MATERIALS.some(m=>m.subject===s.id&&m.ready);

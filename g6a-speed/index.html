@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6A 認識速率</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 溫和、口語、一次一件事，給學障生的平板小課
+   IDEA: 運動會的跑道與記分板，每一步都是一場比賽
+   PICTURE: 左邊是會動的跑道／長條／時鐘，右邊是題目卡
+   COLOUR and TYPE: 跑道橘紅 + 草地青綠 + 記分黃；楷體（LXGW WenKai TC）
+   LAYOUT: 平板橫式左右兩欄，窄螢幕上下堆疊 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0f1e28);--ink:light-dark(#1d3557,#eef3f7);--soft:light-dark(#5b6b7e,#a9b8c6);
+--panel:light-dark(#f2f7f9,#162c3a);--track:#d9623f;--track2:#c4532f;--grass:#2a9d8f;--sun:#ffb703;
+--ok:#1f9d55;--no:#d64545;--hint:light-dark(#1d5fbf,#8cb8ff);--line:light-dark(#d8e2e8,#2a4352)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "LXGW WenKai TC","標楷體","DFKai-SB","BiauKai","Kaiti TC",serif;overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:14px;padding:10px max(3vw,14px);border-bottom:3px solid var(--track)}
+header h1{margin:0;font-size:26px;line-height:1.1;white-space:nowrap}
+.prog{flex:1;height:14px;background:var(--line);border-radius:9px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--grass),var(--sun));transition:width .5s}
+#cnt{font-size:16px;color:var(--soft);white-space:nowrap}
+.tts{border:2px solid var(--grass);background:none;border-radius:12px;padding:6px 12px;min-height:44px;font-size:17px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;padding:16px max(3vw,14px);min-height:calc(100vh - 70px)}
+.stage{position:relative;background:linear-gradient(180deg,light-dark(#e8f6f3,#12303a) 0 62%,light-dark(#d4ede7,#163a40) 62%);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden;min-height:360px}
+.panel{background:var(--panel);border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.sec{align-self:flex-start;background:var(--track);color:#fff;border-radius:10px;padding:2px 12px;font-size:16px}
+.panel h2{margin:0;font-size:30px;line-height:1.15;text-wrap:balance}
+.txt{font-size:20px;line-height:1.75}
+.txt b,.key b{color:var(--track2)}
+:root[data-theme=dark] .txt b{color:#ff9b7a}
+.key{border:3px solid var(--sun);border-radius:16px;padding:10px 14px;font-size:21px;line-height:1.7;background:light-dark(#fffaf0,#2a2a1c)}
+.formula{font-size:28px;font-weight:700;text-align:center;letter-spacing:2px}
+.read{align-self:flex-start;border:2px solid var(--ink);background:none;border-radius:12px;padding:6px 14px;min-height:44px}
+.read.on{background:var(--grass);border-color:var(--grass);color:#fff}
+.q{display:flex;flex-direction:column;gap:10px}
+.qn{font-size:15px;color:var(--soft)}
+.qp{font-size:22px;font-weight:700;line-height:1.5}
+.ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ch button{min-height:60px;border:3px solid var(--line);background:var(--bg);border-radius:16px;font-size:22px;padding:6px 10px;transition:transform .15s}
+.ch button:active{transform:scale(.96)}
+.ch button.yes{border-color:var(--ok);background:var(--ok);color:#fff}
+.ch button.no{border-color:var(--no);color:var(--no);opacity:.55;text-decoration:line-through}
+.fb{min-height:30px;font-size:19px}
+.fb .h{color:var(--hint);font-style:italic}
+.fb .h b{font-style:normal}
+.fb .g{color:var(--ok);font-weight:700}
+.nav{margin-top:auto;display:flex;gap:10px;justify-content:space-between;padding-top:6px}
+.nav button{min-height:56px;border-radius:16px;padding:6px 22px;font-size:21px;border:3px solid var(--ink);background:none}
+#next{background:var(--track);border-color:var(--track);color:#fff;flex:1;max-width:280px;margin-left:auto}
+#next:disabled{background:var(--line);border-color:var(--line);color:var(--soft);cursor:not-allowed}
+#next.go{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* stage parts */
+.hud{display:flex;justify-content:space-between;gap:10px;font-size:22px;font-weight:700}
+.hud span{background:var(--bg);border-radius:12px;padding:2px 14px;border:2px solid var(--line)}
+.track{position:relative;background:var(--track);border-radius:16px;padding:6px 0;box-shadow:inset 0 -6px 0 var(--track2)}
+.lane{position:relative;height:74px;border-bottom:3px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.nm{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#fff;font-weight:700;font-size:20px;width:56px}
+.run{position:absolute;top:8px;left:calc(66px + (100% - 140px)*var(--p,0));font-size:44px;line-height:1;transform:scaleX(-1)}
+.run.noflip{transform:none}
+.val{position:absolute;right:10px;bottom:4px;color:#fff;font-size:18px;background:rgba(0,0,0,.25);border-radius:8px;padding:0 8px}
+.finish{position:absolute;top:0;bottom:0;right:62px;width:10px;background:repeating-linear-gradient(#fff 0 10px,#222 10px 20px)}
+.replay{align-self:center;border:2px solid var(--grass);background:var(--bg);border-radius:12px;padding:4px 16px;min-height:44px;font-size:17px}
+.brow{display:flex;align-items:center;gap:10px}
+.be{font-size:40px;width:52px;text-align:center;flex:none}
+.bar{display:flex;height:58px;border-radius:12px;overflow:hidden;background:var(--line)}
+.pc{flex:1;display:grid;place-items:center;background:var(--grass);color:#fff;font-size:18px;font-weight:700;border-right:2px solid #fff;opacity:0;transform:scaleY(.3);transition:.35s}
+.pc:nth-child(even){background:#238579}
+.pc.in{opacity:1;transform:none}
+.bcap{font-size:19px;padding-left:62px;margin-top:-4px}
+.bcap .tot{color:var(--track2);font-weight:700}
+.road{position:relative;height:172px;margin:0 44px}
+.road .ln{position:absolute;left:0;right:0;top:108px;height:14px;background:var(--track);border-radius:7px}
+.tk{position:absolute;top:90px;width:4px;height:50px;background:var(--ink);transform:translateX(-2px)}
+.tk .up{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:17px;font-weight:700;color:var(--track2);opacity:0;transition:.3s}
+.tk .dn{position:absolute;top:54px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px}
+.tk.on .up{opacity:1}
+.veh{position:absolute;top:4px;font-size:46px;line-height:1;transition:left .6s ease-in-out;transform:translateX(-50%)}
+table.tb{border-collapse:collapse;width:100%;background:var(--bg);border-radius:12px;overflow:hidden;font-size:19px}
+.tb th,.tb td{border:2px solid var(--line);padding:6px;text-align:center}
+.tb th{background:light-dark(#e3f1ee,#1b3b44);font-weight:400;white-space:nowrap}
+.tb td.qm{color:var(--track2);font-weight:700}
+.tb td.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.4)}}
+.big{font-size:64px;text-align:center;line-height:1.1}
+.lines{display:flex;flex-direction:column;gap:10px;align-items:center}
+.lines div{background:var(--bg);border-radius:14px;padding:6px 18px;font-size:24px;opacity:0;transform:translateY(12px);transition:.45s;text-align:center;border:2px solid var(--line)}
+.lines div.in{opacity:1;transform:none}
+.lines div.hl{border-color:var(--sun);font-weight:700}
+.tri{width:100%;max-width:420px;align-self:center}
+.tri text{font-family:inherit;fill:var(--ink)}
+.tri .cell{cursor:pointer}
+.tri .cell rect{fill:transparent;transition:.3s}
+.tri .cell.cov rect{fill:var(--sun)}
+.clock{width:150px;align-self:center}
+.cheer{position:absolute;font-size:34px;pointer-events:none;animation:fly 1.1s forwards}
+@keyframes fly{to{transform:translateY(-140px) rotate(30deg);opacity:0}}
+.learn{border:3px solid var(--sun);border-radius:16px;padding:8px 14px;background:light-dark(#fffaf0,#2a2a1c);font-size:18px;line-height:1.6}
+.learn h3,.sh{margin:2px 0 4px;font-size:22px}.learn p{margin:6px 0 2px}.learn ul{margin:0;padding-left:1.3em}.learn b{color:var(--track2)}
+.learn li.f{list-style:none;margin-left:-1.3em;font-size:22px;font-weight:700;text-align:center}
+.lt{border-collapse:collapse;width:100%;margin:4px 0;background:var(--bg)}.lt th,.lt td{border:1px solid var(--line);padding:3px 8px;text-align:left;font-weight:400}
+.stage.rep{justify-content:flex-start;overflow:auto;background:var(--bg);border:3px solid var(--line)}
+.rh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:18px}
+.rh input{font:inherit;font-size:18px;padding:4px 10px;border:2px solid var(--line);border-radius:10px;width:9em;background:var(--bg);color:var(--ink)}
+.rt{border-collapse:collapse;width:100%;font-size:16px;line-height:1.45}
+.rt th,.rt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.rt th{background:var(--panel);white-space:nowrap;position:sticky;top:0}
+.rt td.n{text-align:center;white-space:nowrap}
+.rt .ok1{color:var(--ok);font-weight:700}.rt .ng{color:var(--no);font-weight:700}
+.rt tr.gp td{background:light-dark(#fff4e0,#2a2a1c);font-weight:700}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.stat div{background:var(--bg);border-radius:12px;padding:6px}.stat b{display:block;font-size:28px;line-height:1.2}
+.gm{display:grid;grid-template-columns:minmax(0,1fr) 110px 62px;gap:6px 8px;align-items:center;font-size:16px}
+.gm .mt{height:12px;background:var(--line);border-radius:6px;overflow:hidden}.gm .mt i{display:block;height:100%}
+.tag{border-radius:8px;padding:0 6px;color:#fff;text-align:center;font-size:15px}
+.cp{border:2px solid var(--grass);background:none;border-radius:12px;min-height:44px;padding:4px 14px;font-size:17px}
+#cpt{width:100%;height:90px;font-size:13px;display:none}
+@media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.stage{min-height:300px}header h1{font-size:21px}#cnt{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>8 認識速率</h1>
+  <div class="prog"><i id="bar"></i></div>
+  <span id="cnt"></span>
+  <button class="tts" id="say">念給我聽</button>
+</header>
+<main>
+  <section class="stage" id="stage"></section>
+  <section class="panel">
+    <span class="sec" id="sec"></span>
+    <h2 id="ttl"></h2>
+    <div class="txt" id="txt"></div>
+    <div id="rd"></div>
+    <div class="q" id="q"></div>
+    <div class="fb" id="fb"></div>
+    <div class="nav"><button id="prev">上一步</button><button id="next" disabled>下一步</button></div>
+  </section>
+</main>
+<script>
+{
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches, K=RM?0.25:1;
+const $=id=>document.getElementById(id);
+let tok=0, scene={fill(){}}, cur=0, qi=0;
+const done=new Set();
+const wait=ms=>new Promise(r=>setTimeout(r,ms*K));
+const live=t=>t===tok;
+
+/* ---------- sound & voice ---------- */
+let ac=null;
+function tone(fs,d=0.13){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ac.currentTime+i*d);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*d+d*1.6);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*d);o.stop(ac.currentTime+i*d+d*1.7)})}catch(e){}}
+const plain=s=>String(s).replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
+function speak(s){try{const ss=speechSynthesis;ss.cancel();const u=new SpeechSynthesisUtterance(plain(s));u.lang='zh-TW';u.rate=.85;const v=ss.getVoices().find(v=>/zh[-_]TW/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+
+/* ---------- scenes ---------- */
+function race(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="hud"><span id="clk"></span><span>${o.mode==='time'?'比一比：誰跑得遠？':'終點 '+o.max+' 公尺'}</span></div>
+  <div class="track">${o.r.map((r,i)=>`<div class="lane"><span class="nm">${r.n}</span><div class="run" id="r${i}">${r.e}</div><b class="val" id="v${i}"></b></div>`).join('')}${o.mode==='dist'?'<div class="finish"></div>':''}</div>
+  <button class="replay" id="rp">再看一次</button>`;
+  let id=0;
+  const play=()=>{const me=++id;const t0=performance.now();const kk=220*K;const total=o.mode==='time'?3500*K:Math.max(...o.r.map(r=>r.t))*kk+300;
+    const f=now=>{if(!live(T)||me!==id)return;const e=now-t0;
+      if(o.mode==='time'){const p=Math.min(1,e/total);o.r.forEach((r,i)=>{$('r'+i).style.setProperty('--p',r.d/o.max*p);$('v'+i).textContent=Math.round(r.d*p)+' 公尺'});$('clk').textContent=p<1?'跑步中……':'時間到！都跑了 1 分鐘'}
+      else{const mt=Math.max(...o.r.map(r=>r.t));$('clk').textContent='經過 '+Math.min(mt,Math.floor(e/kk))+' 秒';o.r.forEach((r,i)=>{const p=Math.min(1,e/(r.t*kk));$('r'+i).style.setProperty('--p',p);$('v'+i).textContent=p<1?'跑步中':r.t+' 秒到終點！'})}
+      if(e<total)requestAnimationFrame(f)};requestAnimationFrame(f)};
+  $('rp').onclick=play;play();
+  return{fill(){}};
+}
+function bars(el,o){
+  const T=tok,md=Math.max(...o.r.map(r=>r.d));
+  el.innerHTML=o.r.map((r,i)=>`<div class="brow"><span class="be">${r.e}</span><div class="bar" style="width:${Math.max(30,r.d/md*100)}%">${Array.from({length:r.t},(_,j)=>`<div class="pc" data-r="${i}">${r.t<=8?'?':(j===0?'?':'')}</div>`).join('')}</div></div>
+  <div class="bcap">${r.n}：<span class="tot">${r.d} ${o.uD}</span>，花 ${r.t} ${o.uT}　<span id="per${i}"></span></div>`).join('')+
+  `<div style="text-align:center;font-size:18px;color:var(--soft)">一格＝1 ${o.uT}</div><button class="replay" id="rp">再看一次</button>`;
+  const play=async()=>{const me=T;el.querySelectorAll('.pc').forEach(p=>p.classList.remove('in'));for(const p of el.querySelectorAll('.pc')){await wait(o.r[0].t>8?90:380);if(!live(me))return;p.classList.add('in')}};
+  $('rp').onclick=play;play();
+  return{fill(i){const r=o.r[i],v=r.d/r.t;el.querySelectorAll(`.pc[data-r="${i}"]`).forEach((p,j)=>{if(r.t<=8||j===0)p.textContent=v});$('per'+i).innerHTML=`→ 每 1 ${o.uT} <b>${v} ${o.uD}</b>`}};
+}
+function travel(el,o){
+  const T=tok,n=o.n;
+  el.innerHTML=`<div class="hud"><span>${o.e} 速率 ${o.v} ${o.uD}/${o.uT.replace('鐘','')}</span><span id="tm">準備出發</span></div>
+  <div class="road"><div class="ln"></div>${Array.from({length:n+1},(_,i)=>`<div class="tk${i===0?' on':''}" id="k${i}" style="left:${i/n*100}%"><span class="up">${i*o.v} ${o.uD}</span><span class="dn">${i} ${o.uT}</span></div>`).join('')}<div class="veh${o.noflip?'':' '}" id="vh" style="left:0%"><span style="display:inline-block;${o.flip?'transform:scaleX(-1)':''}">${o.e}</span></div></div>
+  <table class="tb"><tr><th>時間（${o.uT}）</th>${Array.from({length:n},(_,i)=>`<td id="t${i+1}" class="${o.ht?.includes(i+1)?'qm':''}">${o.ht?.includes(i+1)?'?':i+1}</td>`).join('')}</tr>
+  <tr><th>距離（${o.uD}）</th>${Array.from({length:n},(_,i)=>`<td id="d${i+1}" class="${o.hd?.includes(i+1)?'qm':''}">${o.hd?.includes(i+1)?'?':''}</td>`).join('')}</tr></table>
+  <button class="replay" id="rp">再看一次</button>`;
+  const play=async()=>{const me=T;$('vh').style.left='0%';for(let i=1;i<=n;i++){$('k'+i).classList.remove('on');const d=$('d'+i);if(!o.hd?.includes(i))d.textContent=''}
+    await wait(500);for(let i=1;i<=n;i++){if(!live(me))return;$('vh').style.left=(i/n*100)+'%';$('tm').textContent='第 '+i+' '+o.uT;await wait(650);if(!live(me))return;$('k'+i).classList.add('on');const d=$('d'+i);if(!o.hd?.includes(i)){d.textContent=i*o.v;d.classList.add('pop')}tone([520+i*60],.08)}
+    $('tm').textContent=o.end||'到了！'};
+  $('rp').onclick=play;play();
+  return{fill(k){const c=$(k);if(!c)return;c.textContent=k[0]==='d'?(+k.slice(1))*o.v:k.slice(1);c.classList.add('pop')}};
+}
+function reveal(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
+      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+function triangle(el){
+  el.innerHTML=`<div class="hud"><span>速率三角形</span><span>點一點：遮住要算的</span></div>
+  <svg class="tri" viewBox="0 0 400 300">
+   <path d="M200 14 L388 286 L12 286 Z" fill="var(--bg)" stroke="var(--track)" stroke-width="6" stroke-linejoin="round"/>
+   <line x1="106" y1="150" x2="294" y2="150" stroke="var(--track)" stroke-width="5"/><line x1="200" y1="150" x2="200" y2="286" stroke="var(--track)" stroke-width="5"/>
+   <circle cx="200" cy="150" r="21" fill="var(--bg)" stroke="var(--track)" stroke-width="4"/><text x="200" y="161" text-anchor="middle" font-size="32" font-weight="700" style="fill:var(--track)">÷</text>
+   <g class="cell" data-c="d"><rect x="140" y="80" width="120" height="62" rx="10"/><text x="200" y="124" text-anchor="middle" font-size="34" font-weight="700">距離</text></g>
+   <g class="cell" data-c="v"><rect x="70" y="190" width="112" height="62" rx="10"/><text x="126" y="234" text-anchor="middle" font-size="34" font-weight="700">速率</text></g>
+   <g class="cell" data-c="t"><rect x="218" y="190" width="112" height="62" rx="10"/><text x="274" y="234" text-anchor="middle" font-size="34" font-weight="700">時間</text></g>
+   <text x="200" y="232" text-anchor="middle" font-size="34" font-weight="700" style="fill:var(--track)">×</text>
+  </svg><div class="lines"><div class="in hl" id="tf">橫線是 ÷，直線是 ×</div></div>`;
+  const F={d:'距離 ＝ 速率 × 時間',v:'速率 ＝ 距離 ÷ 時間',t:'時間 ＝ 距離 ÷ 速率'};
+  const show=c=>{el.querySelectorAll('.cell').forEach(g=>g.classList.toggle('cov',g.dataset.c===c));$('tf').textContent=F[c];tone([660],.08)};
+  el.querySelectorAll('.cell').forEach(g=>g.onclick=()=>show(g.dataset.c));
+  return{fill:show};
+}
+
+/* ---------- lesson steps ---------- */
+const S=[
+{sec:'開始',t:'誰比較快？',x:'今天要學 <b>速率</b>。<br>速率就是「<b>跑得多快</b>」。<br>一題一題來，答對了才能往下走喔！',read:1,
+ sc:el=>reveal(el,{big:'🏃 🚗 ✈️ 🐆',lines:['跑步、開車、飛機、獵豹','怎樣知道誰比較快？','我們一起來比一比！']})},
+
+{sec:'8-1 速率',t:'時間一樣，比距離',x:'豆豆和奇奇都跑了 <b>1 分鐘</b>。<br>豆豆跑 300 公尺，奇奇跑 350 公尺。',
+ sc:el=>race(el,{mode:'time',max:400,r:[{e:'🏃',n:'豆豆',d:300},{e:'🏃‍♀️',n:'奇奇',d:350}]}),
+ qs:[{p:'誰跑得比較快？',c:['豆豆','奇奇','一樣快'],a:1,h:'💡 時間一樣，看誰跑得比較<b>遠</b>。',ok:'對！奇奇跑 350 公尺，比較遠，所以比較快。'}],
+ key:'<b>時間一樣</b>，跑的距離比較<b>長</b>，就跑得比較快。'},
+
+{sec:'8-1 速率',t:'距離一樣，比時間',x:'妮妮和妙妙都跑 <b>100 公尺</b>。<br>妮妮花 16 秒，妙妙花 20 秒。',
+ sc:el=>race(el,{mode:'dist',max:100,r:[{e:'🏃‍♀️',n:'妮妮',t:16},{e:'🏃',n:'妙妙',t:20}]}),
+ qs:[{p:'誰跑得比較快？',c:['妮妮','妙妙','一樣快'],a:0,h:'💡 距離一樣，看誰花的時間比較<b>少</b>，誰先到終點。',ok:'對！妮妮只花 16 秒，先到終點。'}],
+ key:'<b>距離一樣</b>，花的時間比較<b>短</b>，就跑得比較快。'},
+
+{sec:'8-1 速率',t:'記住比快慢的方法',x:'把剛剛學的念一遍，再回答。',read:1,
+ sc:el=>reveal(el,{big:'⏱️ 📏',lines:['時間一樣 → 比距離，<b>遠</b>的快','距離一樣 → 比時間，<b>短</b>的快']}),
+ qs:[{p:'時間一樣時，跑的距離比較（　）的，跑得比較快。',c:['長','短'],a:0,h:'💡 同樣 1 分鐘，跑得<b>遠</b>的人比較厲害。',ok:'答對了！'},
+     {p:'距離一樣時，花的時間比較（　）的，跑得比較快。',c:['長','短'],a:1,h:'💡 先到終點的人，花的時間比較<b>少</b>。',ok:'答對了！'}]},
+
+{sec:'8-1 速率',t:'都不一樣，怎麼比？',x:'甲車 4 小時開 280 公里，丁車 3 小時開 240 公里。<br>時間、距離<b>都不一樣</b>！<br>先算：<b>每 1 小時</b>各開幾公里。',
+ sc:el=>bars(el,{uD:'公里',uT:'小時',r:[{e:'🚗',n:'甲車',d:280,t:4},{e:'🚙',n:'丁車',d:240,t:3}]}),
+ qs:[{p:'甲車：280 ÷ 4 ＝ ？　每 1 小時開幾公里？',c:['70','84','280'],a:0,h:'💡 280 公里平分成 <b>4</b> 份，28 ÷ 4 ＝ 7，再加一個 0。',ok:'對！甲車每 1 小時開 70 公里。',f:0},
+     {p:'丁車：240 ÷ 3 ＝ ？　每 1 小時開幾公里？',c:['60','80','240'],a:1,h:'💡 240 公里平分成 <b>3</b> 份，24 ÷ 3 ＝ 8，再加一個 0。',ok:'對！丁車每 1 小時開 80 公里。',f:1},
+     {p:'70 公里和 80 公里，哪一輛車比較快？',c:['甲車','丁車'],a:1,h:'💡 都是 1 小時，看誰開得比較<b>遠</b>。',ok:'對！丁車每 1 小時開得比較遠，比較快。'}]},
+
+{sec:'8-1 速率',t:'什麼是速率？',x:'「<b>平均每 1 單位時間</b>所移動的<b>距離</b>」，叫做<b>平均速率</b>，簡稱<b>速率</b>。',read:1,
+ sc:el=>reveal(el,{big:'🚙 每 1 小時 80 公里',lines:['用「距離」除以「時間」','就知道每 1 小時走多遠'],later:{a:'速率 ＝ 距離 ÷ 時間'}}),
+ qs:[{p:'速率 ＝ 距離（　）時間',c:['＋','－','×','÷'],a:3,h:'💡 剛剛 280 公里分成 4 小時，是用<b>除法</b>。',ok:'對！速率 ＝ 距離 ÷ 時間',f:'a'}],
+ key:'<div class="formula">速率 ＝ 距離 ÷ 時間</div>'},
+
+{sec:'8-1 時速',t:'時速：每 1 小時',x:'飛機飛了 <b>2100 公里</b>，花了 <b>3 小時</b>。',
+ sc:el=>bars(el,{uD:'公里',uT:'小時',r:[{e:'✈️',n:'飛機',d:2100,t:3}]}),
+ qs:[{p:'2100 ÷ 3 ＝ ？',c:['70','700','7000'],a:1,h:'💡 21 ÷ 3 ＝ 7，2100 後面有 <b>兩個 0</b>。',ok:'對！每 1 小時飛 700 公里。',f:0},
+     {p:'每 1 小時飛 700 公里，也可以說成？',c:['時速 700 公里','分速 700 公里','秒速 700 公里'],a:0,h:'💡 每 1 <b>小時</b> → <b>時</b>速。',ok:'對！時速 700 公里，寫成 700 公里/時（km/h）。'}],
+ key:'平均每 <b>1 小時</b>移動的距離，叫做<b>時速</b>。<br>寫法：時速 700 公里 ＝ 700 公里/時'},
+
+{sec:'8-1 分速',t:'分速：每 1 分鐘',x:'豆豆走路，<b>10 分鐘</b>走了 <b>600 公尺</b>。',
+ sc:el=>bars(el,{uD:'公尺',uT:'分鐘',r:[{e:'🚶',n:'豆豆',d:600,t:10}]}),
+ qs:[{p:'600 ÷ 10 ＝ ？',c:['6','60','600'],a:1,h:'💡 除以 10，就是把最後的 <b>0 拿掉</b>。',ok:'對！每 1 分鐘走 60 公尺。',f:0},
+     {p:'每 1 分鐘走 60 公尺，也可以說成？',c:['時速 60 公尺','分速 60 公尺','秒速 60 公尺'],a:1,h:'💡 每 1 <b>分鐘</b> → <b>分</b>速。',ok:'對！分速 60 公尺，寫成 60 公尺/分（m/min）。'}],
+ key:'平均每 <b>1 分鐘</b>移動的距離，叫做<b>分速</b>。<br>寫法：分速 60 公尺 ＝ 60 公尺/分'},
+
+{sec:'8-1 秒速',t:'秒速：每 1 秒鐘',x:'獵豹跑 <b>900 公尺</b>，只花 <b>30 秒鐘</b>！',
+ sc:el=>bars(el,{uD:'公尺',uT:'秒',r:[{e:'🐆',n:'獵豹',d:900,t:30}]}),
+ qs:[{p:'900 ÷ 30 ＝ ？',c:['3','30','300'],a:1,h:'💡 90 ÷ 3 ＝ <b>30</b>。',ok:'對！每 1 秒鐘跑 30 公尺。',f:0},
+     {p:'每 1 秒鐘跑 30 公尺，也可以說成？',c:['時速 30 公尺','分速 30 公尺','秒速 30 公尺'],a:2,h:'💡 每 1 <b>秒鐘</b> → <b>秒</b>速。',ok:'對！秒速 30 公尺，寫成 30 公尺/秒（m/s）。'}],
+ key:'平均每 <b>1 秒鐘</b>移動的距離，叫做<b>秒速</b>。<br>寫法：秒速 30 公尺 ＝ 30 公尺/秒'},
+
+{sec:'8-1 速率單位',t:'選對單位',x:'看看是什麼在動，想想<b>快不快</b>、<b>走多遠</b>，選合適的單位。',
+ sc:el=>reveal(el,{big:'🚆　🚶　🏃',lines:['火車跑很遠 → 用「公里」、「小時」','走路、跑步 → 用「公尺」','公里/時　公尺/分　公尺/秒']}),
+ qs:[{p:'自強號火車的速率是 120（　）',c:['公里/時','公尺/秒'],a:0,h:'💡 火車跑得很<b>遠</b>，1 小時可以跑很多<b>公里</b>。',ok:'對！120 公里/時。'},
+     {p:'豆豆走路的速率是 75（　）',c:['公里/時','公尺/分'],a:1,h:'💡 走路 1 小時走不到 75 公里喔！每 1 <b>分鐘</b>走 75 <b>公尺</b>才合理。',ok:'對！75 公尺/分。'},
+     {p:'奇奇跑 100 公尺的速率是 6（　）',c:['公尺/秒','公里/時'],a:0,h:'💡 跑 100 公尺很快，是用<b>秒</b>來算。',ok:'對！6 公尺/秒。'}]},
+
+{sec:'8-2 求距離',t:'知道速率和時間，求距離',x:'火車的速率是 <b>50 公里/時</b>，就是<b>每 1 小時走 50 公里</b>。',
+ sc:el=>travel(el,{e:'🚆',v:50,n:4,uD:'公里',uT:'小時',hd:[2,3],flip:1,end:'走了 4 小時'}),
+ qs:[{p:'走 2 小時，共走幾公里？',c:['52','100','150'],a:1,h:'💡 1 小時 50 公里，2 小時就是 <b>50 × 2</b>。',ok:'對！50 × 2 ＝ 100 公里。',f:'d2'},
+     {p:'走 3 小時，共走幾公里？',c:['150','53','200'],a:0,h:'💡 <b>50 × 3</b> ＝ ？',ok:'對！50 × 3 ＝ 150 公里。',f:'d3'},
+     {p:'距離 ＝ 速率（　）時間',c:['＋','×','÷'],a:1,h:'💡 每小時 50 公里，走 3 小時，是 3 個 50，用<b>乘法</b>。',ok:'對！距離 ＝ 速率 × 時間'},
+     {p:'速率不變，時間變成 2 倍，距離會變成？',c:['一樣','2 倍','一半'],a:1,h:'💡 看表格：1 小時 50，2 小時 100，100 是 50 的<b>幾倍</b>？',ok:'對！時間變 2 倍，距離也變 2 倍。'}],
+ key:'<div class="formula">距離 ＝ 速率 × 時間</div>'},
+
+{sec:'8-2 求時間',t:'知道速率和距離，求時間',x:'機器人的速率是 <b>5 公尺/分</b>，每 1 分鐘走 5 公尺。<br>它要走到 <b>20 公尺</b>的地方。',
+ sc:el=>travel(el,{e:'🤖',v:5,n:4,uD:'公尺',uT:'分鐘',ht:[4],end:'走到 20 公尺了！'}),
+ qs:[{p:'走 20 公尺，要花幾分鐘？',c:['4','15','100'],a:0,h:'💡 20 裡面有幾個 5？<b>20 ÷ 5</b>。',ok:'對！20 ÷ 5 ＝ 4 分鐘。',f:'t4'},
+     {p:'時間 ＝ 距離（　）速率',c:['×','÷','－'],a:1,h:'💡 剛剛是 20 ÷ 5，用<b>除法</b>。',ok:'對！時間 ＝ 距離 ÷ 速率'}],
+ key:'<div class="formula">時間 ＝ 距離 ÷ 速率</div>'},
+
+{sec:'8-2 整理',t:'速率三角形',x:'<b>距離</b>在上面，<b>速率</b>和<b>時間</b>在下面。<br>要算哪一個，就<b>遮住</b>哪一個！',
+ sc:el=>triangle(el),
+ qs:[{p:'要算「距離」，怎麼算？',c:['速率 × 時間','距離 ÷ 時間'],a:0,h:'💡 遮住上面的距離，下面剩 速率 <b>×</b> 時間。',ok:'對！',f:'d'},
+     {p:'要算「時間」，怎麼算？',c:['速率 × 距離','距離 ÷ 速率'],a:1,h:'💡 遮住時間，剩下 距離 在上、速率 在下 → <b>上 ÷ 下</b>。',ok:'對！',f:'t'},
+     {p:'要算「速率」，怎麼算？',c:['距離 ÷ 時間','時間 ÷ 距離'],a:0,h:'💡 遮住速率，剩下 距離 在上、時間 在下 → <b>上 ÷ 下</b>。',ok:'對！',f:'v'}]},
+
+{sec:'8-3 單位換算',t:'公里換成公尺',x:'爸爸開車的速率是 <b>95 公里/時</b>，<br>就是 1 小時走 95 公里。換成<b>公尺/時</b>是多少？',
+ sc:el=>reveal(el,{big:'🚗 95 公里/時',lines:['1 小時走 95 公里','公里 → 公尺'],later:{a:'1 公里 ＝ 1000 公尺',b:'1000 × 95 ＝ 95000　→　95000 公尺/時'}}),
+ qs:[{p:'1 公里 ＝ 幾公尺？',c:['10','100','1000'],a:2,h:'💡 1 公里 ＝ <b>1000</b> 公尺。',ok:'對！',f:'a'},
+     {p:'95 公里/時 ＝ （　）公尺/時',c:['950','9500','95000'],a:2,h:'💡 1000 × 95，95 後面加 <b>三個 0</b>。',ok:'對！95000 公尺/時。',f:'b'}],
+ key:'公里 → 公尺：<b>× 1000</b>'},
+
+{sec:'8-3 單位換算',t:'時速換成分速',x:'獵鷹的時速是 <b>180 公里</b>：1 小時飛 180 公里。<br>那 <b>1 分鐘</b>飛幾公里？',
+ sc:el=>reveal(el,{big:'🦅 180 公里/時',clock:1,lines:['1 小時 ＝ 60 分鐘','180 公里分給 60 分鐘'],later:{b:'180 ÷ 60 ＝ 3　→　3 公里/分'}}),
+ qs:[{p:'180 公里平分給 60 分鐘，要用？',c:['180 × 60','180 ÷ 60'],a:1,h:'💡 是把 180 公里<b>分</b>給 60 分鐘，每 1 分鐘只走一小段，所以用 <b>÷</b>。不是 × 喔！',ok:'對！時速換分速，要 ÷ 60。'},
+     {p:'180 ÷ 60 ＝ ？',c:['3','30','120'],a:0,h:'💡 18 ÷ 6 ＝ <b>3</b>。',ok:'對！180 公里/時 ＝ 3 公里/分。',f:'b'}],
+ key:'時速 → 分速：<b>÷ 60</b>　　分速 → 秒速：<b>÷ 60</b>'},
+
+{sec:'挑戰',t:'最後挑戰！',x:'用今天學的，試試看這 3 題。',
+ sc:el=>reveal(el,{big:'🏆',lines:['速率 ＝ 距離 ÷ 時間','距離 ＝ 速率 × 時間','時間 ＝ 距離 ÷ 速率']}),
+ qs:[{p:'市區公車的速率是 40（　），哪一個單位比較適合？',c:['公尺/秒','公里/時'],a:1,h:'💡 公車 1 秒跑 40 公尺太快了！應該是每 1 <b>小時</b> 40 <b>公里</b>。',ok:'對！40 公里/時。'},
+     {p:'機車以 40 公里/時 騎了 3 小時，共騎幾公里？',c:['43','120','160'],a:1,h:'💡 求距離 ＝ 速率 <b>×</b> 時間 → 40 × 3。',ok:'對！40 × 3 ＝ 120 公里。'},
+     {p:'婉貞跑 400 公尺花 1 分鐘，凱傑跑 600 公尺花 2 分鐘，誰比較快？',c:['婉貞','凱傑','一樣快'],a:0,h:'💡 凱傑每 1 分鐘跑 600 ÷ 2 ＝ <b>300</b> 公尺，婉貞每 1 分鐘跑 <b>400</b> 公尺。',ok:'對！婉貞每分鐘 400 公尺，比較快。'}]},
+
+{sec:'完成',t:'今天學會＆學習紀錄',x:()=>summary(),sc:el=>report(el),read:1}
+];
+
+/* ---------- engine ---------- */
+function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
+const G=sec=>sec.startsWith('8-1')?'8-1 速率、時速、分速、秒速':sec.startsWith('8-2')?'8-2 距離、時間和速率的關係':sec.startsWith('8-3')?'8-3 速率單位的換算':'綜合挑戰';
+let L={},T0=Date.now(),T1=0,who='';
+const txt=h=>String(h).replace(/<[^>]+>/g,'');
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
+function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
+function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
+  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
+  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
+const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
+const LEARN=`<div class="learn"><h3>今天學會</h3>
+  <p><b>① 比快慢的方法</b></p>
+  <ul><li>時間一樣 → 比<b>距離</b>：跑得<b>遠</b>的比較快</li><li>距離一樣 → 比<b>時間</b>：花的時間<b>短</b>的比較快</li><li>時間、距離都不一樣 → 先算<b>每 1 小時（分鐘、秒鐘）走多遠</b>，再比</li></ul>
+  <p><b>② 速率的定義</b></p>
+  <ul><li>「<b>平均每 1 單位時間所移動的距離</b>」，叫做平均速率，簡稱<b>速率</b>，表示運動的快慢</li><li class="f">速率 ＝ 距離 ÷ 時間</li></ul>
+  <p><b>③ 時速、分速、秒速怎麼分</b>：看「<b>每 1 什麼時間</b>」，或看單位「/」後面的字</p>
+  <table class="lt"><tr><th>每 1 小時走多遠</th><td><b>時速</b></td><td>公里/<b>時</b>（km/h）</td></tr><tr><th>每 1 分鐘走多遠</th><td><b>分速</b></td><td>公尺/<b>分</b>（m/min）</td></tr><tr><th>每 1 秒鐘走多遠</th><td><b>秒速</b></td><td>公尺/<b>秒</b>（m/s）</td></tr></table>
+  <p><b>④ 三個公式</b>：速率 ＝ 距離 ÷ 時間；距離 ＝ 速率 × 時間；時間 ＝ 距離 ÷ 速率</p>
+  <p><b>⑤ 單位換算</b>：公里 → 公尺 × 1000；時速 → 分速、分速 → 秒速 ÷ 60</p></div>`;
+function summary(){const t=stats();
+  return LEARN+`<h3 class="sh">學習概況</h3><div class="stat"><div><b>${t.A.length}</b>完成題數</div><div><b>${t.rate}%</b>一次答對</div><div><b>${mmss((T1||Date.now())-T0)}</b>上課用時</div></div>
+  <div class="gm">${t.gs.map(g=>{const[l,c]=lvl(g.p);return`<span>${g.g}</span><span class="mt"><i style="width:${g.p}%;background:${c}"></i></span><span class="tag" style="background:${c}">${l}</span>`}).join('')}</div>
+  <div style="font-size:15px;color:var(--soft)">一次答對率：80% 以上精熟、50%～79% 尚可、未滿 50% 需加強。</div>
+  <button class="cp" id="cp">複製紀錄（可貼到 Excel / Word）</button><textarea id="cpt" readonly></textarea>`}
+function report(el){
+  el.classList.add('rep');const t=stats();let lg='';
+  el.innerHTML=`<div class="rh"><b style="font-size:22px">8 認識速率 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
+  <table class="rt"><tr><th>#</th><th>題目</th><th>結果</th><th>答錯時選了</th><th>用時</th></tr>${t.R.map((x,k)=>{let g='';const gg=G(x.s.sec);if(gg!==lg){lg=gg;g=`<tr class="gp"><td colspan="5">${gg}</td></tr>`}
+   const r=x.r;const res=!r||!r.fin?'<span class="ng">未作答</span>':r.w.length?`<span class="ng">錯 ${r.w.length} 次</span>`:'<span class="ok1">一次答對</span>';
+   return g+`<tr><td class="n">${k+1}</td><td>${txt(x.q.p)}</td><td class="n">${res}</td><td>${r&&r.w.length?r.w.map(esc).join('、'):''}</td><td class="n">${r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000))+' 秒':''}</td></tr>`}).join('')}</table>`;
+  $('who').oninput=e=>{who=e.target.value};
+  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=['8 認識速率 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
+    const fb=()=>{const a=$('cpt');a.style.display='block';a.value=out;a.select();b.textContent='請按「拷貝」複製下方文字'};
+    try{navigator.clipboard.writeText(out).then(()=>{b.textContent='已複製 ✔'},fb)}catch(e){fb()}}},0);
+  return{fill(){}};
+}
+function showQ(){
+  const s=S[cur],q=s.qs[qi],key=cur+'-'+qi;
+  if(!L[key])L[key]={w:[],t0:Date.now(),fin:0};const rec=L[key];
+  $('q').innerHTML=`<div class="qn">第 ${qi+1} 題／共 ${s.qs.length} 題</div><div class="qp">${q.p}</div><div class="ch">${q.c.map((c,i)=>`<button data-i="${i}">${c}</button>`).join('')}</div>`;
+  $('fb').innerHTML='';
+  $('q').querySelectorAll('.ch button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(i===q.a){if(!rec.fin){rec.fin=1;rec.t1=Date.now()}b.classList.add('yes');$('q').querySelectorAll('.ch button').forEach(x=>x.disabled=true);tone([660,880]);cheer();
+      $('fb').innerHTML=`<span class="g">✔ ${q.ok}</span>`;if(q.f!==undefined)scene.fill(q.f);
+      const T=tok;if(qi<s.qs.length-1){setTimeout(()=>{if(!live(T))return;qi++;showQ()},1500*K+400)}
+      else{if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;unlock()}}
+    else{if(!rec.fin)rec.w.push(txt(q.c[i]));b.classList.add('no','shake');b.disabled=true;tone([220],.18);$('fb').innerHTML=`<span class="h">${q.h}</span>`;speak(q.h)}
+  });
+}
+function go(n){
+  tok++;cur=n;qi=0;try{speechSynthesis.cancel()}catch(e){}
+  const s=S[n];
+  $('sec').textContent=s.sec;$('ttl').textContent=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
+  $('bar').style.width=(n/(S.length-1)*100)+'%';$('cnt').textContent=`${n+1} / ${S.length}`;
+  $('prev').style.visibility=n?'visible':'hidden';
+  const nx=$('next');nx.textContent='下一步';nx.style.visibility=n===S.length-1?'hidden':'visible';nx.disabled=true;nx.classList.remove('go');
+  scene=s.sc($('stage'))||{fill(){}};if(typeof s.x==='function')$('txt').innerHTML=s.x();
+  const startQ=()=>{if(s.qs)showQ();else unlock()};
+  if(done.has(n)){if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;nx.disabled=false}
+  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">念一遍 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='念一遍 ☑';tone([600,750]);startQ()}}
+  else startQ();
+  const lr=document.querySelector('.panel .learn');if(lr&&$('rb'))lr.appendChild($('rb'));
+}
+$('next').onclick=()=>{if(cur===S.length-1){L={};done.clear();T0=Date.now();T1=0;go(0)}else go(cur+1)};
+$('prev').onclick=()=>{if(cur>0)go(cur-1)};
+$('say').onclick=()=>{const s=S[cur];let t=s.t+'。'+s.x;if(s.qs&&$('q').innerHTML)t+='。'+s.qs[qi].p;speak(t)};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&!$('next').disabled)$('next').click();if(e.key==='ArrowLeft')$('prev').click()});
+go(0);
+}
+</script>
+</body>
+</html>
