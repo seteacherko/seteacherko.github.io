@@ -124,6 +124,9 @@ table.tb{border-collapse:collapse;width:100%;background:var(--bg);border-radius:
 .tag{border-radius:8px;padding:0 6px;color:#fff;text-align:center;font-size:15px}
 .cp{border:2px solid var(--grass);background:none;border-radius:12px;min-height:44px;padding:4px 14px;font-size:17px}
 #cpt{width:100%;height:90px;font-size:13px;display:none}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .12em;font-size:.92em}.fr i{font-style:normal;padding:0 .15em}.fr i:first-child{border-bottom:2px solid currentColor}
+.svgw{width:100%;align-self:center}.svgw text{font-family:inherit;fill:var(--ink)}
+.btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 @media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.stage{min-height:300px}header h1{font-size:21px}#cnt{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -159,10 +162,22 @@ const live=t=>t===tok;
 /* ---------- sound & voice ---------- */
 let ac=null;
 function tone(fs,d=0.13){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ac.currentTime+i*d);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*d+d*1.6);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*d);o.stop(ac.currentTime+i*d+d*1.7)})}catch(e){}}
-const plain=s=>String(s).replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
+const plain=s=>String(s).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$2分之$1').replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
 function speak(s){try{const ss=speechSynthesis;ss.cancel();const u=new SpeechSynthesisUtterance(plain(s));u.lang='zh-TW';u.rate=.85;const v=ss.getVoices().find(v=>/zh[-_]TW/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
 
 /* ---------- scenes ---------- */
+function reveal(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
+      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const NS="http://www.w3.org/2000/svg";
+const UNIT='8 認識速率';
+const GROUPS=[['8-1','8-1 速率、時速、分速、秒速'],['8-2','8-2 距離、時間和速率的關係'],['8-3','8-3 速率單位的換算']];
 function race(el,o){
   const T=tok;
   el.innerHTML=`<div class="hud"><span id="clk"></span><span>${o.mode==='time'?'比一比：誰跑得遠？':'終點 '+o.max+' 公尺'}</span></div>
@@ -199,14 +214,6 @@ function travel(el,o){
   $('rp').onclick=play;play();
   return{fill(k){const c=$(k);if(!c)return;c.textContent=k[0]==='d'?(+k.slice(1))*o.v:k.slice(1);c.classList.add('pop')}};
 }
-function reveal(el,o){
-  const T=tok;
-  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
-  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
-      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
-    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
-  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
-}
 function triangle(el){
   el.innerHTML=`<div class="hud"><span>速率三角形</span><span>點一點：遮住要算的</span></div>
   <svg class="tri" viewBox="0 0 400 300">
@@ -223,13 +230,8 @@ function triangle(el){
   el.querySelectorAll('.cell').forEach(g=>g.onclick=()=>show(g.dataset.c));
   return{fill:show};
 }
-
-/* ---------- lesson steps ---------- */
 const S=[
-{sec:'開始',t:'誰比較快？',x:'今天要學 <b>速率</b>。<br>速率就是「<b>跑得多快</b>」。<br>一題一題來，答對了才能往下走喔！',read:1,
- sc:el=>reveal(el,{big:'🏃 🚗 ✈️ 🐆',lines:['跑步、開車、飛機、獵豹','怎樣知道誰比較快？','我們一起來比一比！']})},
-
-{sec:'8-1 速率',t:'時間一樣，比距離',x:'豆豆和奇奇都跑了 <b>1 分鐘</b>。<br>豆豆跑 300 公尺，奇奇跑 350 公尺。',
+{sec:'8-1 速率',t:'時間一樣，比距離',x:'今天要學 <b>速率</b>，就是「跑得多快」。<br>豆豆和奇奇都跑了 <b>1 分鐘</b>。豆豆跑 300 公尺，奇奇跑 350 公尺。',
  sc:el=>race(el,{mode:'time',max:400,r:[{e:'🏃',n:'豆豆',d:300},{e:'🏃‍♀️',n:'奇奇',d:350}]}),
  qs:[{p:'誰跑得比較快？',c:['豆豆','奇奇','一樣快'],a:1,h:'💡 時間一樣，看誰跑得比較<b>遠</b>。',ok:'對！奇奇跑 350 公尺，比較遠，所以比較快。'}],
  key:'<b>時間一樣</b>，跑的距離比較<b>長</b>，就跑得比較快。'},
@@ -238,11 +240,6 @@ const S=[
  sc:el=>race(el,{mode:'dist',max:100,r:[{e:'🏃‍♀️',n:'妮妮',t:16},{e:'🏃',n:'妙妙',t:20}]}),
  qs:[{p:'誰跑得比較快？',c:['妮妮','妙妙','一樣快'],a:0,h:'💡 距離一樣，看誰花的時間比較<b>少</b>，誰先到終點。',ok:'對！妮妮只花 16 秒，先到終點。'}],
  key:'<b>距離一樣</b>，花的時間比較<b>短</b>，就跑得比較快。'},
-
-{sec:'8-1 速率',t:'記住比快慢的方法',x:'把剛剛學的念一遍，再回答。',read:1,
- sc:el=>reveal(el,{big:'⏱️ 📏',lines:['時間一樣 → 比距離，<b>遠</b>的快','距離一樣 → 比時間，<b>短</b>的快']}),
- qs:[{p:'時間一樣時，跑的距離比較（　）的，跑得比較快。',c:['長','短'],a:0,h:'💡 同樣 1 分鐘，跑得<b>遠</b>的人比較厲害。',ok:'答對了！'},
-     {p:'距離一樣時，花的時間比較（　）的，跑得比較快。',c:['長','短'],a:1,h:'💡 先到終點的人，花的時間比較<b>少</b>。',ok:'答對了！'}]},
 
 {sec:'8-1 速率',t:'都不一樣，怎麼比？',x:'甲車 4 小時開 280 公里，丁車 3 小時開 240 公里。<br>時間、距離<b>都不一樣</b>！<br>先算：<b>每 1 小時</b>各開幾公里。',
  sc:el=>bars(el,{uD:'公里',uT:'小時',r:[{e:'🚗',n:'甲車',d:280,t:4},{e:'🚙',n:'丁車',d:240,t:3}]}),
@@ -261,78 +258,35 @@ const S=[
      {p:'每 1 小時飛 700 公里，也可以說成？',c:['時速 700 公里','分速 700 公里','秒速 700 公里'],a:0,h:'💡 每 1 <b>小時</b> → <b>時</b>速。',ok:'對！時速 700 公里，寫成 700 公里/時（km/h）。'}],
  key:'平均每 <b>1 小時</b>移動的距離，叫做<b>時速</b>。<br>寫法：時速 700 公里 ＝ 700 公里/時'},
 
-{sec:'8-1 分速',t:'分速：每 1 分鐘',x:'豆豆走路，<b>10 分鐘</b>走了 <b>600 公尺</b>。',
- sc:el=>bars(el,{uD:'公尺',uT:'分鐘',r:[{e:'🚶',n:'豆豆',d:600,t:10}]}),
- qs:[{p:'600 ÷ 10 ＝ ？',c:['6','60','600'],a:1,h:'💡 除以 10，就是把最後的 <b>0 拿掉</b>。',ok:'對！每 1 分鐘走 60 公尺。',f:0},
-     {p:'每 1 分鐘走 60 公尺，也可以說成？',c:['時速 60 公尺','分速 60 公尺','秒速 60 公尺'],a:1,h:'💡 每 1 <b>分鐘</b> → <b>分</b>速。',ok:'對！分速 60 公尺，寫成 60 公尺/分（m/min）。'}],
- key:'平均每 <b>1 分鐘</b>移動的距離，叫做<b>分速</b>。<br>寫法：分速 60 公尺 ＝ 60 公尺/分'},
-
-{sec:'8-1 秒速',t:'秒速：每 1 秒鐘',x:'獵豹跑 <b>900 公尺</b>，只花 <b>30 秒鐘</b>！',
- sc:el=>bars(el,{uD:'公尺',uT:'秒',r:[{e:'🐆',n:'獵豹',d:900,t:30}]}),
- qs:[{p:'900 ÷ 30 ＝ ？',c:['3','30','300'],a:1,h:'💡 90 ÷ 3 ＝ <b>30</b>。',ok:'對！每 1 秒鐘跑 30 公尺。',f:0},
-     {p:'每 1 秒鐘跑 30 公尺，也可以說成？',c:['時速 30 公尺','分速 30 公尺','秒速 30 公尺'],a:2,h:'💡 每 1 <b>秒鐘</b> → <b>秒</b>速。',ok:'對！秒速 30 公尺，寫成 30 公尺/秒（m/s）。'}],
- key:'平均每 <b>1 秒鐘</b>移動的距離，叫做<b>秒速</b>。<br>寫法：秒速 30 公尺 ＝ 30 公尺/秒'},
-
-{sec:'8-1 速率單位',t:'選對單位',x:'看看是什麼在動，想想<b>快不快</b>、<b>走多遠</b>，選合適的單位。',
- sc:el=>reveal(el,{big:'🚆　🚶　🏃',lines:['火車跑很遠 → 用「公里」、「小時」','走路、跑步 → 用「公尺」','公里/時　公尺/分　公尺/秒']}),
- qs:[{p:'自強號火車的速率是 120（　）',c:['公里/時','公尺/秒'],a:0,h:'💡 火車跑得很<b>遠</b>，1 小時可以跑很多<b>公里</b>。',ok:'對！120 公里/時。'},
-     {p:'豆豆走路的速率是 75（　）',c:['公里/時','公尺/分'],a:1,h:'💡 走路 1 小時走不到 75 公里喔！每 1 <b>分鐘</b>走 75 <b>公尺</b>才合理。',ok:'對！75 公尺/分。'},
-     {p:'奇奇跑 100 公尺的速率是 6（　）',c:['公尺/秒','公里/時'],a:0,h:'💡 跑 100 公尺很快，是用<b>秒</b>來算。',ok:'對！6 公尺/秒。'}]},
+{sec:'8-1 分速、秒速',t:'分速和秒速',x:'看「<b>每 1 什麼時間</b>」：<br>每 1 分鐘 → <b>分速</b>（公尺/分）；每 1 秒鐘 → <b>秒速</b>（公尺/秒）。',
+ sc:el=>reveal(el,{big:'🚶　🐆',lines:['豆豆走路：每 1 分鐘走 60 公尺','獵豹：每 1 秒鐘跑 30 公尺']}),
+ qs:[{p:'豆豆每 1 分鐘走 60 公尺，也可以說成？',c:['時速 60 公尺','分速 60 公尺','秒速 60 公尺'],a:1,h:'💡 每 1 <b>分鐘</b> → <b>分</b>速。',ok:'對！分速 60 公尺，寫成 60 公尺/分。'},
+     {p:'獵豹每 1 秒鐘跑 30 公尺，也可以說成？',c:['時速 30 公尺','分速 30 公尺','秒速 30 公尺'],a:2,h:'💡 每 1 <b>秒鐘</b> → <b>秒</b>速。',ok:'對！秒速 30 公尺，寫成 30 公尺/秒。'}],
+ key:'每 1 小時 → <b>時速</b>　每 1 分鐘 → <b>分速</b>　每 1 秒鐘 → <b>秒速</b>'},
 
 {sec:'8-2 求距離',t:'知道速率和時間，求距離',x:'火車的速率是 <b>50 公里/時</b>，就是<b>每 1 小時走 50 公里</b>。',
- sc:el=>travel(el,{e:'🚆',v:50,n:4,uD:'公里',uT:'小時',hd:[2,3],flip:1,end:'走了 4 小時'}),
- qs:[{p:'走 2 小時，共走幾公里？',c:['52','100','150'],a:1,h:'💡 1 小時 50 公里，2 小時就是 <b>50 × 2</b>。',ok:'對！50 × 2 ＝ 100 公里。',f:'d2'},
-     {p:'走 3 小時，共走幾公里？',c:['150','53','200'],a:0,h:'💡 <b>50 × 3</b> ＝ ？',ok:'對！50 × 3 ＝ 150 公里。',f:'d3'},
-     {p:'距離 ＝ 速率（　）時間',c:['＋','×','÷'],a:1,h:'💡 每小時 50 公里，走 3 小時，是 3 個 50，用<b>乘法</b>。',ok:'對！距離 ＝ 速率 × 時間'},
-     {p:'速率不變，時間變成 2 倍，距離會變成？',c:['一樣','2 倍','一半'],a:1,h:'💡 看表格：1 小時 50，2 小時 100，100 是 50 的<b>幾倍</b>？',ok:'對！時間變 2 倍，距離也變 2 倍。'}],
+ sc:el=>travel(el,{e:'🚆',v:50,n:4,uD:'公里',uT:'小時',hd:[3],flip:1,end:'走了 4 小時'}),
+ qs:[{p:'走 3 小時，共走幾公里？',c:['150','53','200'],a:0,h:'💡 1 小時 50 公里，3 小時就是 <b>50 × 3</b>。',ok:'對！50 × 3 ＝ 150 公里。',f:'d3'},
+     {p:'距離 ＝ 速率（　）時間',c:['＋','×','÷'],a:1,h:'💡 每小時 50 公里，走 3 小時，是 3 個 50，用<b>乘法</b>。',ok:'對！距離 ＝ 速率 × 時間'}],
  key:'<div class="formula">距離 ＝ 速率 × 時間</div>'},
 
 {sec:'8-2 求時間',t:'知道速率和距離，求時間',x:'機器人的速率是 <b>5 公尺/分</b>，每 1 分鐘走 5 公尺。<br>它要走到 <b>20 公尺</b>的地方。',
  sc:el=>travel(el,{e:'🤖',v:5,n:4,uD:'公尺',uT:'分鐘',ht:[4],end:'走到 20 公尺了！'}),
- qs:[{p:'走 20 公尺，要花幾分鐘？',c:['4','15','100'],a:0,h:'💡 20 裡面有幾個 5？<b>20 ÷ 5</b>。',ok:'對！20 ÷ 5 ＝ 4 分鐘。',f:'t4'},
-     {p:'時間 ＝ 距離（　）速率',c:['×','÷','－'],a:1,h:'💡 剛剛是 20 ÷ 5，用<b>除法</b>。',ok:'對！時間 ＝ 距離 ÷ 速率'}],
+ qs:[{p:'走 20 公尺，要花幾分鐘？',c:['4','15','100'],a:0,h:'💡 20 裡面有幾個 5？<b>20 ÷ 5</b>。',ok:'對！20 ÷ 5 ＝ 4 分鐘。時間 ＝ 距離 ÷ 速率',f:'t4'}],
  key:'<div class="formula">時間 ＝ 距離 ÷ 速率</div>'},
 
 {sec:'8-2 整理',t:'速率三角形',x:'<b>距離</b>在上面，<b>速率</b>和<b>時間</b>在下面。<br>要算哪一個，就<b>遮住</b>哪一個！',
  sc:el=>triangle(el),
- qs:[{p:'要算「距離」，怎麼算？',c:['速率 × 時間','距離 ÷ 時間'],a:0,h:'💡 遮住上面的距離，下面剩 速率 <b>×</b> 時間。',ok:'對！',f:'d'},
-     {p:'要算「時間」，怎麼算？',c:['速率 × 距離','距離 ÷ 速率'],a:1,h:'💡 遮住時間，剩下 距離 在上、速率 在下 → <b>上 ÷ 下</b>。',ok:'對！',f:'t'},
-     {p:'要算「速率」，怎麼算？',c:['距離 ÷ 時間','時間 ÷ 距離'],a:0,h:'💡 遮住速率，剩下 距離 在上、時間 在下 → <b>上 ÷ 下</b>。',ok:'對！',f:'v'}]},
+ qs:[{p:'要算「時間」，怎麼算？',c:['速率 × 距離','距離 ÷ 速率'],a:1,h:'💡 遮住時間，剩下 距離 在上、速率 在下 → <b>上 ÷ 下</b>。',ok:'對！',f:'t'}]},
 
-{sec:'8-3 單位換算',t:'公里換成公尺',x:'爸爸開車的速率是 <b>95 公里/時</b>，<br>就是 1 小時走 95 公里。換成<b>公尺/時</b>是多少？',
- sc:el=>reveal(el,{big:'🚗 95 公里/時',lines:['1 小時走 95 公里','公里 → 公尺'],later:{a:'1 公里 ＝ 1000 公尺',b:'1000 × 95 ＝ 95000　→　95000 公尺/時'}}),
- qs:[{p:'1 公里 ＝ 幾公尺？',c:['10','100','1000'],a:2,h:'💡 1 公里 ＝ <b>1000</b> 公尺。',ok:'對！',f:'a'},
-     {p:'95 公里/時 ＝ （　）公尺/時',c:['950','9500','95000'],a:2,h:'💡 1000 × 95，95 後面加 <b>三個 0</b>。',ok:'對！95000 公尺/時。',f:'b'}],
- key:'公里 → 公尺：<b>× 1000</b>'},
-
-{sec:'8-3 單位換算',t:'時速換成分速',x:'獵鷹的時速是 <b>180 公里</b>：1 小時飛 180 公里。<br>那 <b>1 分鐘</b>飛幾公里？',
- sc:el=>reveal(el,{big:'🦅 180 公里/時',clock:1,lines:['1 小時 ＝ 60 分鐘','180 公里分給 60 分鐘'],later:{b:'180 ÷ 60 ＝ 3　→　3 公里/分'}}),
- qs:[{p:'180 公里平分給 60 分鐘，要用？',c:['180 × 60','180 ÷ 60'],a:1,h:'💡 是把 180 公里<b>分</b>給 60 分鐘，每 1 分鐘只走一小段，所以用 <b>÷</b>。不是 × 喔！',ok:'對！時速換分速，要 ÷ 60。'},
-     {p:'180 ÷ 60 ＝ ？',c:['3','30','120'],a:0,h:'💡 18 ÷ 6 ＝ <b>3</b>。',ok:'對！180 公里/時 ＝ 3 公里/分。',f:'b'}],
- key:'時速 → 分速：<b>÷ 60</b>　　分速 → 秒速：<b>÷ 60</b>'},
-
-{sec:'挑戰',t:'最後挑戰！',x:'用今天學的，試試看這 3 題。',
- sc:el=>reveal(el,{big:'🏆',lines:['速率 ＝ 距離 ÷ 時間','距離 ＝ 速率 × 時間','時間 ＝ 距離 ÷ 速率']}),
- qs:[{p:'市區公車的速率是 40（　），哪一個單位比較適合？',c:['公尺/秒','公里/時'],a:1,h:'💡 公車 1 秒跑 40 公尺太快了！應該是每 1 <b>小時</b> 40 <b>公里</b>。',ok:'對！40 公里/時。'},
-     {p:'機車以 40 公里/時 騎了 3 小時，共騎幾公里？',c:['43','120','160'],a:1,h:'💡 求距離 ＝ 速率 <b>×</b> 時間 → 40 × 3。',ok:'對！40 × 3 ＝ 120 公里。'},
-     {p:'婉貞跑 400 公尺花 1 分鐘，凱傑跑 600 公尺花 2 分鐘，誰比較快？',c:['婉貞','凱傑','一樣快'],a:0,h:'💡 凱傑每 1 分鐘跑 600 ÷ 2 ＝ <b>300</b> 公尺，婉貞每 1 分鐘跑 <b>400</b> 公尺。',ok:'對！婉貞每分鐘 400 公尺，比較快。'}]},
+{sec:'8-3 單位換算',t:'速率單位的換算',x:'換算時，先想清楚是換<b>距離</b>還是換<b>時間</b>。',
+ sc:el=>reveal(el,{big:'🚗　🦅',lines:['1 公里 ＝ 1000 公尺','1 小時 ＝ 60 分鐘'],later:{a:'95 公里/時 ＝ 95 × 1000 ＝ 95000 公尺/時',b:'180 公里/時 ＝ 180 ÷ 60 ＝ 3 公里/分'}}),
+ qs:[{p:'95 公里/時 ＝ （　）公尺/時',c:['950','9500','95000'],a:2,h:'💡 公里換公尺 <b>× 1000</b>，95 後面加三個 0。',ok:'對！95000 公尺/時。',f:'a'},
+     {p:'時速 180 公里 ＝ 分速幾公里？',c:['3 公里','10800 公里','120 公里'],a:0,h:'💡 180 公里分給 <b>60 分鐘</b>，用 <b>÷ 60</b>，不是 × 60！',ok:'對！180 ÷ 60 ＝ 3。',f:'b'}],
+ key:'公里 → 公尺：<b>× 1000</b>　時速 → 分速：<b>÷ 60</b>'},
 
 {sec:'完成',t:'今天學會＆學習紀錄',x:()=>summary(),sc:el=>report(el),read:1}
 ];
-
-/* ---------- engine ---------- */
-function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
-function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
-const G=sec=>sec.startsWith('8-1')?'8-1 速率、時速、分速、秒速':sec.startsWith('8-2')?'8-2 距離、時間和速率的關係':sec.startsWith('8-3')?'8-3 速率單位的換算':'綜合挑戰';
-let L={},T0=Date.now(),T1=0,who='';
-const txt=h=>String(h).replace(/<[^>]+>/g,'');
-const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
-function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
-function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
-  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
-  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
-const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
 const LEARN=`<div class="learn"><h3>今天學會</h3>
   <p><b>① 比快慢的方法</b></p>
   <ul><li>時間一樣 → 比<b>距離</b>：跑得<b>遠</b>的比較快</li><li>距離一樣 → 比<b>時間</b>：花的時間<b>短</b>的比較快</li><li>時間、距離都不一樣 → 先算<b>每 1 小時（分鐘、秒鐘）走多遠</b>，再比</li></ul>
@@ -342,6 +296,20 @@ const LEARN=`<div class="learn"><h3>今天學會</h3>
   <table class="lt"><tr><th>每 1 小時走多遠</th><td><b>時速</b></td><td>公里/<b>時</b>（km/h）</td></tr><tr><th>每 1 分鐘走多遠</th><td><b>分速</b></td><td>公尺/<b>分</b>（m/min）</td></tr><tr><th>每 1 秒鐘走多遠</th><td><b>秒速</b></td><td>公尺/<b>秒</b>（m/s）</td></tr></table>
   <p><b>④ 三個公式</b>：速率 ＝ 距離 ÷ 時間；距離 ＝ 速率 × 時間；時間 ＝ 距離 ÷ 速率</p>
   <p><b>⑤ 單位換算</b>：公里 → 公尺 × 1000；時速 → 分速、分速 → 秒速 ÷ 60</p></div>`;
+
+/* ---------- engine ---------- */
+function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
+const G=sec=>{for(const[k,v]of GROUPS)if(sec.startsWith(k))return v;return sec==='挑戰'?'綜合挑戰':sec};
+let L={},T0=Date.now(),T1=0,who='';
+const txt=h=>String(h).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'');
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
+function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
+function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
+  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
+  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
+const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
 function summary(){const t=stats();
   return LEARN+`<h3 class="sh">學習概況</h3><div class="stat"><div><b>${t.A.length}</b>完成題數</div><div><b>${t.rate}%</b>一次答對</div><div><b>${mmss((T1||Date.now())-T0)}</b>上課用時</div></div>
   <div class="gm">${t.gs.map(g=>{const[l,c]=lvl(g.p);return`<span>${g.g}</span><span class="mt"><i style="width:${g.p}%;background:${c}"></i></span><span class="tag" style="background:${c}">${l}</span>`}).join('')}</div>
@@ -349,12 +317,12 @@ function summary(){const t=stats();
   <button class="cp" id="cp">複製紀錄（可貼到 Excel / Word）</button><textarea id="cpt" readonly></textarea>`}
 function report(el){
   el.classList.add('rep');const t=stats();let lg='';
-  el.innerHTML=`<div class="rh"><b style="font-size:22px">8 認識速率 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
+  el.innerHTML=`<div class="rh"><b style="font-size:22px">${UNIT} 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
   <table class="rt"><tr><th>#</th><th>題目</th><th>結果</th><th>答錯時選了</th><th>用時</th></tr>${t.R.map((x,k)=>{let g='';const gg=G(x.s.sec);if(gg!==lg){lg=gg;g=`<tr class="gp"><td colspan="5">${gg}</td></tr>`}
    const r=x.r;const res=!r||!r.fin?'<span class="ng">未作答</span>':r.w.length?`<span class="ng">錯 ${r.w.length} 次</span>`:'<span class="ok1">一次答對</span>';
    return g+`<tr><td class="n">${k+1}</td><td>${txt(x.q.p)}</td><td class="n">${res}</td><td>${r&&r.w.length?r.w.map(esc).join('、'):''}</td><td class="n">${r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000))+' 秒':''}</td></tr>`}).join('')}</table>`;
   $('who').oninput=e=>{who=e.target.value};
-  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=['8 認識速率 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
+  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=[UNIT+' 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
     const fb=()=>{const a=$('cpt');a.style.display='block';a.value=out;a.select();b.textContent='請按「拷貝」複製下方文字'};
     try{navigator.clipboard.writeText(out).then(()=>{b.textContent='已複製 ✔'},fb)}catch(e){fb()}}},0);
   return{fill(){}};
@@ -376,14 +344,14 @@ function showQ(){
 function go(n){
   tok++;cur=n;qi=0;try{speechSynthesis.cancel()}catch(e){}
   const s=S[n];
-  $('sec').textContent=s.sec;$('ttl').textContent=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
+  $('sec').textContent=s.sec;$('ttl').innerHTML=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
   $('bar').style.width=(n/(S.length-1)*100)+'%';$('cnt').textContent=`${n+1} / ${S.length}`;
   $('prev').style.visibility=n?'visible':'hidden';
   const nx=$('next');nx.textContent='下一步';nx.style.visibility=n===S.length-1?'hidden':'visible';nx.disabled=true;nx.classList.remove('go');
   scene=s.sc($('stage'))||{fill(){}};if(typeof s.x==='function')$('txt').innerHTML=s.x();
   const startQ=()=>{if(s.qs)showQ();else unlock()};
   if(done.has(n)){if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;nx.disabled=false}
-  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">念一遍 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='念一遍 ☑';tone([600,750]);startQ()}}
+  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">我讀完了 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='我讀完了 ☑';tone([600,750]);startQ()}}
   else startQ();
   const lr=document.querySelector('.panel .learn');if(lr&&$('rb'))lr.appendChild($('rb'));
 }

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6A 圓周長與扇形周長</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 溫和、口語、一次一件事，給學障生的平板小課
+   IDEA: 運動會的跑道與記分板，每一步都是一場比賽
+   PICTURE: 左邊是會動的跑道／長條／時鐘，右邊是題目卡
+   COLOUR and TYPE: 跑道橘紅 + 草地青綠 + 記分黃；楷體（LXGW WenKai TC）
+   LAYOUT: 平板橫式左右兩欄，窄螢幕上下堆疊 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0f1e28);--ink:light-dark(#1d3557,#eef3f7);--soft:light-dark(#5b6b7e,#a9b8c6);
+--panel:light-dark(#f2f7f9,#162c3a);--track:#d9623f;--track2:#c4532f;--grass:#2a9d8f;--sun:#ffb703;
+--ok:#1f9d55;--no:#d64545;--hint:light-dark(#1d5fbf,#8cb8ff);--line:light-dark(#d8e2e8,#2a4352)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "LXGW WenKai TC","標楷體","DFKai-SB","BiauKai","Kaiti TC",serif;overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:14px;padding:10px max(3vw,14px);border-bottom:3px solid var(--track)}
+header h1{margin:0;font-size:26px;line-height:1.1;white-space:nowrap}
+.prog{flex:1;height:14px;background:var(--line);border-radius:9px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--grass),var(--sun));transition:width .5s}
+#cnt{font-size:16px;color:var(--soft);white-space:nowrap}
+.tts{border:2px solid var(--grass);background:none;border-radius:12px;padding:6px 12px;min-height:44px;font-size:17px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;padding:16px max(3vw,14px);min-height:calc(100vh - 70px)}
+.stage{position:relative;background:linear-gradient(180deg,light-dark(#e8f6f3,#12303a) 0 62%,light-dark(#d4ede7,#163a40) 62%);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden;min-height:360px}
+.panel{background:var(--panel);border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.sec{align-self:flex-start;background:var(--track);color:#fff;border-radius:10px;padding:2px 12px;font-size:16px}
+.panel h2{margin:0;font-size:30px;line-height:1.15;text-wrap:balance}
+.txt{font-size:20px;line-height:1.75}
+.txt b,.key b{color:var(--track2)}
+:root[data-theme=dark] .txt b{color:#ff9b7a}
+.key{border:3px solid var(--sun);border-radius:16px;padding:10px 14px;font-size:21px;line-height:1.7;background:light-dark(#fffaf0,#2a2a1c)}
+.formula{font-size:28px;font-weight:700;text-align:center;letter-spacing:2px}
+.read{align-self:flex-start;border:2px solid var(--ink);background:none;border-radius:12px;padding:6px 14px;min-height:44px}
+.read.on{background:var(--grass);border-color:var(--grass);color:#fff}
+.q{display:flex;flex-direction:column;gap:10px}
+.qn{font-size:15px;color:var(--soft)}
+.qp{font-size:22px;font-weight:700;line-height:1.5}
+.ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ch button{min-height:60px;border:3px solid var(--line);background:var(--bg);border-radius:16px;font-size:22px;padding:6px 10px;transition:transform .15s}
+.ch button:active{transform:scale(.96)}
+.ch button.yes{border-color:var(--ok);background:var(--ok);color:#fff}
+.ch button.no{border-color:var(--no);color:var(--no);opacity:.55;text-decoration:line-through}
+.fb{min-height:30px;font-size:19px}
+.fb .h{color:var(--hint);font-style:italic}
+.fb .h b{font-style:normal}
+.fb .g{color:var(--ok);font-weight:700}
+.nav{margin-top:auto;display:flex;gap:10px;justify-content:space-between;padding-top:6px}
+.nav button{min-height:56px;border-radius:16px;padding:6px 22px;font-size:21px;border:3px solid var(--ink);background:none}
+#next{background:var(--track);border-color:var(--track);color:#fff;flex:1;max-width:280px;margin-left:auto}
+#next:disabled{background:var(--line);border-color:var(--line);color:var(--soft);cursor:not-allowed}
+#next.go{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* stage parts */
+.hud{display:flex;justify-content:space-between;gap:10px;font-size:22px;font-weight:700}
+.hud span{background:var(--bg);border-radius:12px;padding:2px 14px;border:2px solid var(--line)}
+.track{position:relative;background:var(--track);border-radius:16px;padding:6px 0;box-shadow:inset 0 -6px 0 var(--track2)}
+.lane{position:relative;height:74px;border-bottom:3px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.nm{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#fff;font-weight:700;font-size:20px;width:56px}
+.run{position:absolute;top:8px;left:calc(66px + (100% - 140px)*var(--p,0));font-size:44px;line-height:1;transform:scaleX(-1)}
+.run.noflip{transform:none}
+.val{position:absolute;right:10px;bottom:4px;color:#fff;font-size:18px;background:rgba(0,0,0,.25);border-radius:8px;padding:0 8px}
+.finish{position:absolute;top:0;bottom:0;right:62px;width:10px;background:repeating-linear-gradient(#fff 0 10px,#222 10px 20px)}
+.replay{align-self:center;border:2px solid var(--grass);background:var(--bg);border-radius:12px;padding:4px 16px;min-height:44px;font-size:17px}
+.brow{display:flex;align-items:center;gap:10px}
+.be{font-size:40px;width:52px;text-align:center;flex:none}
+.bar{display:flex;height:58px;border-radius:12px;overflow:hidden;background:var(--line)}
+.pc{flex:1;display:grid;place-items:center;background:var(--grass);color:#fff;font-size:18px;font-weight:700;border-right:2px solid #fff;opacity:0;transform:scaleY(.3);transition:.35s}
+.pc:nth-child(even){background:#238579}
+.pc.in{opacity:1;transform:none}
+.bcap{font-size:19px;padding-left:62px;margin-top:-4px}
+.bcap .tot{color:var(--track2);font-weight:700}
+.road{position:relative;height:172px;margin:0 44px}
+.road .ln{position:absolute;left:0;right:0;top:108px;height:14px;background:var(--track);border-radius:7px}
+.tk{position:absolute;top:90px;width:4px;height:50px;background:var(--ink);transform:translateX(-2px)}
+.tk .up{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:17px;font-weight:700;color:var(--track2);opacity:0;transition:.3s}
+.tk .dn{position:absolute;top:54px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px}
+.tk.on .up{opacity:1}
+.veh{position:absolute;top:4px;font-size:46px;line-height:1;transition:left .6s ease-in-out;transform:translateX(-50%)}
+table.tb{border-collapse:collapse;width:100%;background:var(--bg);border-radius:12px;overflow:hidden;font-size:19px}
+.tb th,.tb td{border:2px solid var(--line);padding:6px;text-align:center}
+.tb th{background:light-dark(#e3f1ee,#1b3b44);font-weight:400;white-space:nowrap}
+.tb td.qm{color:var(--track2);font-weight:700}
+.tb td.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.4)}}
+.big{font-size:64px;text-align:center;line-height:1.1}
+.lines{display:flex;flex-direction:column;gap:10px;align-items:center}
+.lines div{background:var(--bg);border-radius:14px;padding:6px 18px;font-size:24px;opacity:0;transform:translateY(12px);transition:.45s;text-align:center;border:2px solid var(--line)}
+.lines div.in{opacity:1;transform:none}
+.lines div.hl{border-color:var(--sun);font-weight:700}
+.tri{width:100%;max-width:420px;align-self:center}
+.tri text{font-family:inherit;fill:var(--ink)}
+.tri .cell{cursor:pointer}
+.tri .cell rect{fill:transparent;transition:.3s}
+.tri .cell.cov rect{fill:var(--sun)}
+.clock{width:150px;align-self:center}
+.cheer{position:absolute;font-size:34px;pointer-events:none;animation:fly 1.1s forwards}
+@keyframes fly{to{transform:translateY(-140px) rotate(30deg);opacity:0}}
+.learn{border:3px solid var(--sun);border-radius:16px;padding:8px 14px;background:light-dark(#fffaf0,#2a2a1c);font-size:18px;line-height:1.6}
+.learn h3,.sh{margin:2px 0 4px;font-size:22px}.learn p{margin:6px 0 2px}.learn ul{margin:0;padding-left:1.3em}.learn b{color:var(--track2)}
+.learn li.f{list-style:none;margin-left:-1.3em;font-size:22px;font-weight:700;text-align:center}
+.lt{border-collapse:collapse;width:100%;margin:4px 0;background:var(--bg)}.lt th,.lt td{border:1px solid var(--line);padding:3px 8px;text-align:left;font-weight:400}
+.stage.rep{justify-content:flex-start;overflow:auto;background:var(--bg);border:3px solid var(--line)}
+.rh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:18px}
+.rh input{font:inherit;font-size:18px;padding:4px 10px;border:2px solid var(--line);border-radius:10px;width:9em;background:var(--bg);color:var(--ink)}
+.rt{border-collapse:collapse;width:100%;font-size:16px;line-height:1.45}
+.rt th,.rt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.rt th{background:var(--panel);white-space:nowrap;position:sticky;top:0}
+.rt td.n{text-align:center;white-space:nowrap}
+.rt .ok1{color:var(--ok);font-weight:700}.rt .ng{color:var(--no);font-weight:700}
+.rt tr.gp td{background:light-dark(#fff4e0,#2a2a1c);font-weight:700}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.stat div{background:var(--bg);border-radius:12px;padding:6px}.stat b{display:block;font-size:28px;line-height:1.2}
+.gm{display:grid;grid-template-columns:minmax(0,1fr) 110px 62px;gap:6px 8px;align-items:center;font-size:16px}
+.gm .mt{height:12px;background:var(--line);border-radius:6px;overflow:hidden}.gm .mt i{display:block;height:100%}
+.tag{border-radius:8px;padding:0 6px;color:#fff;text-align:center;font-size:15px}
+.cp{border:2px solid var(--grass);background:none;border-radius:12px;min-height:44px;padding:4px 14px;font-size:17px}
+#cpt{width:100%;height:90px;font-size:13px;display:none}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .12em;font-size:.92em}.fr i{font-style:normal;padding:0 .15em}.fr i:first-child{border-bottom:2px solid currentColor}
+.svgw{width:100%;align-self:center}.svgw text{font-family:inherit;fill:var(--ink)}
+.btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.stage{min-height:300px}header h1{font-size:21px}#cnt{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>6 圓周長與扇形周長</h1>
+  <div class="prog"><i id="bar"></i></div>
+  <span id="cnt"></span>
+  <button class="tts" id="say">念給我聽</button>
+</header>
+<main>
+  <section class="stage" id="stage"></section>
+  <section class="panel">
+    <span class="sec" id="sec"></span>
+    <h2 id="ttl"></h2>
+    <div class="txt" id="txt"></div>
+    <div id="rd"></div>
+    <div class="q" id="q"></div>
+    <div class="fb" id="fb"></div>
+    <div class="nav"><button id="prev">上一步</button><button id="next" disabled>下一步</button></div>
+  </section>
+</main>
+<script>
+{
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches, K=RM?0.25:1;
+const $=id=>document.getElementById(id);
+let tok=0, scene={fill(){}}, cur=0, qi=0;
+const done=new Set();
+const wait=ms=>new Promise(r=>setTimeout(r,ms*K));
+const live=t=>t===tok;
+
+/* ---------- sound & voice ---------- */
+let ac=null;
+function tone(fs,d=0.13){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ac.currentTime+i*d);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*d+d*1.6);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*d);o.stop(ac.currentTime+i*d+d*1.7)})}catch(e){}}
+const plain=s=>String(s).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$2分之$1').replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
+function speak(s){try{const ss=speechSynthesis;ss.cancel();const u=new SpeechSynthesisUtterance(plain(s));u.lang='zh-TW';u.rate=.85;const v=ss.getVoices().find(v=>/zh[-_]TW/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+
+/* ---------- scenes ---------- */
+function reveal(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
+      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const NS="http://www.w3.org/2000/svg";
+const UNIT='6 圓周長與扇形周長';
+const GROUPS=[['開始','暖身 認識圓'],['6-1','6-1 認識圓周率'],['6-2','6-2 圓周長'],['6-3','6-3 扇形周長']];
+const OR='#d9623f',BL='#2f6fb8',GR='#2a9d8f';
+const pt=(cx,cy,R,deg)=>{const a=deg*Math.PI/180;return[cx+R*Math.cos(a),cy+R*Math.sin(a)]};
+const fx=n=>+n.toFixed(2);
+
+/* 圓的各部分 */
+function parts(el){
+  const T=tok;
+  el.innerHTML=`<div class="hud"><span>圓的各部分</span><span id="ph">看一看</span></div>
+  <svg class="svgw" viewBox="0 0 420 290">
+   <circle cx="210" cy="145" r="115" style="fill:var(--bg)"/>
+   <circle id="cf" cx="210" cy="145" r="115" pathLength="100" stroke="${OR}" stroke-width="7" fill="none" stroke-dasharray="100" stroke-dashoffset="100" style="transition:stroke-dashoffset 1.6s"/>
+   <line id="dm" x1="95" y1="145" x2="325" y2="145" stroke="${GR}" stroke-width="6" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition:stroke-dashoffset 1s"/>
+   <line id="pRad" x1="210" y1="145" x2="${fx(pt(210,145,115,-50)[0])}" y2="${fx(pt(210,145,115,-50)[1])}" stroke="${BL}" stroke-width="6" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition:stroke-dashoffset 1s"/>
+   <circle id="cd" cx="210" cy="145" r="0" fill="#222" style="transition:r .4s"/>
+   <g font-size="22" font-weight="700">
+    <text id="l1" x="342" y="60" opacity="0" style="fill:${OR}">圓周</text>
+    <text id="l2" x="190" y="178" opacity="0">圓心</text>
+    <text id="l3" x="262" y="95" opacity="0" style="fill:${BL}">半徑</text>
+    <text id="l4" x="120" y="135" opacity="0" style="fill:${GR}">直徑</text></g>
+  </svg>`;
+  const on=(id,a,v)=>{const e=$(id);if(e)e.setAttribute(a,v)};
+  (async()=>{await wait(300);if(!live(T))return;on('cf','stroke-dashoffset',0);$('cf').style.strokeDashoffset=0;await wait(1700);if(!live(T))return;on('l1','opacity',1);
+    $('cd').setAttribute('r',7);await wait(500);if(!live(T))return;on('l2','opacity',1);
+    $("pRad").style.strokeDashoffset=0;await wait(1100);if(!live(T))return;on('l3','opacity',1);
+    $('dm').style.strokeDashoffset=0;await wait(1100);if(!live(T))return;on('l4','opacity',1);$('ph').textContent='直徑 ＝ 半徑 × 2'})();
+  return{fill(){}};
+}
+
+/* 圓滾一圈 */
+function roll(el,o){
+  const T=tok,base=[125,285],x0=40;
+  const lanes=o.r.map((r,i)=>({r,y:o.r.length===1?160:base[i]}));
+  el.innerHTML=`<div class="hud"><span>${o.title}</span><span id="rh">滾滾看</span></div>
+  <svg class="svgw" viewBox="0 0 640 ${o.r.length===1?260:335}">${lanes.map((l,i)=>`
+   <line x1="20" y1="${l.y}" x2="625" y2="${l.y}" stroke="var(--ink)" stroke-width="3" style="stroke:var(--ink)"/>
+   ${Array.from({length:13},(_,k)=>`<line x1="${x0+k*50}" y1="${l.y}" x2="${x0+k*50}" y2="${l.y+10}" style="stroke:var(--ink)" stroke-width="2"/>`).join('')}
+   <line id="tr${i}" x1="${x0}" y1="${l.y-2}" x2="${x0}" y2="${l.y-2}" stroke="${OR}" stroke-width="7"/>
+   <g id="w${i}"><circle r="${l.r}" fill="${i?'#bfe3dc':'#ffe0b5'}" stroke="${i?GR:OR}" stroke-width="4"/><line x1="0" y1="0" x2="0" y2="${l.r}" stroke="#555" stroke-width="2"/><circle cx="0" cy="${l.r}" r="6" fill="${OR}"/></g>
+   <text id="tl${i}" x="${x0}" y="${l.y+34}" font-size="18" opacity="0">滾一圈＝圓周長</text>
+   ${o.showD?`<g id="ds${i}" opacity="0">${[0,1,2].map(k=>`<rect x="${x0+k*2*l.r}" y="${l.y+44}" width="${2*l.r}" height="16" fill="${[BL,GR,'#8a5cc2'][k]}" stroke="#fff"/><text x="${x0+k*2*l.r+l.r}" y="${l.y+84}" text-anchor="middle" font-size="16">直徑</text>`).join('')}<text x="${x0+6*l.r+8}" y="${l.y+60}" font-size="17" font-weight="700" style="fill:${OR}">← 還多一點點</text></g>`:''}`).join('')}
+  </svg><button class="replay" id="rp">再看一次</button>`;
+  const play=()=>{const me=T,t0=performance.now(),D=3200*K;
+    lanes.forEach((l,i)=>{$('tl'+i).setAttribute('opacity',0);const d=$('ds'+i);if(d)d.setAttribute('opacity',0)});
+    const f=now=>{if(!live(me))return;const p=Math.min(1,(now-t0)/D);
+      lanes.forEach((l,i)=>{const x=x0+p*2*Math.PI*l.r;$('w'+i).setAttribute('transform',`translate(${x},${l.y-l.r}) rotate(${p*360})`);$('tr'+i).setAttribute('x2',x)});
+      if(p<1)requestAnimationFrame(f);else{lanes.forEach((l,i)=>{$('tl'+i).setAttribute('opacity',1)});$('rh').textContent='剛好滾一圈';
+        if(o.showD)setTimeout(()=>{if(!live(me))return;lanes.forEach((l,i)=>$('ds'+i).setAttribute('opacity',1));$('rh').textContent='直徑排 3 段，還多一點'},600*K)}};
+    requestAnimationFrame(f)};
+  $('rp').onclick=play;play();
+  return{fill(){}};
+}
+
+/* 圓：標直徑或半徑 */
+function circ(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="hud"><span>${o.obj}</span><span>${o.kind==='d'?'直徑':'半徑'} ${o.v} 公分</span></div>
+  <svg class="svgw" viewBox="0 0 420 260" style="max-height:260px">
+   <circle cx="210" cy="130" r="105" style="fill:var(--bg)" stroke="${OR}" stroke-width="6" id="ring" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+   <circle cx="210" cy="130" r="5" fill="#222"/>
+   ${o.kind==='d'?`<line x1="105" y1="130" x2="315" y2="130" stroke="${GR}" stroke-width="6"/><text x="210" y="120" text-anchor="middle" font-size="22" font-weight="700" style="fill:${GR}">直徑 ${o.v} 公分</text>`
+     :`<line x1="210" y1="130" x2="315" y2="130" stroke="${BL}" stroke-width="6"/><text x="262" y="120" text-anchor="middle" font-size="22" font-weight="700" style="fill:${BL}">半徑 ${o.v}</text>`}
+  </svg><div class="lines">${(o.lines||[]).map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{const r=$('ring');r.style.transition='none';r.style.strokeDashoffset=100;await wait(80);r.style.transition='stroke-dashoffset 1.5s';r.style.strokeDashoffset=0;
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(900);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+
+/* 正方形裡最大的圓 */
+function sqCircle(el,o){
+  el.innerHTML=`<div class="hud"><span>正方形裡最大的圓</span><span>邊長 ${o.s} 公分</span></div>
+  <svg class="svgw" viewBox="0 0 420 270" style="max-height:270px">
+   <rect x="100" y="20" width="220" height="220" fill="#e8f1fb" stroke="${BL}" stroke-width="5"/>
+   <circle cx="210" cy="130" r="110" fill="#ffe7cc" stroke="${OR}" stroke-width="5" id="sc" style="transition:opacity .6s" opacity="0"/>
+   <line x1="100" y1="130" x2="320" y2="130" stroke="${GR}" stroke-width="5" stroke-dasharray="10 7" id="sd" opacity="0" style="transition:opacity .6s"/>
+   <text x="210" y="262" text-anchor="middle" font-size="20" font-weight="700" style="fill:${BL}">${o.s} 公分</text>
+   <text x="210" y="120" text-anchor="middle" font-size="20" font-weight="700" id="st" opacity="0" style="fill:${GR}">？公分</text>
+  </svg>`;
+  const T=tok;(async()=>{await wait(500);if(!live(T))return;$('sc').setAttribute('opacity',1);await wait(800);if(!live(T))return;$('sd').setAttribute('opacity',1);$('st').setAttribute('opacity',1)})();
+  return{fill(k){if(k==='d')$('st').textContent='直徑 '+o.s+' 公分'}};
+}
+
+/* 扇形：弧長＋2條半徑 */
+function sector(el,o){
+  const T=tok,R=120,cx=210,deg=o.deg,a1=-90-deg/2,a2=-90+deg/2,cy=deg<=180?(deg<=90?215:180):140;
+  const p1=pt(cx,cy,R,a1),p2=pt(cx,cy,R,a2),lg=deg>180?1:0,m=pt(cx,cy,R+26,-90),r1=pt(cx,cy,R/2,a1),r2=pt(cx,cy,R/2,a2);
+  el.innerHTML=`<div class="hud"><span>${o.title}</span><span>${o.sub}</span></div>
+  <svg class="svgw" viewBox="0 0 420 ${cy+40}" style="max-height:300px">
+   <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" style="stroke:var(--line)" stroke-width="2" stroke-dasharray="6 6"/>
+   <path d="M${cx} ${cy}L${fx(p1[0])} ${fx(p1[1])}A${R} ${R} 0 ${lg} 1 ${fx(p2[0])} ${fx(p2[1])}Z" fill="#ffe7cc"/>
+   <path id="arc" d="M${fx(p1[0])} ${fx(p1[1])}A${R} ${R} 0 ${lg} 1 ${fx(p2[0])} ${fx(p2[1])}" fill="none" stroke="${OR}" stroke-width="8" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition:stroke-dashoffset 1.3s"/>
+   <path id="rads" d="M${fx(p1[0])} ${fx(p1[1])}L${cx} ${cy}L${fx(p2[0])} ${fx(p2[1])}" fill="none" stroke="${BL}" stroke-width="7" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition:stroke-dashoffset 1.1s" stroke-linejoin="round"/>
+   <circle cx="${cx}" cy="${cy}" r="5" fill="#222"/>
+   <text id="ta" x="${fx(m[0])}" y="${fx(m[1])}" text-anchor="middle" font-size="21" font-weight="700" opacity="0" style="fill:${OR}">弧長</text>
+   <text id="tb" x="${fx(r1[0]-(deg>=180?0:28))}" y="${fx(r1[1]+(deg>=180?26:0))}" text-anchor="middle" font-size="19" font-weight="700" opacity="0" style="fill:${BL}">半徑 ${o.r}</text>
+   <text id="tc" x="${fx(r2[0]+(deg>=180?0:28))}" y="${fx(r2[1]+(deg>=180?26:0))}" text-anchor="middle" font-size="19" font-weight="700" opacity="0" style="fill:${BL}">半徑 ${o.r}</text>
+  </svg><div class="lines">${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{await wait(300);if(!live(T))return;$('arc').style.strokeDashoffset=0;await wait(1400);if(!live(T))return;$('ta').setAttribute('opacity',1);$('rads').style.strokeDashoffset=0;await wait(1200);if(!live(T))return;$('tb').setAttribute('opacity',1);$('tc').setAttribute('opacity',1)})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+
+/* 圓心角：把圓平分 */
+function pieces(el,o){
+  let deg=o.deg;
+  const draw=()=>{const n=Math.round(360/deg),cx=210,cy=140,R=120;
+    el.innerHTML=`<div class="hud"><span>圓心角 ${deg}°</span><span>一圈 360°</span></div>
+    <svg class="svgw" viewBox="0 0 420 285" style="max-height:285px">${Array.from({length:n},(_,i)=>{const a=-90+i*deg,b=a+deg,p=pt(cx,cy,R,a),q=pt(cx,cy,R,b);
+      return`<path d="M${cx} ${cy}L${fx(p[0])} ${fx(p[1])}A${R} ${R} 0 0 1 ${fx(q[0])} ${fx(q[1])}Z" fill="${i===0?(o.area?'#ffb27a':'#ffe7cc'):'var(--bg)'}" style="${i===0?'':'fill:var(--bg)'};stroke:${i===0?OR:'var(--line)'}" stroke-width="${i===0?5:2}"/>`}).join('')}
+      <text x="${fx(pt(cx,cy,R*.62,-90+deg/2)[0])}" y="${fx(pt(cx,cy,R*.62,-90+deg/2)[1]+7)}" text-anchor="middle" font-size="20" font-weight="700">${deg}°</text></svg>
+    <div class="lines"><div class="in hl">${deg}° 是 360° 的 ${F(1,n)}，平分成 ${n} 份中的 1 份</div></div>`};
+  draw();
+  return{fill(d){if(typeof d==='number'){deg=d;draw()}}};
+}
+
+const S=[
+{sec:'開始',t:'認識圓',x:'今天要學 <b>圓周長</b> 和 <b>扇形周長</b>。<br>先認識圓的 4 個部分：<b>圓心、半徑、直徑、圓周</b>。',read:1,
+ sc:el=>parts(el),
+ qs:[{p:'直徑一定會通過圓的哪裡？',c:['圓心','任何地方'],a:0,h:'💡 看綠色的直徑，它穿過圓的<b>正中間</b>。',ok:'對！直徑通過圓心。'},
+     {p:'直徑是半徑的幾倍？',c:['2 倍','一樣長','一半'],a:0,h:'💡 直徑是<b>兩條半徑</b>接起來。',ok:'對！直徑 ＝ 半徑 × 2'}]},
+
+{sec:'6-1 認識圓周率',t:'圓滾一圈',x:'在圓的邊上做記號，沿著直尺<b>滾一圈</b>。<br>紅線就是圓滾一圈的長度。',
+ sc:el=>roll(el,{title:'小圓和大圓各滾一圈',r:[30,50]}),
+ qs:[{p:'圓滾一圈的長度，叫做？',c:['圓周長','直徑','半徑'],a:0,h:'💡 滾一圈，就是把<b>圓周</b>攤開來量。',ok:'對！圓滾一圈的長度就是圓周長。'}],
+ key:'圓滾一圈的長度，就是圓周的長度，叫做<b>圓周長</b>。'},
+
+{sec:'6-1 認識圓周率',t:'圓周長和直徑比一比',x:'把圓滾一圈的紅線，和<b>直徑</b>比一比。',
+ sc:el=>roll(el,{title:'圓周長 和 直徑',r:[50],showD:1}),
+ qs:[{p:'圓周長大約是直徑的幾倍？',c:['3 倍多一點','2 倍','剛好 1 倍'],a:0,h:'💡 數一數下面的彩色直徑有<b>3 段</b>，紅線還多出一點點。',ok:'對！圓周長大約是直徑的 3 倍多一點。'}]},
+
+{sec:'6-1 認識圓周率',t:'什麼是圓周率？',x:'不管圓的大小，圓周長大約都是直徑的 <b>3.14 倍</b>。<br>圓周長和直徑的比值，叫做<b>圓周率</b>，通常用 <b>3.14</b> 來算。',read:1,
+ sc:el=>reveal(el,{big:'⭕',lines:['圓周長 ÷ 直徑 ≈ 3.14','這個數字叫做「圓周率」'],later:{a:'圓周長 ＝ 直徑 × 3.14'}}),
+ qs:[{p:'圓周率通常用多少來計算？',c:['3.14','31.4','0.314'],a:0,h:'💡 是「<b>3 倍多一點</b>」的那個數。',ok:'對！圓周率用 3.14 計算。'},
+     {p:'圓周長 ＝ 直徑（　）3.14',c:['＋','×','÷'],a:1,h:'💡 圓周長是直徑的 3.14 <b>倍</b>，「倍」用乘法。',ok:'對！圓周長 ＝ 直徑 × 3.14',f:'a'}],
+ key:'<div class="formula">圓周長 ＝ 直徑 × 3.14</div>'},
+
+{sec:'6-2 圓周長',t:'知道直徑，求圓周長',x:'有一個圓形，<b>直徑是 10 公分</b>。',
+ sc:el=>circ(el,{obj:'⭕ 圓形杯墊',kind:'d',v:10,later:{a:'10 × 3.14 ＝ 31.4　→　約 31.4 公分'}}),
+ qs:[{p:'10 × 3.14 ＝ ？',c:['31.4','3.14','314'],a:0,h:'💡 乘以 10，小數點<b>往右移一位</b>：3.14 → 31.4。',ok:'對！圓周長約 31.4 公分。',f:'a'}]},
+
+{sec:'6-2 圓周長',t:'知道半徑，求圓周長',x:'這個圓的<b>半徑是 5 公分</b>。<br>要先找出<b>直徑</b>喔！',
+ sc:el=>circ(el,{obj:'⭕ 圓形餅乾',kind:'r',v:'5 公分',later:{a:'直徑：5 × 2 ＝ 10',b:'5 × 2 × 3.14 ＝ 31.4　→　約 31.4 公分'}}),
+ qs:[{p:'半徑 5 公分，直徑是幾公分？',c:['10','5','2.5'],a:0,h:'💡 直徑 ＝ 半徑 <b>× 2</b>。',ok:'對！直徑 10 公分。',f:'a'},
+     {p:'圓周長 ＝ 5 × 2 × 3.14 ＝ ？',c:['31.4','15.7','78.5'],a:0,h:'💡 5 × 2 ＝ 10，再算 <b>10 × 3.14</b>。',ok:'對！約 31.4 公分。',f:'b'}],
+ key:'<div class="formula">圓周長 ＝ 半徑 × 2 × 3.14</div>'},
+
+{sec:'6-2 圓周長',t:'知道圓周長，求直徑',x:'奇奇用繩子圍大圓柱一圈，剛好是 <b>314 公分</b>。<br>這個圓柱的直徑大約幾公分？',
+ sc:el=>reveal(el,{big:'🪢 314 公分',lines:['繩子一圈 ＝ 圓周長','直徑 × 3.14 ＝ 314','直徑 ＝ 圓周長 ÷ 3.14'],later:{b:'314 ÷ 3.14 ＝ 100　→　約 100 公分'}}),
+ qs:[{p:'314 ÷ 3.14 ＝ ？',c:['100','10','1000'],a:0,h:'💡 3.14 × <b>100</b> ＝ 314。',ok:'對！直徑約 100 公分。',f:'b'}]},
+
+{sec:'6-3 扇形周長',t:'扇形的周長在哪裡？',x:'半張蔥油餅是一個<b>扇形</b>。<br>扇形的周長＝<b>弧長</b>（橘色）＋<b>2 條半徑</b>（藍色）。',
+ sc:el=>sector(el,{title:'🫓 半張蔥油餅',sub:'直徑 20 公分',deg:180,r:10}),
+ qs:[{p:'扇形的周長包括哪些？',c:['弧長 ＋ 2 條半徑','只有弧長','只有 2 條半徑'],a:0,h:'💡 繞扇形走一圈：先走<b>橘色的弧</b>，再走<b>藍色的兩條半徑</b>。',ok:'對！'}],
+ key:'<div class="formula">扇形周長 ＝ 弧長 ＋ 半徑 × 2</div>'},
+
+{sec:'6-3 扇形周長',t:'半圓的周長',x:'蔥油餅直徑 <b>20 公分</b>，半張是 <b>'+F(1,2)+' 圓</b>。',
+ sc:el=>sector(el,{title:'🫓 '+'半圓',sub:'直徑 20 公分',deg:180,r:10,later:{a:'弧長：20 × 3.14 × '+F(1,2)+' ＝ 31.4',b:'周長：31.4 ＋ 20 ＝ 51.4　→　約 51.4 公分'}}),
+ qs:[{p:'弧長 ＝ 20 × 3.14 × '+F(1,2)+' ＝ ？',c:['31.4','62.8','15.7'],a:0,h:'💡 先算 20 × '+F(1,2)+' ＝ 10，再算 <b>10 × 3.14</b>。',ok:'對！弧長約 31.4 公分。',f:'a'},
+     {p:'周長 ＝ 31.4 ＋ 20 ＝ ？',c:['51.4','31.4','71.4'],a:0,h:'💡 2 條半徑合起來就是<b>直徑 20</b>，要加上去喔！',ok:'對！約 51.4 公分。',f:'b'}]},
+
+{sec:'6-3 扇形周長',t:'圓心角和幾分之幾圓',x:'一整圈是 <b>360°</b>。<br>用<b>圓心角 ÷ 360</b>，就知道是幾分之幾圓。',
+ sc:el=>pieces(el,{deg:180}),
+ qs:[{p:'圓心角 90°，是幾分之幾圓？',c:[F(1,4),F(1,2),F(1,3)],a:0,h:'💡 360 裡面有幾個 90？<b>4 個</b>。',ok:'對！90° 是 '+F(1,4)+' 圓。',f:90},
+     {p:'圓心角 60°，是幾分之幾圓？',c:[F(1,6),F(1,3),F(1,4)],a:0,h:'💡 360 裡面有幾個 60？<b>6 個</b>。',ok:'對！60° 是 '+F(1,6)+' 圓。',f:60}],
+ key:'扇形弧長 ＝ 圓周長 × <span class="fr"><i>圓心角</i><i>360</i></span>'},
+
+{sec:'完成',t:'今天學會＆學習紀錄',x:()=>summary(),sc:el=>report(el),read:1}
+];
+const LEARN=`<div class="learn"><h3>今天學會</h3>
+ <p><b>① 圓的各部分</b>：圓心、半徑、直徑、圓周；<b>直徑 ＝ 半徑 × 2</b></p>
+ <p><b>② 圓周長</b>：圓滾一圈的長度，就是圓周的長度，叫做<b>圓周長</b></p>
+ <p><b>③ 圓周率</b>：不管圓的大小，圓周長大約都是直徑的 3.14 倍。<b>圓周長 ÷ 直徑</b>的比值叫做<b>圓周率</b>，通常用 <b>3.14</b> 計算</p>
+ <ul><li class="f">圓周長 ＝ 直徑 × 3.14 ＝ 半徑 × 2 × 3.14</li><li>知道圓周長求直徑：<b>直徑 ＝ 圓周長 ÷ 3.14</b></li></ul>
+ <p><b>④ 扇形周長</b>：繞扇形一圈 ＝ <b>弧長 ＋ 2 條半徑</b></p>
+ <ul><li>幾分之幾圓：用<b>圓心角 ÷ 360</b>（90° 是 ${F(1,4)} 圓，60° 是 ${F(1,6)} 圓）</li><li>扇形弧長 ＝ 圓周長 × 幾分之幾</li></ul></div>`;
+
+/* ---------- engine ---------- */
+function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
+const G=sec=>{for(const[k,v]of GROUPS)if(sec.startsWith(k))return v;return sec==='挑戰'?'綜合挑戰':sec};
+let L={},T0=Date.now(),T1=0,who='';
+const txt=h=>String(h).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'');
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
+function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
+function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
+  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
+  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
+const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
+function summary(){const t=stats();
+  return LEARN+`<h3 class="sh">學習概況</h3><div class="stat"><div><b>${t.A.length}</b>完成題數</div><div><b>${t.rate}%</b>一次答對</div><div><b>${mmss((T1||Date.now())-T0)}</b>上課用時</div></div>
+  <div class="gm">${t.gs.map(g=>{const[l,c]=lvl(g.p);return`<span>${g.g}</span><span class="mt"><i style="width:${g.p}%;background:${c}"></i></span><span class="tag" style="background:${c}">${l}</span>`}).join('')}</div>
+  <div style="font-size:15px;color:var(--soft)">一次答對率：80% 以上精熟、50%～79% 尚可、未滿 50% 需加強。</div>
+  <button class="cp" id="cp">複製紀錄（可貼到 Excel / Word）</button><textarea id="cpt" readonly></textarea>`}
+function report(el){
+  el.classList.add('rep');const t=stats();let lg='';
+  el.innerHTML=`<div class="rh"><b style="font-size:22px">${UNIT} 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
+  <table class="rt"><tr><th>#</th><th>題目</th><th>結果</th><th>答錯時選了</th><th>用時</th></tr>${t.R.map((x,k)=>{let g='';const gg=G(x.s.sec);if(gg!==lg){lg=gg;g=`<tr class="gp"><td colspan="5">${gg}</td></tr>`}
+   const r=x.r;const res=!r||!r.fin?'<span class="ng">未作答</span>':r.w.length?`<span class="ng">錯 ${r.w.length} 次</span>`:'<span class="ok1">一次答對</span>';
+   return g+`<tr><td class="n">${k+1}</td><td>${txt(x.q.p)}</td><td class="n">${res}</td><td>${r&&r.w.length?r.w.map(esc).join('、'):''}</td><td class="n">${r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000))+' 秒':''}</td></tr>`}).join('')}</table>`;
+  $('who').oninput=e=>{who=e.target.value};
+  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=[UNIT+' 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
+    const fb=()=>{const a=$('cpt');a.style.display='block';a.value=out;a.select();b.textContent='請按「拷貝」複製下方文字'};
+    try{navigator.clipboard.writeText(out).then(()=>{b.textContent='已複製 ✔'},fb)}catch(e){fb()}}},0);
+  return{fill(){}};
+}
+function showQ(){
+  const s=S[cur],q=s.qs[qi],key=cur+'-'+qi;
+  if(!L[key])L[key]={w:[],t0:Date.now(),fin:0};const rec=L[key];
+  $('q').innerHTML=`<div class="qn">第 ${qi+1} 題／共 ${s.qs.length} 題</div><div class="qp">${q.p}</div><div class="ch">${q.c.map((c,i)=>`<button data-i="${i}">${c}</button>`).join('')}</div>`;
+  $('fb').innerHTML='';
+  $('q').querySelectorAll('.ch button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(i===q.a){if(!rec.fin){rec.fin=1;rec.t1=Date.now()}b.classList.add('yes');$('q').querySelectorAll('.ch button').forEach(x=>x.disabled=true);tone([660,880]);cheer();
+      $('fb').innerHTML=`<span class="g">✔ ${q.ok}</span>`;if(q.f!==undefined)scene.fill(q.f);
+      const T=tok;if(qi<s.qs.length-1){setTimeout(()=>{if(!live(T))return;qi++;showQ()},1500*K+400)}
+      else{if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;unlock()}}
+    else{if(!rec.fin)rec.w.push(txt(q.c[i]));b.classList.add('no','shake');b.disabled=true;tone([220],.18);$('fb').innerHTML=`<span class="h">${q.h}</span>`;speak(q.h)}
+  });
+}
+function go(n){
+  tok++;cur=n;qi=0;try{speechSynthesis.cancel()}catch(e){}
+  const s=S[n];
+  $('sec').textContent=s.sec;$('ttl').innerHTML=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
+  $('bar').style.width=(n/(S.length-1)*100)+'%';$('cnt').textContent=`${n+1} / ${S.length}`;
+  $('prev').style.visibility=n?'visible':'hidden';
+  const nx=$('next');nx.textContent='下一步';nx.style.visibility=n===S.length-1?'hidden':'visible';nx.disabled=true;nx.classList.remove('go');
+  scene=s.sc($('stage'))||{fill(){}};if(typeof s.x==='function')$('txt').innerHTML=s.x();
+  const startQ=()=>{if(s.qs)showQ();else unlock()};
+  if(done.has(n)){if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;nx.disabled=false}
+  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">我讀完了 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='我讀完了 ☑';tone([600,750]);startQ()}}
+  else startQ();
+  const lr=document.querySelector('.panel .learn');if(lr&&$('rb'))lr.appendChild($('rb'));
+}
+$('next').onclick=()=>{if(cur===S.length-1){L={};done.clear();T0=Date.now();T1=0;go(0)}else go(cur+1)};
+$('prev').onclick=()=>{if(cur>0)go(cur-1)};
+$('say').onclick=()=>{const s=S[cur];let t=s.t+'。'+s.x;if(s.qs&&$('q').innerHTML)t+='。'+s.qs[qi].p;speak(t)};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&!$('next').disabled)$('next').click();if(e.key==='ArrowLeft')$('prev').click()});
+go(0);
+}
+</script>
+</body>
+</html>

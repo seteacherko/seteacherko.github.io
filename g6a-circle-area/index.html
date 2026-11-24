@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6A 圓面積與扇形面積</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 溫和、口語、一次一件事，給學障生的平板小課
+   IDEA: 運動會的跑道與記分板，每一步都是一場比賽
+   PICTURE: 左邊是會動的跑道／長條／時鐘，右邊是題目卡
+   COLOUR and TYPE: 跑道橘紅 + 草地青綠 + 記分黃；楷體（LXGW WenKai TC）
+   LAYOUT: 平板橫式左右兩欄，窄螢幕上下堆疊 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0f1e28);--ink:light-dark(#1d3557,#eef3f7);--soft:light-dark(#5b6b7e,#a9b8c6);
+--panel:light-dark(#f2f7f9,#162c3a);--track:#d9623f;--track2:#c4532f;--grass:#2a9d8f;--sun:#ffb703;
+--ok:#1f9d55;--no:#d64545;--hint:light-dark(#1d5fbf,#8cb8ff);--line:light-dark(#d8e2e8,#2a4352)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "LXGW WenKai TC","標楷體","DFKai-SB","BiauKai","Kaiti TC",serif;overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:14px;padding:10px max(3vw,14px);border-bottom:3px solid var(--track)}
+header h1{margin:0;font-size:26px;line-height:1.1;white-space:nowrap}
+.prog{flex:1;height:14px;background:var(--line);border-radius:9px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--grass),var(--sun));transition:width .5s}
+#cnt{font-size:16px;color:var(--soft);white-space:nowrap}
+.tts{border:2px solid var(--grass);background:none;border-radius:12px;padding:6px 12px;min-height:44px;font-size:17px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;padding:16px max(3vw,14px);min-height:calc(100vh - 70px)}
+.stage{position:relative;background:linear-gradient(180deg,light-dark(#e8f6f3,#12303a) 0 62%,light-dark(#d4ede7,#163a40) 62%);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden;min-height:360px}
+.panel{background:var(--panel);border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.sec{align-self:flex-start;background:var(--track);color:#fff;border-radius:10px;padding:2px 12px;font-size:16px}
+.panel h2{margin:0;font-size:30px;line-height:1.15;text-wrap:balance}
+.txt{font-size:20px;line-height:1.75}
+.txt b,.key b{color:var(--track2)}
+:root[data-theme=dark] .txt b{color:#ff9b7a}
+.key{border:3px solid var(--sun);border-radius:16px;padding:10px 14px;font-size:21px;line-height:1.7;background:light-dark(#fffaf0,#2a2a1c)}
+.formula{font-size:28px;font-weight:700;text-align:center;letter-spacing:2px}
+.read{align-self:flex-start;border:2px solid var(--ink);background:none;border-radius:12px;padding:6px 14px;min-height:44px}
+.read.on{background:var(--grass);border-color:var(--grass);color:#fff}
+.q{display:flex;flex-direction:column;gap:10px}
+.qn{font-size:15px;color:var(--soft)}
+.qp{font-size:22px;font-weight:700;line-height:1.5}
+.ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ch button{min-height:60px;border:3px solid var(--line);background:var(--bg);border-radius:16px;font-size:22px;padding:6px 10px;transition:transform .15s}
+.ch button:active{transform:scale(.96)}
+.ch button.yes{border-color:var(--ok);background:var(--ok);color:#fff}
+.ch button.no{border-color:var(--no);color:var(--no);opacity:.55;text-decoration:line-through}
+.fb{min-height:30px;font-size:19px}
+.fb .h{color:var(--hint);font-style:italic}
+.fb .h b{font-style:normal}
+.fb .g{color:var(--ok);font-weight:700}
+.nav{margin-top:auto;display:flex;gap:10px;justify-content:space-between;padding-top:6px}
+.nav button{min-height:56px;border-radius:16px;padding:6px 22px;font-size:21px;border:3px solid var(--ink);background:none}
+#next{background:var(--track);border-color:var(--track);color:#fff;flex:1;max-width:280px;margin-left:auto}
+#next:disabled{background:var(--line);border-color:var(--line);color:var(--soft);cursor:not-allowed}
+#next.go{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* stage parts */
+.hud{display:flex;justify-content:space-between;gap:10px;font-size:22px;font-weight:700}
+.hud span{background:var(--bg);border-radius:12px;padding:2px 14px;border:2px solid var(--line)}
+.track{position:relative;background:var(--track);border-radius:16px;padding:6px 0;box-shadow:inset 0 -6px 0 var(--track2)}
+.lane{position:relative;height:74px;border-bottom:3px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.nm{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#fff;font-weight:700;font-size:20px;width:56px}
+.run{position:absolute;top:8px;left:calc(66px + (100% - 140px)*var(--p,0));font-size:44px;line-height:1;transform:scaleX(-1)}
+.run.noflip{transform:none}
+.val{position:absolute;right:10px;bottom:4px;color:#fff;font-size:18px;background:rgba(0,0,0,.25);border-radius:8px;padding:0 8px}
+.finish{position:absolute;top:0;bottom:0;right:62px;width:10px;background:repeating-linear-gradient(#fff 0 10px,#222 10px 20px)}
+.replay{align-self:center;border:2px solid var(--grass);background:var(--bg);border-radius:12px;padding:4px 16px;min-height:44px;font-size:17px}
+.brow{display:flex;align-items:center;gap:10px}
+.be{font-size:40px;width:52px;text-align:center;flex:none}
+.bar{display:flex;height:58px;border-radius:12px;overflow:hidden;background:var(--line)}
+.pc{flex:1;display:grid;place-items:center;background:var(--grass);color:#fff;font-size:18px;font-weight:700;border-right:2px solid #fff;opacity:0;transform:scaleY(.3);transition:.35s}
+.pc:nth-child(even){background:#238579}
+.pc.in{opacity:1;transform:none}
+.bcap{font-size:19px;padding-left:62px;margin-top:-4px}
+.bcap .tot{color:var(--track2);font-weight:700}
+.road{position:relative;height:172px;margin:0 44px}
+.road .ln{position:absolute;left:0;right:0;top:108px;height:14px;background:var(--track);border-radius:7px}
+.tk{position:absolute;top:90px;width:4px;height:50px;background:var(--ink);transform:translateX(-2px)}
+.tk .up{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:17px;font-weight:700;color:var(--track2);opacity:0;transition:.3s}
+.tk .dn{position:absolute;top:54px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px}
+.tk.on .up{opacity:1}
+.veh{position:absolute;top:4px;font-size:46px;line-height:1;transition:left .6s ease-in-out;transform:translateX(-50%)}
+table.tb{border-collapse:collapse;width:100%;background:var(--bg);border-radius:12px;overflow:hidden;font-size:19px}
+.tb th,.tb td{border:2px solid var(--line);padding:6px;text-align:center}
+.tb th{background:light-dark(#e3f1ee,#1b3b44);font-weight:400;white-space:nowrap}
+.tb td.qm{color:var(--track2);font-weight:700}
+.tb td.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.4)}}
+.big{font-size:64px;text-align:center;line-height:1.1}
+.lines{display:flex;flex-direction:column;gap:10px;align-items:center}
+.lines div{background:var(--bg);border-radius:14px;padding:6px 18px;font-size:24px;opacity:0;transform:translateY(12px);transition:.45s;text-align:center;border:2px solid var(--line)}
+.lines div.in{opacity:1;transform:none}
+.lines div.hl{border-color:var(--sun);font-weight:700}
+.tri{width:100%;max-width:420px;align-self:center}
+.tri text{font-family:inherit;fill:var(--ink)}
+.tri .cell{cursor:pointer}
+.tri .cell rect{fill:transparent;transition:.3s}
+.tri .cell.cov rect{fill:var(--sun)}
+.clock{width:150px;align-self:center}
+.cheer{position:absolute;font-size:34px;pointer-events:none;animation:fly 1.1s forwards}
+@keyframes fly{to{transform:translateY(-140px) rotate(30deg);opacity:0}}
+.learn{border:3px solid var(--sun);border-radius:16px;padding:8px 14px;background:light-dark(#fffaf0,#2a2a1c);font-size:18px;line-height:1.6}
+.learn h3,.sh{margin:2px 0 4px;font-size:22px}.learn p{margin:6px 0 2px}.learn ul{margin:0;padding-left:1.3em}.learn b{color:var(--track2)}
+.learn li.f{list-style:none;margin-left:-1.3em;font-size:22px;font-weight:700;text-align:center}
+.lt{border-collapse:collapse;width:100%;margin:4px 0;background:var(--bg)}.lt th,.lt td{border:1px solid var(--line);padding:3px 8px;text-align:left;font-weight:400}
+.stage.rep{justify-content:flex-start;overflow:auto;background:var(--bg);border:3px solid var(--line)}
+.rh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:18px}
+.rh input{font:inherit;font-size:18px;padding:4px 10px;border:2px solid var(--line);border-radius:10px;width:9em;background:var(--bg);color:var(--ink)}
+.rt{border-collapse:collapse;width:100%;font-size:16px;line-height:1.45}
+.rt th,.rt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.rt th{background:var(--panel);white-space:nowrap;position:sticky;top:0}
+.rt td.n{text-align:center;white-space:nowrap}
+.rt .ok1{color:var(--ok);font-weight:700}.rt .ng{color:var(--no);font-weight:700}
+.rt tr.gp td{background:light-dark(#fff4e0,#2a2a1c);font-weight:700}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.stat div{background:var(--bg);border-radius:12px;padding:6px}.stat b{display:block;font-size:28px;line-height:1.2}
+.gm{display:grid;grid-template-columns:minmax(0,1fr) 110px 62px;gap:6px 8px;align-items:center;font-size:16px}
+.gm .mt{height:12px;background:var(--line);border-radius:6px;overflow:hidden}.gm .mt i{display:block;height:100%}
+.tag{border-radius:8px;padding:0 6px;color:#fff;text-align:center;font-size:15px}
+.cp{border:2px solid var(--grass);background:none;border-radius:12px;min-height:44px;padding:4px 14px;font-size:17px}
+#cpt{width:100%;height:90px;font-size:13px;display:none}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .12em;font-size:.92em}.fr i{font-style:normal;padding:0 .15em}.fr i:first-child{border-bottom:2px solid currentColor}
+.svgw{width:100%;align-self:center}.svgw text{font-family:inherit;fill:var(--ink)}
+.btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.stage{min-height:300px}header h1{font-size:21px}#cnt{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>7 圓面積與扇形面積</h1>
+  <div class="prog"><i id="bar"></i></div>
+  <span id="cnt"></span>
+  <button class="tts" id="say">念給我聽</button>
+</header>
+<main>
+  <section class="stage" id="stage"></section>
+  <section class="panel">
+    <span class="sec" id="sec"></span>
+    <h2 id="ttl"></h2>
+    <div class="txt" id="txt"></div>
+    <div id="rd"></div>
+    <div class="q" id="q"></div>
+    <div class="fb" id="fb"></div>
+    <div class="nav"><button id="prev">上一步</button><button id="next" disabled>下一步</button></div>
+  </section>
+</main>
+<script>
+{
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches, K=RM?0.25:1;
+const $=id=>document.getElementById(id);
+let tok=0, scene={fill(){}}, cur=0, qi=0;
+const done=new Set();
+const wait=ms=>new Promise(r=>setTimeout(r,ms*K));
+const live=t=>t===tok;
+
+/* ---------- sound & voice ---------- */
+let ac=null;
+function tone(fs,d=0.13){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ac.currentTime+i*d);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*d+d*1.6);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*d);o.stop(ac.currentTime+i*d+d*1.7)})}catch(e){}}
+const plain=s=>String(s).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$2分之$1').replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
+function speak(s){try{const ss=speechSynthesis;ss.cancel();const u=new SpeechSynthesisUtterance(plain(s));u.lang='zh-TW';u.rate=.85;const v=ss.getVoices().find(v=>/zh[-_]TW/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+
+/* ---------- scenes ---------- */
+function reveal(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
+      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const NS="http://www.w3.org/2000/svg";
+const UNIT='7 圓面積與扇形面積';
+const GROUPS=[['開始','暖身 學過的面積'],['7-1','7-1 圓面積'],['7-2','7-2 扇形面積']];
+const OR='#d9623f',BL='#2f6fb8',GR='#2a9d8f',YE='#f4a261';
+const pt=(cx,cy,R,deg)=>{const a=deg*Math.PI/180;return[cx+R*Math.cos(a),cy+R*Math.sin(a)]};
+const fx=n=>+n.toFixed(2);
+const laterHTML=o=>Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('');
+const showLater=(el,k)=>{const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}};
+
+/* 平方公分板數格子 */
+function grid(el){
+  const T=tok,c=26,ox=80,oy=12,cx=ox+5*c,cy=oy+5*c,full=[],part=[];
+  for(let x=-5;x<5;x++)for(let y=-5;y<5;y++){const ins=[[x,y],[x+1,y],[x,y+1],[x+1,y+1]].map(([a,b])=>a*a+b*b<=25);if(ins.every(Boolean))full.push([x,y]);else if(ins.some(Boolean))part.push([x,y])}
+  el.innerHTML=`<div class="hud"><span>半徑 5 公分的圓</span><span id="gc">1 格 ＝ 1 平方公分</span></div>
+  <svg class="svgw" viewBox="0 0 420 285" style="max-height:300px">
+   ${Array.from({length:100},(_,i)=>{const x=i%10-5,y=Math.floor(i/10)-5;return`<rect id="g${x}_${y}" x="${cx+x*c}" y="${cy+y*c}" width="${c}" height="${c}" style="fill:var(--bg);stroke:var(--line)" stroke-width="1.2"/>`}).join('')}
+   <circle cx="${cx}" cy="${cy}" r="${5*c}" fill="none" stroke="${OR}" stroke-width="4"/>
+  </svg><button class="replay" id="rp">再數一次</button>`;
+  const play=async()=>{const me=T;[...full,...part].forEach(([x,y])=>$(`g${x}_${y}`).style.fill='var(--bg)');
+    let n=0;for(const[x,y]of full){await wait(45);if(!live(me))return;$(`g${x}_${y}`).style.fill='#9fd9cf';n++;$('gc').textContent='完整的方格：'+n+' 個'}
+    await wait(500);if(!live(me))return;part.forEach(([x,y])=>$(`g${x}_${y}`).style.fill='#ffe3a6');$('gc').textContent='完整 '+n+' 個，黃色是不完整的'};
+  $('rp').onclick=play;play();
+  return{fill(){}};
+}
+
+/* 切一切、拼一拼 */
+function cut(el){
+  const T=tok;let n=16;
+  const draw=()=>{const me=tok,R=95,cx=230,cy=112,a=360/n,h=a/2*Math.PI/180,w=2*R*Math.sin(h),half=n/2,width=half*w+w/2,x0=(460-width)/2,yt=118;
+    const p1=[R*Math.cos(Math.PI/2-h),R*Math.sin(Math.PI/2-h)],p2=[-p1[0],p1[1]];
+    const d=`M0 0L${fx(p1[0])} ${fx(p1[1])}A${R} ${R} 0 0 1 ${fx(p2[0])} ${fx(p2[1])}Z`;
+    const A=[],B=[];for(let i=0;i<n;i++){(i<n/4||i>=3*n/4?A:B).push(i)}
+    A.sort((i,j)=>((i*a+180)%360)-((j*a+180)%360));B.sort((i,j)=>j-i);
+    const tgt={};A.forEach((i,k)=>tgt[i]=[x0+k*w+w/2,yt,i*a>180?360:0]);B.forEach((i,k)=>tgt[i]=[x0+k*w+w,yt+R,180]);
+    el.innerHTML=`<div class="hud"><span>把圓平分成 ${n} 份</span><span id="cs">切開……</span></div>
+    <svg class="svgw" viewBox="0 0 460 290" style="max-height:320px">${Array.from({length:n},(_,i)=>`<path id="pc${i}" d="${d}" fill="${A.includes(i)?YE:GR}" stroke="#fff" stroke-width="1.2" style="transform:translate(${cx}px,${cy}px) rotate(${i*a}deg);transition:transform 1.6s ease-in-out"/>`).join('')}
+     <g id="lab" opacity="0" style="transition:opacity .6s"><line x1="${x0-12}" y1="${yt}" x2="${x0-12}" y2="${yt+R}" stroke="${BL}" stroke-width="4"/><text x="${x0-18}" y="${yt+R/2-4}" text-anchor="end" font-size="17" font-weight="700" style="fill:${BL}">寬</text><text x="${x0-18}" y="${yt+R/2+18}" text-anchor="end" font-size="15" style="fill:${BL}">＝半徑</text>
+      <line x1="${x0}" y1="${yt+R+14}" x2="${x0+width}" y2="${yt+R+14}" stroke="${OR}" stroke-width="4"/><text x="${x0+width/2}" y="${yt+R+40}" text-anchor="middle" font-size="18" font-weight="700" style="fill:${OR}">長 ＝ 圓周長的一半</text></g>
+    </svg><div class="btnrow">${[8,16,32].map(k=>`<button class="replay" data-n="${k}">切成 ${k} 份</button>`).join('')}</div>`;
+    el.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{n=+b.dataset.n;draw()});
+    (async()=>{await wait(1200);if(!live(me))return;$('cs').textContent='拼起來！';for(let i=0;i<n;i++){const[x,y,r]=tgt[i];$('pc'+i).style.transform=`translate(${fx(x)}px,${fx(y)}px) rotate(${r}deg)`}
+      await wait(1800);if(!live(me))return;$('lab').setAttribute('opacity',1);$('cs').textContent=n>=16?'好像長方形！':'有點像長方形'})()};
+  draw();
+  return{fill(){}};
+}
+
+/* 圓：標半徑或直徑，塗面積 */
+function circA(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="hud"><span>${o.obj}</span><span>${o.kind==='d'?'直徑':'半徑'} ${o.v} 公分</span></div>
+  <svg class="svgw" viewBox="0 0 420 250" style="max-height:250px">
+   <circle cx="210" cy="125" r="105" fill="#ffe7cc" stroke="${OR}" stroke-width="5" id="ca" style="transition:transform 1s;transform-origin:210px 125px;transform:scale(.2)"/>
+   <circle cx="210" cy="125" r="5" fill="#222"/>
+   ${o.kind==='d'?`<line x1="105" y1="125" x2="315" y2="125" stroke="${GR}" stroke-width="6"/><text x="210" y="115" text-anchor="middle" font-size="22" font-weight="700" style="fill:${GR}">直徑 ${o.v}</text>`
+     :`<line x1="210" y1="125" x2="315" y2="125" stroke="${BL}" stroke-width="6"/><text x="262" y="115" text-anchor="middle" font-size="22" font-weight="700" style="fill:${BL}">半徑 ${o.v}</text>`}
+  </svg><div class="lines">${(o.lines||[]).map(l=>`<div>${l}</div>`).join('')}${laterHTML(o)}</div>`;
+  (async()=>{await wait(150);$('ca').style.transform='scale(1)';for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(900);if(!live(T))return;d.classList.add('in')}})();
+  return{fill:k=>showLater(el,k)};
+}
+
+/* 扇形面積：幾分之幾圓 */
+function pieces(el,o){
+  let deg=o.deg;
+  const draw=()=>{const n=Math.round(360/deg),cx=210,cy=135,R=115;
+    el.innerHTML=`<div class="hud"><span>${o.title||'圓心角 '+deg+'°'}</span><span>${o.sub||'一圈 360°'}</span></div>
+    <svg class="svgw" viewBox="0 0 420 275" style="max-height:280px">${Array.from({length:n},(_,i)=>{const a=-90+i*deg,b=a+deg,p=pt(cx,cy,R,a),q=pt(cx,cy,R,b);
+      return`<path d="M${cx} ${cy}L${fx(p[0])} ${fx(p[1])}A${R} ${R} 0 0 1 ${fx(q[0])} ${fx(q[1])}Z" style="fill:${i===0?'#ffb27a':'var(--bg)'};stroke:${i===0?OR:'var(--line)'}" stroke-width="${i===0?5:2}"/>`}).join('')}
+      <text x="${fx(pt(cx,cy,R*.6,-90+deg/2)[0])}" y="${fx(pt(cx,cy,R*.6,-90+deg/2)[1]+7)}" text-anchor="middle" font-size="20" font-weight="700">${deg}°</text></svg>
+    <div class="lines"><div class="in hl">${deg}° 是 360° 的 ${F(1,n)}，是 ${F(1,n)} 圓</div>${laterHTML(o)}</div>`};
+  draw();
+  return{fill(d){if(typeof d==='number'){deg=d;draw()}else showLater(el,d)}};
+}
+
+/* 拴著的羊 */
+function goats(el){
+  const T=tok,X=40,Y=40,W=340,H=200,r=62;
+  const g=[{n:'A',x:112,y:140},{n:'B',x:250,y:Y},{n:'C',x:X+W,y:Y+H}];
+  el.innerHTML=`<div class="hud"><span>繩子都長 2 公尺</span><span id="gh">羊可以走到哪裡？</span></div>
+  <svg class="svgw" viewBox="0 0 420 270" style="max-height:290px"><defs><clipPath id="fld"><rect x="${X}" y="${Y}" width="${W}" height="${H}"/></clipPath></defs>
+   <rect x="${X}" y="${Y}" width="${W}" height="${H}" fill="#cfeccf" stroke="#6b4f2a" stroke-width="6"/>
+   <g clip-path="url(#fld)">${g.map((q,i)=>`<circle id="gr${i}" cx="${q.x}" cy="${q.y}" r="0" fill="${[OR,BL,'#8a5cc2'][i]}" fill-opacity=".35" stroke="${[OR,BL,'#8a5cc2'][i]}" stroke-width="3" style="transition:r 1.2s"/>`).join('')}</g>
+   ${g.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="5" fill="#222"/><text x="${q.x+[0,0,-24][i]}" y="${q.y+[-10,36,-12][i]}" text-anchor="middle" font-size="26">🐐</text><text x="${q.x+[18,18,-58][i]}" y="${q.y+[-10,36,-12][i]}" font-size="20" font-weight="700">${q.n}</text>`).join('')}
+  </svg><button class="replay" id="rp">再看一次</button>`;
+  const play=async()=>{const me=T;g.forEach((q,i)=>$('gr'+i).setAttribute('r',0));for(let i=0;i<3;i++){await wait(500);if(!live(me))return;$('gr'+i).setAttribute('r',r)}await wait(1200);if(!live(me))return;$('gh').textContent='A 整圓、B 半圓、C '+'四分之一圓'};
+  $('rp').onclick=play;play();
+  return{fill(){}};
+}
+
+/* 正方形 − 四分之一圓 */
+function sqMinus(el){
+  el.innerHTML=`<div class="hud"><span>正方形邊長 20 公分</span><span>求藍色部分</span></div>
+  <svg class="svgw" viewBox="0 0 420 275" style="max-height:290px">
+   <rect id="s1" x="110" y="30" width="200" height="200" fill="#dbe8f7" stroke="${BL}" stroke-width="4"/>
+   <path id="s2" d="M110 230L110 30A200 200 0 0 1 310 230Z" fill="#ffe0b5" stroke="${OR}" stroke-width="4" style="transition:opacity .6s"/>
+   <path id="s3" d="M310 30L310 230A200 200 0 0 0 110 30Z" fill="${BL}" fill-opacity=".75" opacity="0" style="transition:opacity .6s"/>
+   <line x1="110" y1="230" x2="310" y2="230" stroke="${OR}" stroke-width="5"/><text x="210" y="256" text-anchor="middle" font-size="18" font-weight="700" style="fill:${OR}">半徑 20 公分</text>
+  </svg><div class="lines"><div class="in">藍色 ＝ 正方形 － ${F(1,4)} 圓</div></div>`;
+  const T=tok;setTimeout(()=>{if(live(T))$('s3').setAttribute('opacity',1)},1500*K);
+  return{fill(){}};
+}
+
+const S=[
+{sec:'7-1 圓面積',t:'切一切、拼一拼',x:'圓沒有直直的邊，面積怎麼算？<br>把圓<b>平分</b>成很多份，再一上一下拼起來。<br>可以按下面的按鈕，切成 8、16、32 份看看。',
+ sc:el=>cut(el),
+ qs:[{p:'切得越多份，拼出來越像什麼？',c:['長方形','三角形','圓形'],a:0,h:'💡 按「切成 32 份」看看，邊會變得<b>直直的</b>。',ok:'對！越來越像長方形。'},
+     {p:'拼出來的長方形，寬和圓的什麼一樣長？',c:['半徑','直徑','圓周長'],a:0,h:'💡 看藍色的「寬」，就是一片的<b>邊</b>，從圓心到圓周。',ok:'對！寬 ＝ 半徑。'},
+     {p:'拼出來的長方形，長是圓的什麼？',c:['圓周長的一半','直徑','半徑'],a:0,h:'💡 黃色在下、綠色在上，各用了<b>一半</b>的圓周。',ok:'對！長 ＝ 圓周長的一半。'}]},
+
+{sec:'7-1 圓面積',t:'圓面積公式',x:'圓面積 ＝ 拼出來的長方形面積。',read:1,
+ sc:el=>reveal(el,{big:'⭕ → ▭',lines:['長方形面積 ＝ 長 × 寬','＝ 圓周長的一半 × 半徑','＝ 半徑 × 3.14 × 半徑'],later:{a:'圓面積 ＝ 半徑 × 半徑 × 3.14'}}),
+ qs:[{p:'圓面積 ＝ 半徑 × 半徑 ×（　）',c:['3.14','2','半徑'],a:0,h:'💡 圓周率，通常用 <b>3.14</b>。',ok:'對！',f:'a'}],
+ key:'<div class="formula">圓面積 ＝ 半徑 × 半徑 × 3.14</div>'},
+
+{sec:'7-1 圓面積',t:'算算看',x:'半徑 <b>5 公分</b>的圓，面積大約是多少？',
+ sc:el=>circA(el,{obj:'⭕ 圓形圖卡',kind:'r',v:5,later:{a:'5 × 5 ＝ 25',b:'25 × 3.14 ＝ 78.5　→　約 78.5 平方公分'}}),
+ qs:[{p:'5 × 5 × 3.14 ＝ 25 × 3.14 ＝ ？',c:['78.5','15.7','31.4'],a:0,h:'💡 用直式：314 × 25 ＝ 7850，3.14 有<b>兩位小數</b> → 78.50。',ok:'對！約 78.5 平方公分，比 60 多一點，跟數格子差不多！',f:'b'}]},
+
+{sec:'7-1 圓面積',t:'知道直徑，先找半徑',x:'大披薩的<b>直徑是 40 公分</b>。<br>算圓面積要用<b>半徑</b>喔！',
+ sc:el=>circA(el,{obj:'🍕 大披薩',kind:'d',v:40,later:{a:'半徑：40 ÷ 2 ＝ 20',b:'20 × 20 × 3.14 ＝ 400 × 3.14 ＝ 1256'}}),
+ qs:[{p:'直徑 40 公分，半徑是幾公分？',c:['20','40','80'],a:0,h:'💡 半徑 ＝ 直徑 <b>÷ 2</b>。',ok:'對！半徑 20 公分。',f:'a'},
+     {p:'20 × 20 × 3.14 ＝ 400 × 3.14 ＝ ？',c:['1256','125.6','12560'],a:0,h:'💡 4 × 314 ＝ 1256；400 × 3.14 的答案是<b>一千多</b>。',ok:'對！約 1256 平方公分。',f:'b'}]},
+
+{sec:'7-2 扇形面積',t:'扇形是幾分之幾圓',x:'半徑 10 公分的圓，面積是 10 × 10 × 3.14 ＝ <b>314</b> 平方公分。<br>扇形面積 ＝ 圓面積 × 幾分之幾。',
+ sc:el=>pieces(el,{deg:180,title:'半徑 10 公分',sub:'圓面積 314'}),
+ qs:[{p:F(1,2)+' 圓的面積 ＝ 314 × '+F(1,2)+' ＝ ？',c:['157','628','314'],a:0,h:'💡 314 的<b>一半</b>：314 ÷ 2。',ok:'對！約 157 平方公分。',f:90},
+     {p:F(1,4)+' 圓的面積 ＝ 314 × '+F(1,4)+' ＝ ？',c:['78.5','157','31.4'],a:0,h:'💡 314 平分成 <b>4</b> 份：314 ÷ 4。',ok:'對！約 78.5 平方公分。'}],
+ key:'扇形面積 ＝ 圓面積 × 幾分之幾'},
+
+{sec:'7-2 扇形面積',t:'圓心角 72° 的扇形',x:'半徑 10 公分，圓心角 <b>72°</b>。<br>先算是<b>幾分之幾圓</b>：圓心角 ÷ 360。',
+ sc:el=>pieces(el,{deg:72,later:{a:'314 × '+F(1,5)+' ＝ 62.8　→　約 62.8 平方公分'}}),
+ qs:[{p:'72° 是幾分之幾圓？',c:[F(1,5),F(1,4),F(1,6)],a:0,h:'💡 360 裡面有幾個 72？72 × <b>5</b> ＝ 360。',ok:'對！'},
+     {p:'扇形面積 ＝ 314 × '+F(1,5)+' ＝ ？',c:['62.8','78.5','31.4'],a:0,h:'💡 314 ÷ <b>5</b>。',ok:'對！約 62.8 平方公分。',f:'a'}],
+ key:'扇形面積 ＝ 圓面積 × <span class="fr"><i>圓心角</i><i>360</i></span>'},
+
+{sec:'7-2 扇形面積',t:'羊可以吃到多少草？',x:'3 隻羊用 <b>2 公尺</b>的繩子綁在草地上。<br>A 在中間，B 在邊上，C 在角落。',
+ sc:el=>goats(el),
+ qs:[{p:'哪一隻羊可以活動的範圍最大？',c:['A 羊','B 羊','C 羊'],a:0,h:'💡 A 羊可以繞<b>一整圈</b>，沒有被圍欄擋住。',ok:'對！A 羊是一整個圓。'},
+     {p:'C 羊在角落，可以活動的範圍是幾分之幾圓？',c:[F(1,4),F(1,2),'1 個圓'],a:0,h:'💡 角落是<b>直角 90°</b>，90° 是幾分之幾圓？',ok:'對！是 '+F(1,4)+' 圓。'}]},
+
+{sec:'7-2 扇形面積',t:'正方形減掉扇形',x:'藍色部分 ＝ 正方形 － '+F(1,4)+' 圓。<br>正方形面積：20 × 20 ＝ <b>400</b> 平方公分。',
+ sc:el=>sqMinus(el),
+ qs:[{p:F(1,4)+' 圓：20 × 20 × 3.14 × '+F(1,4)+' ＝ ？',c:['314','1256','628'],a:0,h:'💡 400 × '+F(1,4)+' ＝ <b>100</b>，100 × 3.14。',ok:'對！約 314 平方公分。'},
+     {p:'藍色部分 ＝ 400 － 314 ＝ ？',c:['86','714','314'],a:0,h:'💡 用<b>減法</b>：400 － 314。',ok:'對！約 86 平方公分。'}]},
+
+{sec:'完成',t:'今天學會＆學習紀錄',x:()=>summary(),sc:el=>report(el),read:1}
+];
+const LEARN=`<div class="learn"><h3>今天學會</h3>
+ <p><b>① 圓面積怎麼來</b>：把圓平分切開，一上一下拼起來，切越多份越像<b>長方形</b></p>
+ <ul><li>長方形的<b>寬 ＝ 半徑</b>，<b>長 ＝ 圓周長的一半</b></li></ul>
+ <p><b>② 圓面積公式</b></p>
+ <ul><li class="f">圓面積 ＝ 半徑 × 半徑 × 3.14</li><li>知道<b>直徑</b>，要先 ÷ 2 變成半徑</li><li>面積的單位是<b>平方公分</b>、<b>平方公尺</b></li></ul>
+ <p><b>③ 扇形面積</b>：扇形是幾分之幾圓，就用<b>圓面積 × 幾分之幾</b></p>
+ <ul><li>幾分之幾圓：<b>圓心角 ÷ 360</b>（180° 是 ${F(1,2)} 圓，90° 是 ${F(1,4)} 圓，72° 是 ${F(1,5)} 圓）</li></ul>
+ <p><b>④ 複合圖形</b>：看清楚是哪些圖形，再用<b>加</b>或<b>減</b>（例：正方形 － ${F(1,4)} 圓）</p></div>`;
+
+/* ---------- engine ---------- */
+function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
+const G=sec=>{for(const[k,v]of GROUPS)if(sec.startsWith(k))return v;return sec==='挑戰'?'綜合挑戰':sec};
+let L={},T0=Date.now(),T1=0,who='';
+const txt=h=>String(h).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'');
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
+function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
+function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
+  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
+  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
+const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
+function summary(){const t=stats();
+  return LEARN+`<h3 class="sh">學習概況</h3><div class="stat"><div><b>${t.A.length}</b>完成題數</div><div><b>${t.rate}%</b>一次答對</div><div><b>${mmss((T1||Date.now())-T0)}</b>上課用時</div></div>
+  <div class="gm">${t.gs.map(g=>{const[l,c]=lvl(g.p);return`<span>${g.g}</span><span class="mt"><i style="width:${g.p}%;background:${c}"></i></span><span class="tag" style="background:${c}">${l}</span>`}).join('')}</div>
+  <div style="font-size:15px;color:var(--soft)">一次答對率：80% 以上精熟、50%～79% 尚可、未滿 50% 需加強。</div>
+  <button class="cp" id="cp">複製紀錄（可貼到 Excel / Word）</button><textarea id="cpt" readonly></textarea>`}
+function report(el){
+  el.classList.add('rep');const t=stats();let lg='';
+  el.innerHTML=`<div class="rh"><b style="font-size:22px">${UNIT} 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
+  <table class="rt"><tr><th>#</th><th>題目</th><th>結果</th><th>答錯時選了</th><th>用時</th></tr>${t.R.map((x,k)=>{let g='';const gg=G(x.s.sec);if(gg!==lg){lg=gg;g=`<tr class="gp"><td colspan="5">${gg}</td></tr>`}
+   const r=x.r;const res=!r||!r.fin?'<span class="ng">未作答</span>':r.w.length?`<span class="ng">錯 ${r.w.length} 次</span>`:'<span class="ok1">一次答對</span>';
+   return g+`<tr><td class="n">${k+1}</td><td>${txt(x.q.p)}</td><td class="n">${res}</td><td>${r&&r.w.length?r.w.map(esc).join('、'):''}</td><td class="n">${r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000))+' 秒':''}</td></tr>`}).join('')}</table>`;
+  $('who').oninput=e=>{who=e.target.value};
+  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=[UNIT+' 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
+    const fb=()=>{const a=$('cpt');a.style.display='block';a.value=out;a.select();b.textContent='請按「拷貝」複製下方文字'};
+    try{navigator.clipboard.writeText(out).then(()=>{b.textContent='已複製 ✔'},fb)}catch(e){fb()}}},0);
+  return{fill(){}};
+}
+function showQ(){
+  const s=S[cur],q=s.qs[qi],key=cur+'-'+qi;
+  if(!L[key])L[key]={w:[],t0:Date.now(),fin:0};const rec=L[key];
+  $('q').innerHTML=`<div class="qn">第 ${qi+1} 題／共 ${s.qs.length} 題</div><div class="qp">${q.p}</div><div class="ch">${q.c.map((c,i)=>`<button data-i="${i}">${c}</button>`).join('')}</div>`;
+  $('fb').innerHTML='';
+  $('q').querySelectorAll('.ch button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(i===q.a){if(!rec.fin){rec.fin=1;rec.t1=Date.now()}b.classList.add('yes');$('q').querySelectorAll('.ch button').forEach(x=>x.disabled=true);tone([660,880]);cheer();
+      $('fb').innerHTML=`<span class="g">✔ ${q.ok}</span>`;if(q.f!==undefined)scene.fill(q.f);
+      const T=tok;if(qi<s.qs.length-1){setTimeout(()=>{if(!live(T))return;qi++;showQ()},1500*K+400)}
+      else{if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;unlock()}}
+    else{if(!rec.fin)rec.w.push(txt(q.c[i]));b.classList.add('no','shake');b.disabled=true;tone([220],.18);$('fb').innerHTML=`<span class="h">${q.h}</span>`;speak(q.h)}
+  });
+}
+function go(n){
+  tok++;cur=n;qi=0;try{speechSynthesis.cancel()}catch(e){}
+  const s=S[n];
+  $('sec').textContent=s.sec;$('ttl').innerHTML=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
+  $('bar').style.width=(n/(S.length-1)*100)+'%';$('cnt').textContent=`${n+1} / ${S.length}`;
+  $('prev').style.visibility=n?'visible':'hidden';
+  const nx=$('next');nx.textContent='下一步';nx.style.visibility=n===S.length-1?'hidden':'visible';nx.disabled=true;nx.classList.remove('go');
+  scene=s.sc($('stage'))||{fill(){}};if(typeof s.x==='function')$('txt').innerHTML=s.x();
+  const startQ=()=>{if(s.qs)showQ();else unlock()};
+  if(done.has(n)){if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;nx.disabled=false}
+  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">我讀完了 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='我讀完了 ☑';tone([600,750]);startQ()}}
+  else startQ();
+  const lr=document.querySelector('.panel .learn');if(lr&&$('rb'))lr.appendChild($('rb'));
+}
+$('next').onclick=()=>{if(cur===S.length-1){L={};done.clear();T0=Date.now();T1=0;go(0)}else go(cur+1)};
+$('prev').onclick=()=>{if(cur>0)go(cur-1)};
+$('say').onclick=()=>{const s=S[cur];let t=s.t+'。'+s.x;if(s.qs&&$('q').innerHTML)t+='。'+s.qs[qi].p;speak(t)};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&!$('next').disabled)$('next').click();if(e.key==='ArrowLeft')$('prev').click()});
+go(0);
+}
+</script>
+</body>
+</html>

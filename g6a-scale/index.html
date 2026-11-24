@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6A 放大圖、縮圖與比例尺</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 溫和、口語、一次一件事，給學障生的平板小課
+   IDEA: 運動會的跑道與記分板，每一步都是一場比賽
+   PICTURE: 左邊是會動的跑道／長條／時鐘，右邊是題目卡
+   COLOUR and TYPE: 跑道橘紅 + 草地青綠 + 記分黃；楷體（LXGW WenKai TC）
+   LAYOUT: 平板橫式左右兩欄，窄螢幕上下堆疊 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0f1e28);--ink:light-dark(#1d3557,#eef3f7);--soft:light-dark(#5b6b7e,#a9b8c6);
+--panel:light-dark(#f2f7f9,#162c3a);--track:#d9623f;--track2:#c4532f;--grass:#2a9d8f;--sun:#ffb703;
+--ok:#1f9d55;--no:#d64545;--hint:light-dark(#1d5fbf,#8cb8ff);--line:light-dark(#d8e2e8,#2a4352)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "LXGW WenKai TC","標楷體","DFKai-SB","BiauKai","Kaiti TC",serif;overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:14px;padding:10px max(3vw,14px);border-bottom:3px solid var(--track)}
+header h1{margin:0;font-size:26px;line-height:1.1;white-space:nowrap}
+.prog{flex:1;height:14px;background:var(--line);border-radius:9px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--grass),var(--sun));transition:width .5s}
+#cnt{font-size:16px;color:var(--soft);white-space:nowrap}
+.tts{border:2px solid var(--grass);background:none;border-radius:12px;padding:6px 12px;min-height:44px;font-size:17px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;padding:16px max(3vw,14px);min-height:calc(100vh - 70px)}
+.stage{position:relative;background:linear-gradient(180deg,light-dark(#e8f6f3,#12303a) 0 62%,light-dark(#d4ede7,#163a40) 62%);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden;min-height:360px}
+.panel{background:var(--panel);border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.sec{align-self:flex-start;background:var(--track);color:#fff;border-radius:10px;padding:2px 12px;font-size:16px}
+.panel h2{margin:0;font-size:30px;line-height:1.15;text-wrap:balance}
+.txt{font-size:20px;line-height:1.75}
+.txt b,.key b{color:var(--track2)}
+:root[data-theme=dark] .txt b{color:#ff9b7a}
+.key{border:3px solid var(--sun);border-radius:16px;padding:10px 14px;font-size:21px;line-height:1.7;background:light-dark(#fffaf0,#2a2a1c)}
+.formula{font-size:28px;font-weight:700;text-align:center;letter-spacing:2px}
+.read{align-self:flex-start;border:2px solid var(--ink);background:none;border-radius:12px;padding:6px 14px;min-height:44px}
+.read.on{background:var(--grass);border-color:var(--grass);color:#fff}
+.q{display:flex;flex-direction:column;gap:10px}
+.qn{font-size:15px;color:var(--soft)}
+.qp{font-size:22px;font-weight:700;line-height:1.5}
+.ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ch button{min-height:60px;border:3px solid var(--line);background:var(--bg);border-radius:16px;font-size:22px;padding:6px 10px;transition:transform .15s}
+.ch button:active{transform:scale(.96)}
+.ch button.yes{border-color:var(--ok);background:var(--ok);color:#fff}
+.ch button.no{border-color:var(--no);color:var(--no);opacity:.55;text-decoration:line-through}
+.fb{min-height:30px;font-size:19px}
+.fb .h{color:var(--hint);font-style:italic}
+.fb .h b{font-style:normal}
+.fb .g{color:var(--ok);font-weight:700}
+.nav{margin-top:auto;display:flex;gap:10px;justify-content:space-between;padding-top:6px}
+.nav button{min-height:56px;border-radius:16px;padding:6px 22px;font-size:21px;border:3px solid var(--ink);background:none}
+#next{background:var(--track);border-color:var(--track);color:#fff;flex:1;max-width:280px;margin-left:auto}
+#next:disabled{background:var(--line);border-color:var(--line);color:var(--soft);cursor:not-allowed}
+#next.go{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* stage parts */
+.hud{display:flex;justify-content:space-between;gap:10px;font-size:22px;font-weight:700}
+.hud span{background:var(--bg);border-radius:12px;padding:2px 14px;border:2px solid var(--line)}
+.track{position:relative;background:var(--track);border-radius:16px;padding:6px 0;box-shadow:inset 0 -6px 0 var(--track2)}
+.lane{position:relative;height:74px;border-bottom:3px dashed rgba(255,255,255,.75)}
+.lane:last-child{border-bottom:0}
+.nm{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#fff;font-weight:700;font-size:20px;width:56px}
+.run{position:absolute;top:8px;left:calc(66px + (100% - 140px)*var(--p,0));font-size:44px;line-height:1;transform:scaleX(-1)}
+.run.noflip{transform:none}
+.val{position:absolute;right:10px;bottom:4px;color:#fff;font-size:18px;background:rgba(0,0,0,.25);border-radius:8px;padding:0 8px}
+.finish{position:absolute;top:0;bottom:0;right:62px;width:10px;background:repeating-linear-gradient(#fff 0 10px,#222 10px 20px)}
+.replay{align-self:center;border:2px solid var(--grass);background:var(--bg);border-radius:12px;padding:4px 16px;min-height:44px;font-size:17px}
+.brow{display:flex;align-items:center;gap:10px}
+.be{font-size:40px;width:52px;text-align:center;flex:none}
+.bar{display:flex;height:58px;border-radius:12px;overflow:hidden;background:var(--line)}
+.pc{flex:1;display:grid;place-items:center;background:var(--grass);color:#fff;font-size:18px;font-weight:700;border-right:2px solid #fff;opacity:0;transform:scaleY(.3);transition:.35s}
+.pc:nth-child(even){background:#238579}
+.pc.in{opacity:1;transform:none}
+.bcap{font-size:19px;padding-left:62px;margin-top:-4px}
+.bcap .tot{color:var(--track2);font-weight:700}
+.road{position:relative;height:172px;margin:0 44px}
+.road .ln{position:absolute;left:0;right:0;top:108px;height:14px;background:var(--track);border-radius:7px}
+.tk{position:absolute;top:90px;width:4px;height:50px;background:var(--ink);transform:translateX(-2px)}
+.tk .up{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:17px;font-weight:700;color:var(--track2);opacity:0;transition:.3s}
+.tk .dn{position:absolute;top:54px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px}
+.tk.on .up{opacity:1}
+.veh{position:absolute;top:4px;font-size:46px;line-height:1;transition:left .6s ease-in-out;transform:translateX(-50%)}
+table.tb{border-collapse:collapse;width:100%;background:var(--bg);border-radius:12px;overflow:hidden;font-size:19px}
+.tb th,.tb td{border:2px solid var(--line);padding:6px;text-align:center}
+.tb th{background:light-dark(#e3f1ee,#1b3b44);font-weight:400;white-space:nowrap}
+.tb td.qm{color:var(--track2);font-weight:700}
+.tb td.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.4)}}
+.big{font-size:64px;text-align:center;line-height:1.1}
+.lines{display:flex;flex-direction:column;gap:10px;align-items:center}
+.lines div{background:var(--bg);border-radius:14px;padding:6px 18px;font-size:24px;opacity:0;transform:translateY(12px);transition:.45s;text-align:center;border:2px solid var(--line)}
+.lines div.in{opacity:1;transform:none}
+.lines div.hl{border-color:var(--sun);font-weight:700}
+.tri{width:100%;max-width:420px;align-self:center}
+.tri text{font-family:inherit;fill:var(--ink)}
+.tri .cell{cursor:pointer}
+.tri .cell rect{fill:transparent;transition:.3s}
+.tri .cell.cov rect{fill:var(--sun)}
+.clock{width:150px;align-self:center}
+.cheer{position:absolute;font-size:34px;pointer-events:none;animation:fly 1.1s forwards}
+@keyframes fly{to{transform:translateY(-140px) rotate(30deg);opacity:0}}
+.learn{border:3px solid var(--sun);border-radius:16px;padding:8px 14px;background:light-dark(#fffaf0,#2a2a1c);font-size:18px;line-height:1.6}
+.learn h3,.sh{margin:2px 0 4px;font-size:22px}.learn p{margin:6px 0 2px}.learn ul{margin:0;padding-left:1.3em}.learn b{color:var(--track2)}
+.learn li.f{list-style:none;margin-left:-1.3em;font-size:22px;font-weight:700;text-align:center}
+.lt{border-collapse:collapse;width:100%;margin:4px 0;background:var(--bg)}.lt th,.lt td{border:1px solid var(--line);padding:3px 8px;text-align:left;font-weight:400}
+.stage.rep{justify-content:flex-start;overflow:auto;background:var(--bg);border:3px solid var(--line)}
+.rh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:18px}
+.rh input{font:inherit;font-size:18px;padding:4px 10px;border:2px solid var(--line);border-radius:10px;width:9em;background:var(--bg);color:var(--ink)}
+.rt{border-collapse:collapse;width:100%;font-size:16px;line-height:1.45}
+.rt th,.rt td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.rt th{background:var(--panel);white-space:nowrap;position:sticky;top:0}
+.rt td.n{text-align:center;white-space:nowrap}
+.rt .ok1{color:var(--ok);font-weight:700}.rt .ng{color:var(--no);font-weight:700}
+.rt tr.gp td{background:light-dark(#fff4e0,#2a2a1c);font-weight:700}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.stat div{background:var(--bg);border-radius:12px;padding:6px}.stat b{display:block;font-size:28px;line-height:1.2}
+.gm{display:grid;grid-template-columns:minmax(0,1fr) 110px 62px;gap:6px 8px;align-items:center;font-size:16px}
+.gm .mt{height:12px;background:var(--line);border-radius:6px;overflow:hidden}.gm .mt i{display:block;height:100%}
+.tag{border-radius:8px;padding:0 6px;color:#fff;text-align:center;font-size:15px}
+.cp{border:2px solid var(--grass);background:none;border-radius:12px;min-height:44px;padding:4px 14px;font-size:17px}
+#cpt{width:100%;height:90px;font-size:13px;display:none}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .12em;font-size:.92em}.fr i{font-style:normal;padding:0 .15em}.fr i:first-child{border-bottom:2px solid currentColor}
+.svgw{width:100%;align-self:center}.svgw text{font-family:inherit;fill:var(--ink)}
+.btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.stage{min-height:300px}header h1{font-size:21px}#cnt{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>9 放大圖、縮圖與比例尺</h1>
+  <div class="prog"><i id="bar"></i></div>
+  <span id="cnt"></span>
+  <button class="tts" id="say">念給我聽</button>
+</header>
+<main>
+  <section class="stage" id="stage"></section>
+  <section class="panel">
+    <span class="sec" id="sec"></span>
+    <h2 id="ttl"></h2>
+    <div class="txt" id="txt"></div>
+    <div id="rd"></div>
+    <div class="q" id="q"></div>
+    <div class="fb" id="fb"></div>
+    <div class="nav"><button id="prev">上一步</button><button id="next" disabled>下一步</button></div>
+  </section>
+</main>
+<script>
+{
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches, K=RM?0.25:1;
+const $=id=>document.getElementById(id);
+let tok=0, scene={fill(){}}, cur=0, qi=0;
+const done=new Set();
+const wait=ms=>new Promise(r=>setTimeout(r,ms*K));
+const live=t=>t===tok;
+
+/* ---------- sound & voice ---------- */
+let ac=null;
+function tone(fs,d=0.13){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ac.currentTime+i*d);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*d+d*1.6);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*d);o.stop(ac.currentTime+i*d+d*1.7)})}catch(e){}}
+const plain=s=>String(s).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$2分之$1').replace(/<[^>]+>/g,'').replace(/\//g,'每').replace(/＝/g,'等於').replace(/÷/g,'除以').replace(/×/g,'乘以').replace(/（　）|\(　\)/g,'什麼');
+function speak(s){try{const ss=speechSynthesis;ss.cancel();const u=new SpeechSynthesisUtterance(plain(s));u.lang='zh-TW';u.rate=.85;const v=ss.getVoices().find(v=>/zh[-_]TW/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+
+/* ---------- scenes ---------- */
+function reveal(el,o){
+  const T=tok;
+  el.innerHTML=`<div class="big">${o.big}</div>${o.clock?'<svg class="clock" viewBox="0 0 120 120" id="ck"></svg>':''}<div class="lines">${o.lines.map(l=>`<div>${l}</div>`).join('')}${Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('')}</div>`;
+  (async()=>{if(o.clock){const s=$('ck');s.innerHTML='<circle cx="60" cy="60" r="54" fill="var(--bg)" stroke="var(--ink)" stroke-width="3"/>'+Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180,x1=60+46*Math.sin(a),y1=60-46*Math.cos(a),x2=60+52*Math.sin(a),y2=60-52*Math.cos(a);return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="${i%5?2:4}" id="m${i}"/>`}).join('')+'<text x="60" y="66" text-anchor="middle" font-size="18" id="ckt">0</text>';
+      for(let i=0;i<60;i++){await wait(25);if(!live(T))return;$('m'+i).setAttribute('stroke','var(--track)');$('ckt').textContent=(i+1)+' 分'}}
+    for(const d of el.querySelectorAll('.lines div:not([data-k])')){await wait(700);if(!live(T))return;d.classList.add('in')}})();
+  return{fill(k){const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}}};
+}
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const NS="http://www.w3.org/2000/svg";
+const UNIT='9 放大圖、縮圖與比例尺';
+const GROUPS=[['開始','9-1 放大圖和縮圖'],['9-1','9-1 放大圖和縮圖'],['9-2','9-2 繪製放大圖和縮圖'],['9-3','9-3 比例尺']];
+const OR='#d9623f',BL='#2f6fb8',GR='#2a9d8f';
+const fx=n=>+n.toFixed(2);
+const laterHTML=o=>Object.entries(o.later||{}).map(([k,l])=>`<div class="hl" data-k="${k}" style="display:none">${l}</div>`).join('');
+const showLater=(el,k)=>{const d=el.querySelector(`[data-k="${k}"]`);if(d){d.style.display='';requestAnimationFrame(()=>d.classList.add('in'))}};
+const gridLines=(x,y,w,h,c)=>{let s='';for(let i=0;i<=w;i++)s+=`<line x1="${x+i*c}" y1="${y}" x2="${x+i*c}" y2="${y+h*c}" style="stroke:var(--line)" stroke-width="1"/>`;for(let j=0;j<=h;j++)s+=`<line x1="${x}" y1="${y+j*c}" x2="${x+w*c}" y2="${y+j*c}" style="stroke:var(--line)" stroke-width="1"/>`;return s};
+/* 企鵝明信片：用 preserveAspectRatio="none"，只拉長一邊就會變形 */
+const PIC=`<rect width="40" height="30" fill="#cfe8ff"/><rect y="23" width="40" height="7" fill="#e9f4ff"/><circle cx="33" cy="6" r="3.5" fill="#ffcf4a"/>
+<ellipse cx="20" cy="16" rx="8" ry="10" fill="#1d2a3a"/><ellipse cx="20" cy="18.5" rx="5" ry="7" fill="#fff"/><ellipse cx="20" cy="9.5" rx="4" ry="1.6" fill="#ffb703"/>
+<circle cx="17.6" cy="11" r="1.1" fill="#fff"/><circle cx="22.4" cy="11" r="1.1" fill="#fff"/><path d="M18.5 13.4L21.5 13.4L20 15.6Z" fill="#f08a24"/><ellipse cx="17" cy="26" rx="2.6" ry="1" fill="#f08a24"/><ellipse cx="23" cy="26" rx="2.6" ry="1" fill="#f08a24"/>`;
+
+function pics(el,o){
+  const T=tok,c=o.c||16,gap=2;let x=1;const pos=o.items.map(it=>{const p=x;x+=it.w+gap;return p});
+  const Wu=x-gap+1,Hu=Math.max(...o.items.map(i=>i.h))+1,VW=Wu*c,VH=Hu*c+60;
+  el.innerHTML=`<div class="hud"><span>${o.title}</span><span>${o.sub||'1 格 ＝ 1 公分'}</span></div>
+  <svg class="svgw" viewBox="0 0 ${VW} ${VH}" style="max-height:320px">${o.items.map((it,i)=>{const X=pos[i]*c,Y=(Hu-it.h)*c;
+    return`<g id="pi${i}" opacity="0" style="transition:opacity .6s">${gridLines(X-c/2,Y-c/2,it.w+1,it.h+1,c)}<svg x="${X}" y="${Y}" width="${it.w*c}" height="${it.h*c}" viewBox="0 0 40 30" preserveAspectRatio="none">${PIC}</svg>
+    <rect x="${X}" y="${Y}" width="${it.w*c}" height="${it.h*c}" fill="none" stroke="${it.col||BL}" stroke-width="3"/>
+    <text x="${X+it.w*c/2}" y="${Hu*c+22}" text-anchor="middle" font-size="${Math.max(17,c*.95)}" font-weight="700">${it.n}</text>
+    <text x="${X+it.w*c/2}" y="${Hu*c+44}" text-anchor="middle" font-size="${Math.max(15,c*.8)}">長 ${it.w}・寬 ${it.h}</text></g>`}).join('')}</svg>
+  <div class="lines">${laterHTML(o)}</div>`;
+  (async()=>{for(let i=0;i<o.items.length;i++){await wait(i?700:200);if(!live(T))return;$('pi'+i).setAttribute('opacity',1)}})();
+  return{fill:k=>showLater(el,k)};
+}
+
+/* 對應點、對應邊、對應角 */
+function correspond(el){
+  const T=tok,u=22,A=[30,215],sm=[[0,0],[4,0],[1.2,-2.4]],a0=[180,240];
+  const P=(o,k)=>sm.map(([x,y])=>[o[0]+x*u*k,o[1]+y*u*k]);const s=P(A,1),b=P(a0,2);
+  const poly=p=>p.map(q=>q.map(fx).join(',')).join(' ');
+  const arc=(p,q,r)=>{const[ax,ay]=p,d1=[q[1][0]-ax,q[1][1]-ay],d2=[q[2][0]-ax,q[2][1]-ay],n1=Math.hypot(...d1),n2=Math.hypot(...d2);return`M${fx(ax+d1[0]/n1*r)} ${fx(ay+d1[1]/n1*r)}A${r} ${r} 0 0 0 ${fx(ax+d2[0]/n2*r)} ${fx(ay+d2[1]/n2*r)}`};
+  const lab=(p,names,off)=>p.map((q,i)=>`<text x="${fx(q[0]+off[i][0])}" y="${fx(q[1]+off[i][1])}" text-anchor="middle" font-size="19" font-weight="700">${names[i]}</text>`).join('');
+  const off=[[-12,18],[12,18],[0,-10]];
+  el.innerHTML=`<div class="hud"><span>甲 放大 2 倍 → 乙</span><span id="ch">找一找</span></div>
+  <svg class="svgw" viewBox="0 0 420 270" style="max-height:300px">
+   <polygon points="${poly(s)}" fill="#ffe7cc" stroke="${OR}" stroke-width="3"/><text x="${s[0][0]+40}" y="${s[0][1]-14}" font-size="16" style="fill:${OR}">甲</text>
+   <g id="big" style="transition:transform 1.4s;transform-origin:${a0[0]}px ${a0[1]}px;transform:scale(.5)"><polygon points="${poly(b)}" fill="#dbe8f7" stroke="${BL}" stroke-width="3"/></g>
+   <text x="${b[0][0]+90}" y="${b[0][1]-20}" font-size="16" style="fill:${BL}" id="yi" opacity="0">乙</text>
+   <g id="hlP" opacity="0"><circle cx="${s[0][0]}" cy="${s[0][1]}" r="8" fill="#e63946"/><circle cx="${b[0][0]}" cy="${b[0][1]}" r="8" fill="#e63946"/></g>
+   <g id="hlE" opacity="0"><line x1="${s[0][0]}" y1="${s[0][1]}" x2="${s[1][0]}" y2="${s[1][1]}" stroke="#e63946" stroke-width="7"/><line x1="${b[0][0]}" y1="${b[0][1]}" x2="${b[1][0]}" y2="${b[1][1]}" stroke="#e63946" stroke-width="7"/></g>
+   <g id="hlA" opacity="0" fill="none" stroke="#8a2be2" stroke-width="5"><path d="${arc(s[0],s,16)}"/><path d="${arc(b[0],b,26)}"/></g>
+   <g id="hlL" opacity="0" font-size="16" font-weight="700"><text x="${(s[0][0]+s[1][0])/2}" y="${s[0][1]+38}" text-anchor="middle">2 cm</text><text x="${(b[0][0]+b[1][0])/2}" y="${b[0][1]+22}" text-anchor="middle" style="fill:#e63946">？cm</text>
+     <text x="${s[0][0]+26}" y="${s[0][1]-6}" style="fill:#8a2be2">63°</text><text x="${b[0][0]+38}" y="${b[0][1]-10}" style="fill:#8a2be2" id="angD">？°</text></g>
+   ${lab(s,['A','B','C'],off)}<g id="lb" opacity="0">${lab(b,['D','E','F'],off)}</g>
+  </svg>`;
+  (async()=>{await wait(500);if(!live(T))return;$('big').style.transform='scale(1)';await wait(1400);if(!live(T))return;$('lb').setAttribute('opacity',1);$('yi').setAttribute('opacity',1);$('ch').textContent='乙是甲的 2 倍放大圖'})();
+  const on=id=>$(id).setAttribute('opacity',1),off2=id=>$(id).setAttribute('opacity',0);
+  return{fill(k){if(k==='P')on('hlP');if(k==='E'){off2('hlP');on('hlE')}if(k==='A'){off2('hlE');on('hlA')}if(k==='L'){on('hlE');on('hlA');on('hlL')}
+    if(k==='DE'){const t=$('hlL').querySelectorAll('text')[1];t.textContent='4 cm'}if(k==='D'){$('angD').textContent='63°'}}};
+}
+
+/* 在方格紙上畫放大圖或縮圖 */
+function drawScale(el,o){
+  const T=tok,c=o.c||20,k=o.k,big=o.pts.map(([x,y])=>[x*k,y*k]);
+  const wo=Math.max(...o.pts.map(p=>p[0])),ho=Math.max(...o.pts.map(p=>p[1])),ws=wo*k,hs=ho*k,H=Math.max(ho,hs);
+  const X1=1,X2=X1+wo+5,Wu=X2+ws+1,Hu=H+2;
+  const P=(pts,X)=>pts.map(([x,y])=>`${(X+x)*c},${(1+H-(pts===o.pts?ho:hs)+y)*c}`).join(' ');
+  const yb=(h)=>(1+H)*c, yt=(h)=>(1+H-h)*c;
+  const dimT=(X,w,h,vals,id)=>`<text x="${(X+w/2)*c}" y="${yb()+22}" text-anchor="middle" font-size="17" font-weight="700" id="${id}a">${o.dl[0]} ${vals[0]}</text><text x="${X*c-8}" y="${(yt(h)+yb())/2+6}" text-anchor="end" font-size="17" font-weight="700" id="${id}b">${o.dl[1]} ${vals[1]}</text>`;
+  const tile=(o.tile||[]).map(([[x1,y1],[x2,y2]])=>{const L=k>1?X2:X1,hh=k>1?hs:ho;return`<line x1="${(L+x1)*c}" y1="${(1+H-hh+y1)*c}" x2="${(L+x2)*c}" y2="${(1+H-hh+y2)*c}" stroke="${OR}" stroke-width="3" stroke-dasharray="6 5"/>`}).join('');
+  el.innerHTML=`<div class="hud"><span>${o.title}</span><span>1 格 ＝ 1 公分</span></div>
+  <svg class="svgw" viewBox="${-c*2.2} 0 ${Wu*c+c*2.2} ${Hu*c+16}" style="max-height:310px">${gridLines(0,0,Wu,Hu,c)}
+   <polygon points="${P(o.pts,X1)}" fill="#ffe7cc" stroke="${OR}" stroke-width="3"/>
+   <polygon id="dp" points="${P(big,X2)}" fill="#dbe8f7" stroke="${BL}" stroke-width="4" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" fill-opacity="0" style="transition:stroke-dashoffset 2s,fill-opacity .6s 2s"/>
+   <g id="tl" opacity="0" style="transition:opacity .5s">${tile}</g>
+   ${dimT(X1,wo,ho,[o.pts===o.pts?wo:0,ho].map(v=>v+' 格'),'o')}${dimT(X2,ws,hs,['？ 格','？ 格'],'s')}
+   <text x="${(X1+wo/2)*c}" y="${yt(ho)-8}" text-anchor="middle" font-size="16" style="fill:${OR}">原圖</text>
+   <text x="${(X2+ws/2)*c}" y="${yt(hs)-8}" text-anchor="middle" font-size="16" style="fill:${BL}">${o.name}</text>
+  </svg><button class="replay" id="rp">再畫一次</button>`;
+  const play=()=>{const d=$('dp');d.style.transition='none';d.style.strokeDashoffset=100;d.style.fillOpacity=0;requestAnimationFrame(()=>requestAnimationFrame(()=>{d.style.transition='stroke-dashoffset 2s,fill-opacity .6s 2s';d.style.strokeDashoffset=0;d.style.fillOpacity=1}))};
+  $('rp').onclick=play;setTimeout(()=>{if(live(T))play()},300);
+  return{fill(q){if(q.includes('a'))$('sa').textContent=o.dl[0]+' '+ws+' 格';if(q.includes('b'))$('sb').textContent=o.dl[1]+' '+hs+' 格';if(q==='t')$('tl').setAttribute('opacity',1)}};
+}
+
+/* 房間平面圖 */
+function room(el){
+  const T=tok,c=30,x0=40,y0=30;
+  el.innerHTML=`<div class="hud"><span>妙妙的房間平面圖</span><span>實際：長 4 公尺、寬 3 公尺</span></div>
+  <svg class="svgw" viewBox="0 0 420 290" style="max-height:300px">
+   <rect x="${x0}" y="${y0}" width="${8*c}" height="${6*c}" fill="#fff7ea" stroke="var(--ink)" style="stroke:var(--ink)" stroke-width="4"/>
+   <rect x="${x0+8}" y="${y0+8}" width="${2.5*c}" height="${3.6*c}" fill="#cfe8ff" stroke="${BL}" stroke-width="2"/><text x="${x0+8+1.25*c}" y="${y0+8+1.9*c}" text-anchor="middle" font-size="16">床</text>
+   <rect x="${x0+5.4*c}" y="${y0+8}" width="${2.4*c}" height="${1.2*c}" fill="#ffe0b5" stroke="${OR}" stroke-width="2"/><text x="${x0+6.6*c}" y="${y0+8+0.8*c}" text-anchor="middle" font-size="16">書桌</text>
+   <g id="rul">${Array.from({length:9},(_,i)=>`<line x1="${x0+i*c}" y1="${y0+6*c+12}" x2="${x0+i*c}" y2="${y0+6*c+24}" style="stroke:var(--ink)" stroke-width="2"/><text x="${x0+i*c}" y="${y0+6*c+42}" text-anchor="middle" font-size="14">${i}</text>`).join('')}
+    <rect id="rbar" x="${x0}" y="${y0+6*c+12}" width="0" height="8" fill="${OR}" style="transition:width 2s"/></g>
+   <text x="${x0+8*c+14}" y="${y0+3*c}" font-size="17" font-weight="700" id="wtx" opacity="0">寬 6 公分</text>
+   <text x="${x0+4*c}" y="${y0+6*c+66}" text-anchor="middle" font-size="18" font-weight="700" id="ltx" opacity="0" style="fill:${OR}">圖上的長 ＝ 8 公分</text>
+  </svg><div class="lines">${laterHTML({later:{a:'4 公尺 ＝ 400 公分',b:'8 ÷ 400 ＝ '+F(1,50)+'　→　'+F(1,50)+' 倍縮圖'}})}</div>`;
+  (async()=>{await wait(400);if(!live(T))return;$('rbar').setAttribute('width',8*c);await wait(2100);if(!live(T))return;$('ltx').setAttribute('opacity',1);$('wtx').setAttribute('opacity',1)})();
+  return{fill:k=>showLater(el,k)};
+}
+
+/* 校園平面圖＋線段比例尺 */
+function schoolMap(el){
+  const T=tok,c=26,x0=20,y0=14;
+  const R=(x,y,w,h,n,f)=>`<rect x="${x0+x*c}" y="${y0+y*c}" width="${w*c}" height="${h*c}" fill="${f}" stroke="#555" stroke-width="1.5"/><text x="${x0+(x+w/2)*c}" y="${y0+(y+h/2)*c+6}" text-anchor="middle" font-size="15">${n}</text>`;
+  el.innerHTML=`<div class="hud"><span>紅葉國小平面圖</span><span>比例尺 0―10―20―30（公尺）</span></div>
+  <svg class="svgw" viewBox="0 0 420 290" style="max-height:300px">${gridLines(x0,y0,14,8,c)}
+   ${R(1,1,4,2,'忠孝樓','#ffd8c2')}${R(7,1,4,2,'信義樓','#e3e0f7')}${R(1,4,3,3,'活動中心','#d7efe0')}
+   <rect x="${x0+6*c}" y="${y0+4*c}" width="${7*c}" height="${3.4*c}" rx="${1.7*c}" fill="#bfe3c7" stroke="#555"/><text x="${x0+9.5*c}" y="${y0+5.9*c}" text-anchor="middle" font-size="15">操場</text>
+   <g id="ml" opacity="0"><rect x="${x0+c}" y="${y0+c}" width="${4*c}" height="${2*c}" fill="none" stroke="#e63946" stroke-width="5"/>
+    <text x="${x0+3*c}" y="${y0+c-6}" text-anchor="middle" font-size="15" font-weight="700" style="fill:#e63946">4 公分</text><text x="${x0+5*c+6}" y="${y0+2.2*c}" font-size="15" font-weight="700" style="fill:#e63946">2 公分</text></g>
+   <g transform="translate(${x0+c},${y0+8.6*c})">${[0,1,2].map(i=>`<rect x="${i*c}" y="0" width="${c}" height="9" fill="${i%2?'#fff':'#333'}" stroke="#333"/>`).join('')}${[0,10,20,30].map((v,i)=>`<text x="${i*c}" y="28" text-anchor="middle" font-size="14">${v}</text>`).join('')}<text x="${3*c+14}" y="28" font-size="14">(m)</text>
+    <text x="${4.6*c}" y="12" font-size="15" style="fill:${BL}" font-weight="700">1 格長 1 公分 ＝ 實際 10 公尺</text></g>
+  </svg><div class="lines">${laterHTML({later:{a:'長：4 × 10 ＝ 40 公尺　寬：2 × 10 ＝ 20 公尺',b:'1 公分：1000 公分 ＝ 1：1000'}})}</div>`;
+  setTimeout(()=>{if(live(T))$('ml').setAttribute('opacity',1)},900*K);
+  return{fill:k=>showLater(el,k)};
+}
+
+/* 比例尺與地圖範圍 */
+function zoom(el){
+  let town='';for(let i=0;i<8;i++)for(let j=0;j<8;j++){const x=i*100+20,y=j*100+30,col=['#ffb27a','#9fd9cf','#cfe8ff','#ffe08a'][(i+j)%4];
+    town+=`<rect x="${x}" y="${y+20}" width="60" height="45" fill="${col}" stroke="#555" stroke-width="3"/><path d="M${x-6} ${y+22}L${x+30} ${y-8}L${x+66} ${y+22}Z" fill="#c4532f"/><rect x="${x+24}" y="${y+42}" width="12" height="23" fill="#7a5c3e"/>`}
+  const road='<rect x="0" y="0" width="800" height="800" fill="#e8f5e3"/>'+[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="${i*100-6}" y="0" width="6" height="800" fill="#bbb"/><rect x="0" y="${i*100-6}" width="800" height="6" fill="#bbb"/>`).join('');
+  el.innerHTML=`<div class="hud"><span>手機地圖</span><span>同樣大的螢幕</span></div>
+  <svg class="svgw" viewBox="0 0 420 270" style="max-height:300px"><defs><g id="town">${road}${town}</g></defs>
+   ${[['1：200',0,200,15],['1：800',0,800,225]].map(([n,o,s,x])=>`<rect x="${x-3}" y="17" width="186" height="186" rx="12" fill="#333"/><svg x="${x}" y="20" width="180" height="180" viewBox="${o} ${o} ${s} ${s}"><use href="#town"/></svg><text x="${x+90}" y="232" text-anchor="middle" font-size="20" font-weight="700">比例尺 ${n}</text>`).join('')}
+  </svg><div class="lines">${laterHTML({later:{a:'1：200 → 看到的範圍小，比較詳細',b:'1：800 → 看到的範圍大，比較簡略'}})}</div>`;
+  return{fill:k=>k.split('').forEach(c=>showLater(el,c))};
+}
+
+const S=[
+{sec:'開始',t:'哪一張最像原圖？',x:'豆豆買了一張國王企鵝的明信片（原圖）。<br>甲、乙、丙是改變大小後的圖。',
+ sc:el=>pics(el,{title:'🐧 企鵝明信片',items:[{n:'原圖',w:4,h:3,col:OR},{n:'甲',w:8,h:3},{n:'乙',w:4,h:6},{n:'丙',w:8,h:6}],c:16}),
+ qs:[{p:'甲、乙、丙哪一張和原圖最像？',c:['丙','甲','乙'],a:0,h:'💡 甲變<b>胖</b>、乙變<b>瘦</b>了。看哪一張的企鵝形狀沒有變。',ok:'對！丙圖的長和寬都變成 2 倍，形狀一樣。'}]},
+
+{sec:'9-1 放大圖和縮圖',t:'放大圖和縮圖',x:'丙圖：長 8 格、寬 6 格。<br>原圖：長 4 格、寬 3 格。',
+ sc:el=>pics(el,{title:'原圖 和 丙圖',items:[{n:'原圖',w:4,h:3,col:OR},{n:'丙',w:8,h:6}],c:20,later:{a:'8 ÷ 4 ＝ 2，6 ÷ 3 ＝ 2'}}),
+ qs:[{p:'丙圖是原圖的？',c:['2 倍放大圖','2 倍縮圖'],a:0,h:'💡 丙圖變<b>大</b>了，是「放大圖」。',ok:'對！'},
+     {p:'反過來說，原圖是丙圖的？',c:[F(1,2)+' 倍縮圖','2 倍縮圖','2 倍放大圖'],a:0,h:'💡 原圖的長和寬，都是丙圖的<b>一半</b>。',ok:'對！原圖是丙圖的 '+F(1,2)+' 倍縮圖。'}],
+ key:'長和寬<b>都</b>變成 2 倍 → <b>2 倍放大圖</b>；<br>反過來，原圖是它的 <b>'+F(1,2)+' 倍縮圖</b>。'},
+
+{sec:'9-1 放大圖和縮圖',t:'對應點、對應邊、對應角',x:'甲三角形用影印機放大 2 倍，變成乙三角形。<br>放大前、放大後在<b>同一個位置</b>的，就是「<b>對應</b>」的。',
+ sc:el=>correspond(el),
+ qs:[{p:'甲圖的點 A，放大後是乙圖的哪一個點？',c:['點 D','點 E','點 F'],a:0,h:'💡 點 A 在<b>左下角</b>，乙圖左下角是哪一點？',ok:'對！點 A 和點 D 是對應點。',f:'P'},
+     {p:'甲圖的邊 AB，放大後是乙圖的哪一條邊？',c:['DE','EF','DF'],a:0,h:'💡 A 對應 D，B 對應 <b>E</b>。',ok:'對！AB 和 DE 是對應邊。',f:'E'}]},
+
+{sec:'9-1 放大圖和縮圖',t:'對應邊和對應角的關係',x:'量一量：AB 長 2 公分，∠A 是 63°。',
+ sc:el=>{const s=correspond(el),T=tok;setTimeout(()=>{if(live(T))s.fill('L')},2000*K);return s},
+ qs:[{p:'乙是甲的 2 倍放大圖，DE 長幾公分？',c:['4 公分','2 公分','1 公分'],a:0,h:'💡 對應邊都變成 <b>2 倍</b>：2 × 2。',ok:'對！DE ＝ 4 公分。',f:'DE'},
+     {p:'∠D 是幾度？',c:['63°','126°','31.5°'],a:0,h:'💡 放大以後形狀沒變，<b>角的大小不會變</b>。',ok:'對！對應角一樣大。',f:'D'}],
+ key:'放大圖（或縮圖）和原圖：<br>對應邊放大（縮小）的<b>倍數都一樣</b>；對應角<b>都一樣大</b>。'},
+
+{sec:'9-2 繪製放大圖和縮圖',t:'畫 2 倍放大圖',x:'原圖：長 3 格、寬 2 格。<br>畫 2 倍放大圖，<b>格數都乘以 2</b>。',
+ sc:el=>drawScale(el,{title:'畫 2 倍放大圖',pts:[[0,0],[3,0],[3,2],[0,2]],k:2,dl:['長','寬'],name:'2 倍放大圖',tile:[[[3,0],[3,4]],[[0,2],[6,2]]]}),
+ qs:[{p:'2 倍放大圖的長和寬要畫幾格？',c:['長 6 格、寬 4 格','長 5 格、寬 4 格','長 6 格、寬 2 格'],a:0,h:'💡 長 3 格 × <b>2</b>，寬 2 格 × <b>2</b>。',ok:'對！長 6 格、寬 4 格。',f:'ab'},
+     {p:'原圖面積 3 × 2 ＝ 6，放大圖面積 6 × 4 ＝ 24。放大圖面積是原圖的幾倍？',c:['4 倍','2 倍','6 倍'],a:0,h:'💡 24 ÷ 6；也可以數一數，放大圖裡放得下<b>幾個</b>原圖？',ok:'對！4 倍，剛好放得下 4 個原圖。',f:'t'}],
+ key:'2 倍放大圖：邊長 × 2，面積變成 <b>2 × 2 ＝ 4 倍</b>'},
+
+{sec:'9-2 繪製放大圖和縮圖',t:'畫 '+F(1,2)+' 倍縮圖',x:'三角形：底 6 格、高 4 格。<br>畫 '+F(1,2)+' 倍縮圖，<b>格數都除以 2</b>。',
+ sc:el=>drawScale(el,{title:'畫 '+'二分之一倍縮圖',pts:[[0,4],[6,4],[0,0]],k:.5,dl:['底','高'],name:'縮圖',tile:[[[3,4],[3,2]],[[3,2],[0,2]],[[0,2],[3,4]]]}),
+ qs:[{p:'縮圖的底和高要畫幾格？',c:['底 3 格、高 2 格','底 12 格、高 8 格','底 3 格、高 4 格'],a:0,h:'💡 底 6 格和高 4 格，都變成<b>一半</b>。',ok:'對！底 3 格、高 2 格。',f:'ab'},
+     {p:'原圖面積 12，縮圖面積 3。縮圖面積是原圖的幾倍？',c:[F(1,4)+' 倍',F(1,2)+' 倍','2 倍'],a:0,h:'💡 3 ÷ 12；看原圖裡的虛線，原圖可以分成<b>4 個</b>縮圖。',ok:'對！是 '+F(1,4)+' 倍。',f:'t'}],
+ key:F(1,2)+' 倍縮圖：邊長 × '+F(1,2)+'，面積變成 '+F(1,2)+' × '+F(1,2)+' ＝ <b>'+F(1,4)+' 倍</b>'},
+
+{sec:'9-3 比例尺',t:'什麼是比例尺？',x:'妙妙的房間長 <b>4 公尺</b>（＝ 400 公分），畫成平面圖，量一量長是 <b>8 公分</b>。',
+ sc:el=>room(el),
+ qs:[{p:'8 ÷ 400 ＝ ？平面圖是實際的幾倍？',c:[F(1,50),F(1,8),'50'],a:0,h:'💡 '+F(8,400)+' 上下都除以 <b>8</b>。',ok:'對！是 '+F(1,50)+' 倍縮圖。',f:'b'}],
+ key:'縮圖上的長度和實際長度的比，叫做<b>比例尺</b>。<br>可以寫成 <b>1：50</b>、<b>'+F(1,50)+'</b>，表示<b>圖上 1 公分 ＝ 實際 50 公分</b>。'},
+
+{sec:'9-3 比例尺',t:'看線段比例尺',x:'地圖下方的比例尺，<b>1 格長 1 公分</b>，代表實際 <b>10 公尺</b>。<br>忠孝樓在圖上長 4 公分、寬 2 公分。',
+ sc:el=>schoolMap(el),
+ qs:[{p:'圖上 1 公分，代表實際多長？',c:['10 公尺','1 公尺','100 公尺'],a:0,h:'💡 看比例尺：0 到 <b>10</b> 是 1 格。',ok:'對！'},
+     {p:'忠孝樓圖上長 4 公分，實際長幾公尺？',c:['40 公尺','4 公尺','400 公尺'],a:0,h:'💡 1 公分是 10 公尺，4 公分就是 <b>4 × 10</b>。',ok:'對！40 公尺。寬 2 公分就是 20 公尺。',f:'a'}]},
+
+{sec:'9-3 比例尺',t:'比例尺和地圖範圍',x:'爸爸用手機看地圖。<br>同樣大的螢幕，比例尺不一樣，看到的東西也不一樣。',
+ sc:el=>zoom(el),
+ qs:[{p:'想看<b>範圍小、比較詳細</b>的地圖，要選哪一個？',c:['1：200','1：800'],a:0,h:'💡 看左邊的螢幕，房子<b>比較大、比較清楚</b>。',ok:'對！1：200。範圍大、比較簡略就選 1：800。',f:'ab'}]},
+
+{sec:'完成',t:'今天學會＆學習紀錄',x:()=>summary(),sc:el=>report(el),read:1}
+];
+const LEARN=`<div class="learn"><h3>今天學會</h3>
+ <p><b>① 放大圖和縮圖</b>：長和寬<b>都</b>變成 2 倍 → <b>2 倍放大圖</b>；反過來，原圖是它的 <b>${F(1,2)} 倍縮圖</b>（只有一邊變，形狀就變了）</p>
+ <p><b>② 對應點、對應邊、對應角</b>：放大或縮小前後，在同一個位置的</p>
+ <ul><li>對應邊：放大（縮小）的<b>倍數都一樣</b></li><li>對應角：<b>都一樣大</b></li></ul>
+ <p><b>③ 畫放大圖、縮圖</b>：格數 × 倍數；面積會變成 <b>倍數 × 倍數</b>（2 倍放大圖 → 面積 4 倍；${F(1,2)} 倍縮圖 → 面積 ${F(1,4)} 倍）</p>
+ <p><b>④ 比例尺</b>：縮圖上的長度和實際長度的比，例如 <b>1：50</b>、<b>${F(1,50)}</b>，表示圖上 1 公分 ＝ 實際 50 公分</p>
+ <ul><li>實際距離 ＝ 圖上距離 × 比例尺後面的數，再換單位</li><li>1：200 範圍小、比較詳細；1：800 範圍大、比較簡略</li></ul></div>`;
+
+/* ---------- engine ---------- */
+function cheer(){const st=$('stage');for(let i=0;i<6;i++){const s=document.createElement('span');s.className='cheer';s.textContent=['⭐','✨','👏'][i%3];s.style.left=(15+Math.random()*70)+'%';s.style.top=(55+Math.random()*30)+'%';st.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function unlock(){const n=$('next');n.disabled=false;n.classList.add('go');done.add(cur)}
+const G=sec=>{for(const[k,v]of GROUPS)if(sec.startsWith(k))return v;return sec==='挑戰'?'綜合挑戰':sec};
+let L={},T0=Date.now(),T1=0,who='';
+const txt=h=>String(h).replace(/<span class="fr"><i>(.*?)<\/i><i>(.*?)<\/i><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'');
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=ms=>{const t=Math.round(ms/1000);return Math.floor(t/60)+' 分 '+(t%60)+' 秒'};
+function rows(){return S.flatMap((s,i)=>(s.qs||[]).map((q,j)=>({i,j,s,q,r:L[i+'-'+j]})))}
+function stats(){const R=rows(),A=R.filter(x=>x.r&&x.r.fin),one=A.filter(x=>!x.r.w.length).length;
+  const gs=[...new Set(R.map(x=>G(x.s.sec)))].map(g=>{const a=A.filter(x=>G(x.s.sec)===g),o=a.filter(x=>!x.r.w.length).length;return{g,n:a.length,o,p:a.length?Math.round(o/a.length*100):0}});
+  return{R,A,one,gs,rate:A.length?Math.round(one/A.length*100):0,wr:A.reduce((t,x)=>t+x.r.w.length,0)}}
+const lvl=p=>p>=80?['精熟','var(--ok)']:p>=50?['尚可','#d08a00']:['需加強','var(--no)'];
+function summary(){const t=stats();
+  return LEARN+`<h3 class="sh">學習概況</h3><div class="stat"><div><b>${t.A.length}</b>完成題數</div><div><b>${t.rate}%</b>一次答對</div><div><b>${mmss((T1||Date.now())-T0)}</b>上課用時</div></div>
+  <div class="gm">${t.gs.map(g=>{const[l,c]=lvl(g.p);return`<span>${g.g}</span><span class="mt"><i style="width:${g.p}%;background:${c}"></i></span><span class="tag" style="background:${c}">${l}</span>`}).join('')}</div>
+  <div style="font-size:15px;color:var(--soft)">一次答對率：80% 以上精熟、50%～79% 尚可、未滿 50% 需加強。</div>
+  <button class="cp" id="cp">複製紀錄（可貼到 Excel / Word）</button><textarea id="cpt" readonly></textarea>`}
+function report(el){
+  el.classList.add('rep');const t=stats();let lg='';
+  el.innerHTML=`<div class="rh"><b style="font-size:22px">${UNIT} 作答紀錄</b><label>姓名 <input id="who" value="${esc(who)}"></label><span>日期 ${new Date().toLocaleDateString('zh-TW')}</span></div>
+  <table class="rt"><tr><th>#</th><th>題目</th><th>結果</th><th>答錯時選了</th><th>用時</th></tr>${t.R.map((x,k)=>{let g='';const gg=G(x.s.sec);if(gg!==lg){lg=gg;g=`<tr class="gp"><td colspan="5">${gg}</td></tr>`}
+   const r=x.r;const res=!r||!r.fin?'<span class="ng">未作答</span>':r.w.length?`<span class="ng">錯 ${r.w.length} 次</span>`:'<span class="ok1">一次答對</span>';
+   return g+`<tr><td class="n">${k+1}</td><td>${txt(x.q.p)}</td><td class="n">${res}</td><td>${r&&r.w.length?r.w.map(esc).join('、'):''}</td><td class="n">${r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000))+' 秒':''}</td></tr>`}).join('')}</table>`;
+  $('who').oninput=e=>{who=e.target.value};
+  setTimeout(()=>{const b=$('cp');if(b)b.onclick=()=>{const tt=stats();const lines=[UNIT+' 作答紀錄','姓名\t'+who,'日期\t'+new Date().toLocaleDateString('zh-TW'),'上課用時\t'+mmss((T1||Date.now())-T0),'一次答對率\t'+tt.rate+'%',''].concat(tt.gs.map(g=>g.g+'\t'+g.p+'%\t'+lvl(g.p)[0]),['','#\t小節\t題目\t結果\t答錯時選了\t用時（秒）'],tt.R.map((x,k)=>{const r=x.r;return[k+1,G(x.s.sec),txt(x.q.p),!r||!r.fin?'未作答':r.w.length?'錯'+r.w.length+'次':'一次答對',r?r.w.join('、'):'',r&&r.fin?Math.max(1,Math.round((r.t1-r.t0)/1000)):''].join('\t')}));const out=lines.join('\n');
+    const fb=()=>{const a=$('cpt');a.style.display='block';a.value=out;a.select();b.textContent='請按「拷貝」複製下方文字'};
+    try{navigator.clipboard.writeText(out).then(()=>{b.textContent='已複製 ✔'},fb)}catch(e){fb()}}},0);
+  return{fill(){}};
+}
+function showQ(){
+  const s=S[cur],q=s.qs[qi],key=cur+'-'+qi;
+  if(!L[key])L[key]={w:[],t0:Date.now(),fin:0};const rec=L[key];
+  $('q').innerHTML=`<div class="qn">第 ${qi+1} 題／共 ${s.qs.length} 題</div><div class="qp">${q.p}</div><div class="ch">${q.c.map((c,i)=>`<button data-i="${i}">${c}</button>`).join('')}</div>`;
+  $('fb').innerHTML='';
+  $('q').querySelectorAll('.ch button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(i===q.a){if(!rec.fin){rec.fin=1;rec.t1=Date.now()}b.classList.add('yes');$('q').querySelectorAll('.ch button').forEach(x=>x.disabled=true);tone([660,880]);cheer();
+      $('fb').innerHTML=`<span class="g">✔ ${q.ok}</span>`;if(q.f!==undefined)scene.fill(q.f);
+      const T=tok;if(qi<s.qs.length-1){setTimeout(()=>{if(!live(T))return;qi++;showQ()},1500*K+400)}
+      else{if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;unlock()}}
+    else{if(!rec.fin)rec.w.push(txt(q.c[i]));b.classList.add('no','shake');b.disabled=true;tone([220],.18);$('fb').innerHTML=`<span class="h">${q.h}</span>`;speak(q.h)}
+  });
+}
+function go(n){
+  tok++;cur=n;qi=0;try{speechSynthesis.cancel()}catch(e){}
+  const s=S[n];
+  $('sec').textContent=s.sec;$('ttl').innerHTML=s.t;if(n===S.length-1&&!T1)T1=Date.now();$('stage').classList.remove('rep');$('txt').innerHTML=typeof s.x==='function'?'':s.x;$('q').innerHTML='';$('fb').innerHTML='';$('rd').innerHTML='';
+  $('bar').style.width=(n/(S.length-1)*100)+'%';$('cnt').textContent=`${n+1} / ${S.length}`;
+  $('prev').style.visibility=n?'visible':'hidden';
+  const nx=$('next');nx.textContent='下一步';nx.style.visibility=n===S.length-1?'hidden':'visible';nx.disabled=true;nx.classList.remove('go');
+  scene=s.sc($('stage'))||{fill(){}};if(typeof s.x==='function')$('txt').innerHTML=s.x();
+  const startQ=()=>{if(s.qs)showQ();else unlock()};
+  if(done.has(n)){if(s.key)$('rd').innerHTML=`<div class="key">${s.key}</div>`;nx.disabled=false}
+  if(s.read){$('rd').innerHTML+=`<button class="read" id="rb">我讀完了 □</button>`;$('rb').onclick=()=>{const b=$('rb');if(b.classList.contains('on'))return;b.classList.add('on');b.textContent='我讀完了 ☑';tone([600,750]);startQ()}}
+  else startQ();
+  const lr=document.querySelector('.panel .learn');if(lr&&$('rb'))lr.appendChild($('rb'));
+}
+$('next').onclick=()=>{if(cur===S.length-1){L={};done.clear();T0=Date.now();T1=0;go(0)}else go(cur+1)};
+$('prev').onclick=()=>{if(cur>0)go(cur-1)};
+$('say').onclick=()=>{const s=S[cur];let t=s.t+'。'+s.x;if(s.qs&&$('q').innerHTML)t+='。'+s.qs[qi].p;speak(t)};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&!$('next').disabled)$('next').click();if(e.key==='ArrowLeft')$('prev').click()});
+go(0);
+}
+</script>
+</body>
+</html>
