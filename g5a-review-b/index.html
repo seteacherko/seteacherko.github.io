@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>5A 小步走複習站 B組</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* VOICE: 溫和、一步一步，像老師在旁邊陪著做。
+   IDEA: 方格練習簿上的「動畫小劇場」：左邊演出生活情境，右邊回答問題，答對才翻下一頁。
+   PICTURE: 每一步一張會動的圖（餅乾、披薩、巧克力、停車格、蛋糕），佔畫面左半。
+   COLOUR and TYPE: 松綠為主色，單元各有一色；黃、綠、橘塗色；霞鶩文楷標題＋思源黑體內文。
+   LAYOUT: 平板橫放左右兩欄；窄螢幕上下排。 */
+:root{color-scheme:light;
+  --paper:#F2F6F1;--grid:#DFE9DE;--card:#fff;--ink:#1C2B21;--mute:#55695B;--line:#C8D7C9;
+  --accent:#2E6B3F;--accent-soft:#E2EFE4;--on:#fff;
+  --hl:#F6D35B;--hl2:#A9D5A0;--hl3:#EFA77A;
+  --ok:#1F7A4A;--ok-bg:#E1F2E7;--warn:#A84E00;--warn-bg:#FFEFD9;--star:#E8A317;
+  --u6:#3D6A86;--u7:#7A4E6B;--u8:#5B7F47;--u9:#A0522D;--u10:#41604F;
+  --display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --u:var(--accent);
+}
+:root[data-theme=dark]{color-scheme:dark;--paper:#111A14;--grid:#18241B;--card:#17231B;--ink:#E4EEE6;--mute:#9CB3A2;--line:#30453A;--accent:#74C38A;--accent-soft:#183222;--on:#0C1A10;--hl:#C9A23A;--hl2:#3F7A48;--hl3:#A8643E;--ok:#6CCB93;--ok-bg:#16301F;--warn:#F2A35A;--warn-bg:#3A2913;--star:#F0C24F}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--paper:#111A14;--grid:#18241B;--card:#17231B;--ink:#E4EEE6;--mute:#9CB3A2;--line:#30453A;--accent:#74C38A;--accent-soft:#183222;--on:#0C1A10;--hl:#C9A23A;--hl2:#3F7A48;--hl3:#A8643E;--ok:#6CCB93;--ok-bg:#16301F;--warn:#F2A35A;--warn-bg:#3A2913;--star:#F0C24F}}
+*{box-sizing:border-box;min-width:0}
+html{font-size:21px;-webkit-text-size-adjust:100%}
+body{margin:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+h1,h2{font-family:var(--display);line-height:1.2;margin:0;text-wrap:balance}
+b{font-weight:700}
+[hidden]{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;padding:16px}
+
+/* ---------- home ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:1.2rem;align-items:center;padding:1rem 0 1.2rem}
+.hero h1{font-size:2.2rem}
+.hero p{color:var(--mute);margin:.4rem 0 0;font-size:1rem}
+.flow{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+.flow span{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:.2rem .9rem;font-weight:700;font-size:.9rem}
+.flow i{font-style:normal;color:var(--accent);align-self:center}
+.hero svg{width:100%;height:auto}
+.units{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.9rem}
+.unit{display:flex;flex-direction:column;text-align:left;border:0;padding:0;border-radius:20px;overflow:hidden;background:var(--card);box-shadow:0 4px 0 color-mix(in srgb,var(--u) 60%,#000);min-height:15rem;transition:transform .15s}
+.unit:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--u) 60%,#000)}
+.unit .top{background:var(--u);color:#fff;padding:.8rem 1rem;display:flex;align-items:baseline;gap:.5rem}
+.unit .no{font-size:.85rem;font-weight:700;opacity:.9}
+.unit .nm{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.25;padding:0 1rem .3rem;margin-top:.6rem}
+.unit .gl{padding:.2rem 1rem;color:var(--u);font-weight:700;font-size:1.05rem;min-height:2.4rem;display:flex;align-items:center}
+.unit .gl svg{height:2.2rem;width:auto}
+.unit ul{margin:.2rem 0 0;padding:0 1rem 0 2.1rem;color:var(--mute);font-size:.82rem;line-height:1.5}
+.unit .go{margin:auto 1rem 1rem;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--u);padding-top:.7rem}
+.stars{display:inline-flex;gap:.1rem}
+.stars svg{width:1.5rem;height:1.5rem;color:var(--line)}
+.stars svg.on{color:var(--star)}
+.foot{color:var(--mute);font-size:.8rem;margin-top:1.4rem}
+
+/* ---------- lesson ---------- */
+.bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar .in{max-width:1240px;margin:0 auto;padding:.45rem 16px;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.ib{display:grid;place-items:center;width:2.8rem;height:2.8rem;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--accent);flex:none}
+.ib svg{width:1.4rem;height:1.4rem}
+.badge{background:var(--u);color:#fff;border-radius:10px;padding:.15rem .7rem;font-weight:700;font-size:.9rem;white-space:nowrap}
+.utitle{font-family:var(--display);font-weight:700;font-size:1.2rem}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap;margin-left:auto}
+.dots i{width:.85rem;height:.85rem;border-radius:50%;background:var(--line)}
+.dots i.done{background:var(--u)}
+.dots i.cur{background:var(--hl);box-shadow:0 0 0 3px color-mix(in srgb,var(--u) 45%,transparent)}
+.dots i.drill{border-radius:3px}
+.stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:1.1rem;align-items:start;padding-top:1rem}
+.artbox{position:sticky;top:4.4rem;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:1rem;display:flex;flex-direction:column;gap:.6rem}
+.art{display:grid;place-items:center;min-height:16rem}
+.art svg.vis{width:100%;height:auto;max-height:62vh}
+.art .formula{font-family:var(--display);font-size:2.4rem;font-weight:700;text-align:center;padding:1.4rem .6rem;line-height:1.5}
+.artfoot{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}
+.kind{font-weight:700;color:var(--u);font-size:.9rem}
+.talk{display:flex;flex-direction:column;gap:.8rem}
+.talk h2{font-size:1.65rem;color:var(--ink)}
+.story{display:flex;gap:.7rem;align-items:flex-start;font-size:1.15rem;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:.8rem 1rem}
+.story .t{flex:1}
+.say{flex:none;width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;color:var(--accent);padding:0}
+.say svg{width:1.25rem;height:1.25rem}
+.q{background:var(--card);border:3px dashed var(--line);border-radius:16px;padding:.8rem 1rem;animation:rise .35s ease-out}
+.q.done{border-style:solid;border-color:var(--ok);background:var(--ok-bg)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.qp{display:flex;gap:.7rem;align-items:flex-start}
+.qp .t{flex:1;font-size:1.2rem;font-weight:500}
+.qa{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem;font-size:1.3rem;font-weight:700}
+.part{display:inline-flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.box{min-width:3.6rem;height:2.9rem;border:3px solid var(--line);border-radius:10px;background:var(--card);font-weight:700;font-size:1.35rem;padding:0 .4rem;display:inline-grid;place-items:center}
+.box.act{border-color:var(--u);box-shadow:0 0 0 4px color-mix(in srgb,var(--u) 22%,transparent)}
+.box.act:empty::after{content:'';width:2px;height:1.4rem;background:var(--u);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.box.ok{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.box.bad{border-color:var(--warn);background:var(--warn-bg);color:var(--warn);animation:shake .4s}
+@keyframes shake{25%,75%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.12;margin:0 .12em;font-weight:700}
+.fr>span:first-child,.fr>.box:first-child{border-bottom:2.5px solid currentColor;padding:0 .2em}
+.fr>.box:first-child{border-bottom-width:3px;margin-bottom:3px}
+.fr .box{min-width:3rem;height:2.5rem;font-size:1.15rem}
+.opt{min-height:3.1rem;min-width:4.4rem;padding:.4rem 1.1rem;border:3px solid var(--line);background:var(--card);border-radius:14px;font-size:1.15rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:.3rem}
+.opt svg{width:130px;height:auto}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.opt.bad{border-color:var(--warn);background:var(--warn-bg);color:var(--warn);animation:shake .4s}
+.opt.show{border-color:var(--ok);border-style:dashed;animation:glow 1.4s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--ok) 25%,transparent)}}
+.pad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;margin-top:.7rem;max-width:340px;padding:.5rem;border:2px solid var(--line);border-radius:14px;background:var(--paper)}
+.pad button{min-height:3.1rem;border-radius:11px;border:2px solid var(--line);background:var(--card);font-weight:700;font-size:1.35rem}
+.pad button:active{background:var(--accent-soft)}
+.pad .z{grid-column:span 2}
+.pad .go{grid-column:1/-1;background:var(--u);border-color:var(--u);color:#fff;font-size:1.05rem}
+.fb{margin-top:.6rem}
+.fb>div{padding:.55rem .9rem;border-radius:10px;font-weight:700;display:flex;gap:.5rem;align-items:flex-start}
+.fb .ok{background:var(--ok-bg);color:var(--ok)}
+.fb .bad{background:var(--warn-bg);color:var(--warn)}
+.fb .info{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.fb svg{width:1.3rem;height:1.3rem;flex:none;margin-top:.15rem}
+.key{border:3px solid var(--u);border-radius:16px;padding:.7rem 1rem;background:var(--card);font-family:var(--display);font-size:1.25rem;animation:rise .4s ease-out}
+.key b.lab{display:block;color:var(--u);font-size:.95rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:3.2rem;padding:.5rem 1.4rem;border-radius:16px;border:2px solid var(--u);background:var(--u);color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 3px 0 color-mix(in srgb,var(--u) 55%,#000)}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.ghost{background:var(--card);color:var(--u);box-shadow:none}
+.btn.small{min-height:2.6rem;font-size:.95rem;padding:.25rem 1rem;box-shadow:none}
+.btn svg{width:1.15em;height:1.15em}
+.next{animation:rise .4s ease-out;align-self:flex-start}
+.endcard{max-width:640px;margin:2rem auto;text-align:center;background:var(--card);border:3px solid var(--star);border-radius:26px;padding:1.6rem 1.4rem}
+.endcard h2{font-size:2rem;margin:.4rem 0}
+.endcard .big{display:flex;justify-content:center;gap:.4rem}
+.endcard .big svg{width:3.4rem;height:3.4rem;color:var(--line);animation:pop .5s cubic-bezier(.3,1.6,.6,1) both}
+.endcard .big svg.on{color:var(--star)}
+.endcard .big svg:nth-child(2){animation-delay:.15s}.endcard .big svg:nth-child(3){animation-delay:.3s}
+.endcard p{color:var(--mute)}
+.endcard .row{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+
+/* ---------- svg drawing ---------- */
+.vis .t{fill:var(--ink);font-family:var(--body);font-weight:700;font-size:18px}
+.vis .tm{fill:var(--mute);font-family:var(--body);font-size:15px}
+.vis .tw{fill:#fff;font-family:var(--body);font-weight:700;font-size:17px}
+.vis .fa{fill:var(--hl)}.vis .fb{fill:var(--hl2)}.vis .fc{fill:var(--hl3)}.vis .fp{fill:var(--card)}.vis .fi{fill:var(--ink)}.vis .fu{fill:var(--u)}
+.vis .st{stroke:var(--ink);stroke-width:2.2}.vis .st1{stroke:var(--ink);stroke-width:1.4}
+.vis .no{fill:none}
+.vis .ln{stroke:var(--ink);stroke-width:2.2;fill:none}
+.vis .gl{stroke:var(--grid);stroke-width:1.2}
+.vis .dash{fill:none;stroke:var(--mute);stroke-width:2;stroke-dasharray:6 5}
+.vis .hi{fill:none;stroke:var(--u);stroke-width:5;stroke-linecap:round}
+/* animations */
+.vis *{transform-box:fill-box;transform-origin:center}
+.pop{animation:pop .55s cubic-bezier(.3,1.6,.6,1) var(--d,0s) both}
+@keyframes pop{from{opacity:0;transform:scale(.3)}}
+.fade{animation:fade .7s ease var(--d,0s) both}
+@keyframes fade{from{opacity:0}}
+.gone{animation:gone .7s ease var(--d,0s) forwards}
+@keyframes gone{to{opacity:.12;transform:scale(.6)}}
+.vanish{animation:vanish .7s ease var(--d,0s) forwards}
+@keyframes vanish{to{opacity:0}}
+.mv{animation:mv 1.1s ease-in-out var(--d,0s) both}
+@keyframes mv{to{transform:translate(var(--tx,0px),var(--ty,0px))}}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .8s ease var(--d,0s) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.rot{transform-box:view-box;transform-origin:var(--ox) var(--oy);animation:rot 1.5s ease-in-out var(--d,0s) both}
+@keyframes rot{from{opacity:.4}to{transform:rotate(180deg);opacity:1}}
+.pulse{animation:pulse 1.3s ease-in-out var(--d,0s) infinite}
+@keyframes pulse{50%{opacity:.45}}
+.calm .vis *,.calm .vis{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}
+@media (prefers-reduced-motion:reduce){.vis *{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}}
+
+
+.toprow{display:flex;gap:.6rem;flex-wrap:wrap}.toprow a.btn{text-decoration:none}
+.herotop{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+.rec .who{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:1rem 0}
+.rec .who label{font-weight:700}
+.rec input{font:inherit;font-size:1.1rem;padding:.4rem .8rem;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);min-height:2.8rem;width:12rem}
+.muted{color:var(--mute);font-size:.85rem}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:.6rem 1rem;display:flex;flex-direction:column}
+.sum b{font-size:1.7rem;color:var(--accent);line-height:1.2}
+.sum span{color:var(--mute);font-size:.85rem}
+.ucards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.8rem}
+.ucard{background:var(--card);border:1px solid var(--line);border-top:6px solid var(--u);border-radius:16px;padding:.8rem 1rem;display:flex;flex-direction:column;gap:.45rem}
+.ucard .uh{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ucard .uh .stars{margin-left:auto}
+.ucard .btn{align-self:flex-start;margin-top:auto}
+.meter{height:.6rem;background:var(--grid);border-radius:99px;overflow:hidden}.meter i{display:block;height:100%;background:var(--u)}
+.weak{color:var(--warn);font-size:.9rem}.good{color:var(--ok);font-size:.9rem;font-weight:700}
+.rh{font-size:1.3rem;margin:1.4rem 0 .6rem}
+.scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
+table.log{border-collapse:collapse;width:100%;font-size:.85rem}
+table.log th,table.log td{padding:.45rem .7rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.log td:last-child{white-space:normal;min-width:12rem}
+table.log th{background:var(--accent-soft)}
+table.log td.n{text-align:right}
+.recbtns{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
+.btn.danger{background:var(--warn);border-color:var(--warn);color:#fff}
+.rtxt{width:100%;margin-top:.6rem;font:inherit;font-size:.85rem;border:2px solid var(--line);border-radius:12px;padding:.6rem;background:var(--card);color:var(--ink)}
+@media (max-width:600px){.sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.units{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:860px){.stage{grid-template-columns:minmax(0,1fr)}.artbox{position:static}.art{min-height:0}.hero{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){html{font-size:18px}.units{grid-template-columns:minmax(0,1fr)}.unit{min-height:0}.hero h1{font-size:1.8rem}.dots{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+{
+/* ================= helpers ================= */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const h=html=>{const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild;};
+const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
+const G={int:(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick:a=>a[Math.floor(Math.random()*a.length)],shuffle:a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}};
+const F=(n,d)=>`<span class="fr" aria-label="${d}分之${n}"><span>${n}</span><span>${d}</span></span>`;
+const r2=x=>Math.round(x*100)/100;
+const ICON={
+ say:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
+ replay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+ star:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="currentColor"/><circle cx="8.6" cy="9.8" r="1.5" fill="#fff"/><circle cx="15.4" cy="9.8" r="1.5" fill="#fff"/><path d="M7.4 13.6c1 2.3 2.8 3.5 4.6 3.5s3.6-1.2 4.6-3.5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>'
+};
+const OK=['答對了！','很棒！','你做到了！','好厲害！','對了，繼續加油！'];
+const S=(w,hh,inner,label)=>`<svg class="vis" viewBox="0 0 ${w} ${hh}" role="img" aria-label="${label||'圖'}">${inner}</svg>`;
+const d=s=>`style="--d:${s}s"`;
+const T=(x,y,txt,cls='t',extra='')=>`<text x="${x}" y="${y}" class="${cls}" text-anchor="middle" ${extra}>${txt}</text>`;
+/* fraction written inside an svg */
+const SF=(x,y,n,dd,cls='',ex='')=>`<g class="${cls}" ${ex}><text x="${x}" y="${y-6}" class="t" text-anchor="middle">${n}</text><line x1="${x-14}" y1="${y}" x2="${x+14}" y2="${y}" class="ln"/><text x="${x}" y="${y+20}" class="t" text-anchor="middle">${dd}</text></g>`;
+const XY=(cx,cy,r,deg)=>[r2(cx+r*Math.cos(deg*Math.PI/180)),r2(cy-r*Math.sin(deg*Math.PI/180))];
+function sectorPath(cx,cy,r,a0,a1){const [x0,y0]=XY(cx,cy,r,a0),[x1,y1]=XY(cx,cy,r,a1);return `M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 ${a1-a0>180?1:0} 0 ${x1} ${y1}Z`;}
+
+/* ---------- reusable pictures ---------- */
+/* fraction bar: outline + shaded part + division lines (lines can animate) */
+function fbar(x,y,w,hh,n,k,cls='fa',o={}){
+  let g=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" class="fp"/>`;
+  if(k)g+=`<rect x="${x}" y="${y}" width="${r2(w*k/n)}" height="${hh}" class="${cls} ${o.kc||''}" ${o.kd!=null?d(o.kd):''}/>`;
+  g+=divs(x,y,w,hh,n);
+  return g+`<rect x="${x}" y="${y}" width="${w}" height="${hh}" class="ln"/>`;
+}
+function divs(x,y,w,hh,n,o={}){let g='';for(let i=1;i<n;i++){const xx=r2(x+w*i/n);const c=o.vanish&&o.vanish(i)?'vanish':o.draw?'draw':'';g+=`<line x1="${xx}" y1="${y}" x2="${xx}" y2="${y+hh}" class="ln ${c}" pathLength="1" ${c?d((o.d||0)+(o.draw?i*.06:0)):''}/>`;}return g;}
+function pieV(n,take,o={}){const cx=120,cy=115,R=95;let g=`<circle cx="${cx}" cy="${cy}" r="${R}" class="fp st"/>`;
+  for(let i=0;i<take;i++)g+=`<path d="${sectorPath(cx,cy,R,90-360*(i+1)/n,90-360*i/n)}" class="fa ${o.cut?'fade':''}" ${o.cut?d(o.cut+n*.3):''}/>`;
+  for(let i=0;i<n;i++){const [x,y]=XY(cx,cy,R,90-360*i/n);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" class="ln ${o.cut?'draw':''}" pathLength="1" ${o.cut?d(o.cut+i*.3):''}/>`;}
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R}" class="ln"/><circle cx="${cx}" cy="${cy}" r="4" class="fi"/>`;
+  return S(240,230,g,`圓分成 ${n} 份`);}
+function sectorV(a,o={}){const cx=130,cy=125,R=100;let g=`<circle cx="${cx}" cy="${cy}" r="${R}" class="dash"/>`;
+  g+=a>=360?`<circle cx="${cx}" cy="${cy}" r="${R}" class="fa st"/>`:`<path d="${sectorPath(cx,cy,R,0,a)}" class="fa st"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="4" class="fi"/>`;
+  if(o.lab!==false)g+=`<text x="${cx+16}" y="${cy-8}" class="t">${o.lab||a+'°'}</text>`;
+  return S(260,250,g,`圓心角 ${a} 度的扇形`);}
+const shp={
+ sector:()=>S(150,140,'<circle cx="70" cy="75" r="55" class="dash"/><path d="M70 75 L125 75 A55 55 0 0 0 31 36Z" class="fa st"/><circle cx="70" cy="75" r="3" class="fi"/>','扇形'),
+ off:()=>S(150,140,'<circle cx="70" cy="75" r="55" class="dash"/><path d="M92 98 L125 75 A55 55 0 0 0 31 36Z" class="fa st"/><circle cx="70" cy="75" r="3" class="fi"/>','頂點不在圓心的圖形'),
+ seg:()=>S(150,140,'<circle cx="70" cy="75" r="55" class="dash"/><path d="M125 75 A55 55 0 0 0 31 36Z" class="fa st"/><circle cx="70" cy="75" r="3" class="fi"/>','弓形'),
+ tri:()=>S(150,140,'<circle cx="70" cy="75" r="55" class="dash"/><path d="M70 75 L125 75 L31 36Z" class="fa st"/><circle cx="70" cy="75" r="3" class="fi"/>','三角形')
+};
+function gridBg(w,hh,u){let g='';for(let x=0;x<=w;x+=u)g+=`<line x1="${x}" y1="0" x2="${x}" y2="${hh}" class="gl"/>`;for(let y=0;y<=hh;y+=u)g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" class="gl"/>`;return g;}
+const TF=(x,y,txt,dl,cls='t')=>`<text x="${x}" y="${y}" class="${cls} fade" text-anchor="middle" ${d(dl)}>${txt}</text>`;
+const formula=t=>`<div class="formula">${t}</div>`;
+
+/* ================= animated scenes ================= */
+const ART={
+ cookies(){let g='';
+  [0,1,2].forEach(k=>{const x=25+k*125;g+=`<g class="pop" ${d(.2+k*.6)}><rect x="${x}" y="20" width="105" height="150" rx="16" class="fp st"/>${T(x+52,46,`第 ${k+1} 包`,'tm')}`;
+   for(let i=0;i<8;i++){const cx=x+32+(i%2)*40,cy=72+Math.floor(i/2)*25,eat=k===2&&i>=4;g+=`<circle cx="${cx}" cy="${cy}" r="10" class="fc st1 ${eat?'gone':''}" ${eat?d(2.6+(i-4)*.3):''}/>`;}
+   g+='</g>';});
+  g+=TF(200,205,'每包 8 片，買 3 包',2)+TF(312,234,'弟弟吃掉 4 片',3.6,'tm');
+  return S(400,245,g,'三包餅乾，每包8片，吃掉4片');},
+ stairs(){const st=[['①','括號 ( )','先算'],['②','乘 ×　除 ÷','再算'],['③','加 +　減 −','最後']];let g='';
+  st.forEach((s,i)=>{const x=20+i*125,y=30+i*55,hh=200-i*55;g+=`<g class="pop" ${d(.3+i*.7)}><rect x="${x}" y="${y}" width="118" height="${hh}" rx="12" class="${['fc','fa','fb'][i]} st"/>${T(x+59,y+34,s[0]+' '+s[2])}${T(x+59,y+62,s[1],'t')}</g>`;});
+  return S(400,245,g,'計算順序：括號、乘除、加減');},
+ eqBars(a,b,n,still){const x=30,w=300,hh=46;let g=fbar(x,24,w,hh,b,a,'fc')+T(372,52,'','tm');g+=`<rect x="${x}" y="110" width="${w}" height="${hh}" class="fp"/><rect x="${x}" y="110" width="${r2(w*a/b)}" height="${hh}" class="fc"/>`+divs(x,110,w,hh,n,still?{}:{draw:true,d:.6})+`<rect x="${x}" y="110" width="${w}" height="${hh}" class="ln"/>`;g+=`<line x1="${r2(x+w*a/b)}" y1="16" x2="${r2(x+w*a/b)}" y2="166" class="dash"/>`;return S(360,180,g,'上下一樣長');},
+ sameAdd(a,b,n){const x=30,w=300,hh=50,u=w/n;let g=`<rect x="${x}" y="40" width="${w}" height="${hh}" class="fp"/><rect x="${x}" y="40" width="${r2(u*a)}" height="${hh}" class="fa pop" ${d(.3)}/>`;g+=`<rect x="${x}" y="130" width="${r2(u*b)}" height="${hh}" class="fb st1 mv" style="--tx:${r2(u*a)}px;--ty:-90px;--d:1.3s"/>`+divs(x,40,w,hh,n)+`<rect x="${x}" y="40" width="${w}" height="${hh}" class="ln"/>`+TF(180,220,'分母還是 '+n+'，數一數塗色幾格',2.4,'tm');return S(360,235,g,'同分母相加');},
+ multAdd(){const x=100,w=270,hh=44,u=w/6;let g='';
+  /* row 1: 1/3, then cut into sixths -> 2/6 */
+  g+=fbar(x,20,w,hh,3,1,'fa')+divs(x,20,w,hh,6,{draw:true,d:.6})+SF(50,42,1,3)+TF(408,48,'＝ 2/6',1.4,'t');
+  /* row 2: 1/6 stays */
+  g+=fbar(x,100,w,hh,6,1,'fb')+SF(50,122,1,6);
+  /* row 3: put them together */
+  g+=`<g class="fade" ${d(2.2)}><rect x="${x}" y="180" width="${w}" height="${hh}" class="fp"/><rect x="${x}" y="180" width="${r2(u*2)}" height="${hh}" class="fa"/></g>`;
+  g+=`<rect x="${x}" y="100" width="${r2(u)}" height="${hh}" class="fb mv" style="--tx:${r2(u*2)}px;--ty:80px;--d:2.8s"/>`;
+  g+=`<g class="fade" ${d(2.2)}>${divs(x,180,w,hh,6)}<rect x="${x}" y="180" width="${w}" height="${hh}" class="ln"/></g>`+TF(50,208,'合起來',2.2,'tm');
+  return S(450,240,g,'3分之1先變成6分之2，再加6分之1');},
+ white(w){const cx=150,cy=135,R=105;let g=`<circle cx="${cx}" cy="${cy}" r="${R}" class="fa st"/>`;g+=w>=360?'':`<path d="${sectorPath(cx,cy,R,0,w)}" class="fp st fade" ${d(.5)}/>`;const [lx,ly]=XY(cx,cy,R*.55,w/2);g+=`<text x="${lx}" y="${ly+6}" class="t fade" text-anchor="middle" ${d(.9)}>白 ${w}°</text>`;const [qx,qy]=XY(cx,cy,R*.55,w+(360-w)/2);g+=`<text x="${qx}" y="${qy+6}" class="t fade" text-anchor="middle" ${d(1.4)}>塗色 ?</text><circle cx="${cx}" cy="${cy}" r="4" class="fi"/>`;return S(300,270,g,'塗色和白色的圓心角');},
+ paren(){let g=`<rect x="20" y="60" width="360" height="90" rx="18" class="fp st"/>`;
+  g+=`<rect x="108" y="74" width="150" height="62" rx="12" class="fa pulse" ${d(.8)}/>`;
+  g+=T(74,118,'3 ×','t','style="font-size:34px"')+T(183,118,'( 9 − 6 )','t','style="font-size:34px"')+T(318,118,'＋ 8','t','style="font-size:34px"');
+  g+=TF(183,190,'括號裡先算',1.2)+`<path d="M183 168 L183 142" class="hi fade" ${d(1.2)}/>`;
+  return S(400,215,g,'有括號的算式');},
+ dots(){let g='';const r=6,sp=20,x0=20,y0=46;
+  g+=T(150,24,'6 排，每排 13 張椅子','tm');
+  let a='',b='';for(let i=0;i<6;i++)for(let j=0;j<13;j++){const c=`<circle cx="${x0+j*sp+10}" cy="${y0+i*sp+10}" r="${r+1}" class="${j<10?'fa':'fb'} st1"/>`;if(j<10)a+=c;else b+=c;}
+  g+=a+`<g class="mv" style="--tx:34px;--d:1.2s">${b}</g>`;
+  g+=TF(x0+100,y0+150,'6 × 10',2.2)+TF(x0+264,y0+150,'6 × 3',2.2);
+  return S(340,215,g,'6排13張椅子拆成10和3');},
+ avg(){const u=22,base=220,xs=[50,160,270],vals=[4,8,6];let g=`<line x1="30" y1="${base}" x2="370" y2="${base}" class="ln"/>`;
+  vals.forEach((v,b)=>{for(let l=0;l<v;l++){const mv=b===1&&l>=6;const tx=xs[0]-xs[1],ty=(l-(l-2))*u;g+=`<rect x="${xs[b]}" y="${base-(l+1)*u}" width="70" height="${u}" class="${['fa','fb','fc'][b]} st1 ${mv?'mv':''}" ${mv?`style="--tx:${tx}px;--ty:${ty}px;--d:${1.2+(l-6)*.4}s"`:''}/>`;}
+   g+=T(xs[b]+35,base+24,['第1天','第2天','第3天'][b],'tm');});
+  g+=`<line x1="34" y1="${base-6*u}" x2="366" y2="${base-6*u}" class="dash fade" ${d(2.6)}/>`+TF(330,base-6*u-10,'都變 6',2.8);
+  return S(400,255,g,'三天存的錢4、8、6，移多補少');},
+ choco(){let g='';const x=30,w=300,hh=46;
+  [[2,0],[4,1],[6,2]].forEach(([n,k],i)=>{const y=24+i*76;g+=fbar(x,y,w,hh,2,1,'fc');if(i)g+=divs(x,y,w,hh,n,{draw:true,d:.6+i*1.1});g+=TF(375,y+30,`切 ${n} 塊`,i?.6+i*1.1:0,'tm');});
+  return S(420,250,g,'巧克力切成2、4、6塊');},
+ cake8(){let g='';const x=40,y=70,w=320,hh=70;g+=fbar(x,y,w,hh,1,0);g+=`<rect x="${x}" y="${y}" width="240" height="${hh}" class="fc"/>`;
+  g+=divs(x,y,w,hh,8,{vanish:i=>i%2===1,d:1.4})+`<rect x="${x}" y="${y}" width="${w}" height="${hh}" class="ln"/>`;
+  g+=T(200,40,'8 塊吃掉 6 塊','t')+TF(200,180,'兩塊併成一塊 → 4 大塊吃掉 3 塊',2.2);
+  return S(400,200,g,'8分之6約成4分之3');},
+ milk(){let g='';const x=30,w=300,hh=46;
+  g+=fbar(x,30,w,hh,3,2,'fa')+divs(x,30,w,hh,12,{draw:true,d:1.4})+T(372,62,'哥哥','tm');
+  g+=fbar(x,130,w,hh,4,3,'fb')+divs(x,130,w,hh,12,{draw:true,d:1.4})+T(372,162,'妹妹','tm');
+  g+=TF(180,215,'都切成 12 小格，再數一數',2.4,'tm');
+  return S(420,235,g,'3分之2和4分之3比較');},
+ pizzaAdd(){let g='';const x=30,w=300,hh=44;
+  g+=fbar(x,24,w,hh,2,1,'fa')+divs(x,24,w,hh,6,{draw:true,d:1})+T(372,52,'早上','tm');
+  g+=fbar(x,104,w,hh,3,1,'fb')+divs(x,104,w,hh,6,{draw:true,d:1})+T(372,132,'下午','tm');
+  g+=`<g class="fade" ${d(2.2)}><rect x="${x}" y="184" width="${w}" height="${hh}" class="fp"/><rect x="${x}" y="184" width="150" height="${hh}" class="fa"/></g>`;
+  g+=`<rect x="${x}" y="104" width="100" height="${hh}" class="fb mv" style="--tx:150px;--ty:80px;--d:2.8s"/>`;
+  g+=`<g class="fade" ${d(2.2)}>${divs(x,184,w,hh,6)}<rect x="${x}" y="184" width="${w}" height="${hh}" class="ln"/></g>`+TF(372,212,'合起來',2.2,'tm');
+  return S(420,245,g,'2分之1加3分之1');},
+ para(){const u=30;let g=gridBg(360,240,u);
+  g+=`<path d="M120 200 L240 200 L300 80 L120 80Z" class="fb"/>`;
+  g+=`<path d="M60 200 L120 200 L120 80Z" class="fc mv" style="--tx:180px;--d:1.4s"/>`;
+  g+=`<path d="M60 200 L240 200 L300 80 L120 80Z" class="ln vanish" ${d(1.4)}/>`;
+  g+=`<path d="M120 200 L300 200 L300 80 L120 80Z" class="ln fade" ${d(2.6)}/>`;
+  g+=`<line x1="120" y1="80" x2="120" y2="200" class="dash"/><text x="110" y="146" class="t" text-anchor="end">高 4</text>`+T(180,224,'底 6');
+  return S(360,240,g,'平行四邊形切下三角形移到右邊變成長方形');},
+ tri(){let g=gridBg(390,240,30);
+  g+=`<path d="M60 200 L240 200 L150 110Z" class="fb st"/>`;
+  g+=`<path d="M60 200 L240 200 L150 110Z" class="fc st rot" style="--ox:195px;--oy:155px;--d:1s"/>`;
+  g+=`<line x1="150" y1="110" x2="150" y2="200" class="dash"/>`+T(150,224,'底 6')+`<text x="140" y="165" class="t" text-anchor="end">高 3</text>`;
+  return S(390,240,g,'兩個三角形拼成平行四邊形');},
+ trap(){let g=gridBg(300,240,30);
+  g+=`<path d="M40 200 L160 200 L130 110 L70 110Z" class="fb st"/>`;
+  g+=`<path d="M40 200 L160 200 L130 110 L70 110Z" class="fc st rot" style="--ox:145px;--oy:155px;--d:1s"/>`;
+  g+=`<line x1="70" y1="110" x2="70" y2="200" class="dash"/>`+T(100,100,'上底 2')+T(100,224,'下底 4')+`<text x="56" y="162" class="t" text-anchor="end">高 3</text>`;
+  g+=TF(150,256,'拼起來的底 = 上底 + 下底',2.6,'tm');
+  return S(300,270,g,'兩個梯形拼成平行四邊形');},
+ pizzas(){let g='';[80,200,320].forEach((cx,k)=>{const cy=105,R=50;
+   g+=`<circle cx="${cx}" cy="${cy}" r="${R}" class="fc st pop" ${d(.2*k)}/>`;
+   g+=`<path d="${sectorPath(cx,cy,R,0,90)}" class="fa st1 fade" ${d(1.8+k*.35)}/>`;
+   g+=`<line x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" class="ln draw" pathLength="1" ${d(.8)}/><line x1="${cx}" y1="${cy-R}" x2="${cx}" y2="${cy+R}" class="ln draw" pathLength="1" ${d(1.1)}/>`;});
+  g+=TF(200,195,'4 個人分，每個披薩切 4 片',1,'tm')+TF(200,225,'黃色是小明拿到的',2.8);
+  return S(400,240,g,'3個披薩平分給4人');},
+ candies(){let g='';
+  [0,1,2].forEach(j=>{g+=`<rect x="${25+j*125}" y="120" width="105" height="92" rx="14" class="${j===0?'fp':'fp'} st"/>`;});
+  g+=`<rect x="22" y="117" width="111" height="98" rx="16" class="no hi fade" ${d(3.6)}/>`;
+  for(let i=0;i<12;i++){const sx=28+i*29,sy=50,b=i%3,s=Math.floor(i/3),tx=25+b*125+30+(s%2)*45-sx,ty=148+Math.floor(s/2)*34-sy;
+   g+=`<circle cx="${sx}" cy="${sy}" r="11" class="${['fa','fb','fc'][b]} st1 mv" style="--tx:${tx}px;--ty:${ty}px;--d:${.5+i*.2}s"/>`;}
+  g+=T(200,24,'12 顆糖，平分成 3 份','tm')+TF(78,236,'妹妹拿 1 份',3.6);
+  return S(400,245,g,'12顆糖平分成3份');},
+ toast(){let g='';for(let i=0;i<8;i++)g+=`<rect x="${30+i*42}" y="60" width="38" height="60" rx="8" class="${i<4?'fa':'fp'} st1 ${i<4?'fade':''}" ${i<4?d(1.6):''}/>`;
+  g+=`<line x1="198" y1="40" x2="198" y2="140" class="hi draw" pathLength="1" ${d(.6)}/>`+TF(200,170,'8 片的一半',1.6);
+  return S(400,190,g,'8片吐司的一半');},
+ sector(){const cx=200,cy=135,R=100,[ex,ey]=XY(cx,cy,R,70);let g=`<circle cx="${cx}" cy="${cy}" r="${R}" class="fc st"/>`;
+  g+=`<path d="${sectorPath(cx,cy,R,0,70)}" class="fa fade" ${d(2.3)}/>`;
+  g+=`<line x1="${cx}" y1="${cy}" x2="${cx+R}" y2="${cy}" class="hi draw" pathLength="1" ${d(.4)}/><line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" class="hi draw" pathLength="1" ${d(1)}/>`;
+  g+=`<path d="M${cx+R} ${cy} A${R} ${R} 0 0 0 ${ex} ${ey}" class="hi draw" style="stroke:var(--ok);--d:1.6s" pathLength="1"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="5" class="fi"/>`+TF(cx-8,cy+26,'圓心',.2);
+  g+=TF(cx+52,cy+24,'半徑',.7)+TF(cx-6,cy-56,'半徑',1.3)+TF(cx+104,cy-72,'弧',1.9);
+  return S(400,250,g,'扇形：兩條半徑和一段弧');},
+ sweep(){return S(300,290,`<circle cx="150" cy="170" r="110" class="dash"/><path id="swp" d="" class="fa st"/><line id="swr" x1="150" y1="170" x2="260" y2="170" class="hi"/><line x1="150" y1="170" x2="260" y2="170" class="hi"/><circle cx="150" cy="170" r="5" class="fi"/><text id="swt" x="150" y="36" class="t" text-anchor="middle" style="font-size:26px">0°</text>`,'圓心角轉動');},
+ cake6(){return pieV(6,1,{cut:.3});}
+};
+/* the sweeping central angle: 0 → 90 (pause) → 180 (pause) → 360 */
+function sweepAnim(el){const p=$('#swp',el),r=$('#swr',el),t=$('#swt',el);if(!p)return;
+  const calm=document.body.classList.contains('calm')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const keys=[[0,0],[90,1200],[90,2200],[180,3400],[180,4400],[359.9,6000]];const names={90:'90°　四分之一圓',180:'180°　半圓',359.9:'360°　整個圓'};
+  const set=a=>{const [x,y]=XY(150,170,110,a);r.setAttribute('x2',x);r.setAttribute('y2',y);p.setAttribute('d',a<.5?'':sectorPath(150,170,110,0,a));t.textContent=names[a]||Math.round(a)+'°';};
+  if(calm){set(180);t.textContent='180°　半圓';return;}
+  const t0=performance.now();let id;
+  const step=now=>{if(!el.isConnected)return;const e=now-t0;let a=359.9;for(let i=1;i<keys.length;i++){if(e<keys[i][1]){const [a0,s0]=keys[i-1],[a1,s1]=keys[i];a=a0+(a1-a0)*(e-s0)/(s1-s0);break;}}
+   set(e>=6000?359.9:r2(a));if(e<6000)id=requestAnimationFrame(step);};
+  id=requestAnimationFrame(step);}
+
+/* small static drawings for practice items */
+function paraV(b,hh,s){return S(380,210,`<path d="M40 170 L280 170 L350 60 L110 60Z" class="fb st"/><line x1="110" y1="60" x2="110" y2="170" class="dash"/><path d="M110 158 h12 v12" class="st1 no"/><text x="100" y="122" class="t" text-anchor="end">${hh}</text>${T(160,196,b)}<text x="328" y="122" class="t">${s}</text>`,'平行四邊形');}
+function triV(b,hh){return S(340,210,`<path d="M40 170 L300 170 L190 60Z" class="fb st"/><line x1="190" y1="60" x2="190" y2="170" class="dash"/><path d="M190 158 h12 v12" class="st1 no"/><text x="180" y="124" class="t" text-anchor="end">${hh}</text>${T(170,196,b)}`,'三角形');}
+function trapV(a,b,hh){return S(360,215,`<path d="M30 170 L320 170 L240 60 L100 60Z" class="fb st"/><line x1="100" y1="60" x2="100" y2="170" class="dash"/><path d="M100 158 h12 v12" class="st1 no"/>${T(170,48,a)}${T(175,196,b)}<text x="90" y="122" class="t" text-anchor="end">${hh}</text>`,'梯形');}
+function twoBars(a1,d1,a2,d2,l1,l2){return S(420,170,fbar(30,24,300,44,d1,a1,'fa')+T(375,52,l1||'','tm')+fbar(30,104,300,44,d2,a2,'fb')+T(375,132,l2||'','tm'),'分數條');}
+function groupsV(N,n){const W=360;let g='';for(let i=0;i<n;i++)g+=`<rect x="${20+i*W/n}" y="30" width="${r2(W/n)}" height="60" class="${i===0?'fa':'fp'} st"/>`;g+=`<path d="M20 102 Q ${20+W/2} 128 ${20+W} 102" class="hi no"/>`+T(200,150,`${N} 平分成 ${n} 份，拿 1 份`);return S(400,165,g,'平分');}
+
+/* ================= units ================= */
+/* question kinds: choice {opts,a} · num {a,unit} · multi {parts:[{pre,a,den,post}]} · frac {n,d,simplest} */
+const C=(p,opts,a,hint)=>({t:'choice',p,opts,a,hint});
+const N=(p,a,unit,hint)=>({t:'num',p,a,unit,hint});
+const M=(p,parts,hint)=>({t:'multi',p,parts,hint});
+const FQ=(p,n,dd,simplest,hint,exact)=>({t:'frac',p,n,d:dd,simplest,hint,exact});
+const sh=(opts,a)=>{const idx=G.shuffle(opts.map((_,i)=>i));return [idx.map(i=>opts[i]),idx.indexOf(a)];};
+const CS=(p,opts,a,hint)=>{const [o,k]=sh(opts,a);return C(p,o,k,hint);};
+
+const UNITS=[
+{no:6,name:'整數四則運算',color:'var(--u6)',topics:['先算哪一個','有括號先算括號','先乘除、後加減','一步一步算'],glyph:'3 × (9 − 6) + 8',
+ learn:()=>[
+  {title:'計算的順序',story:'算式裡有好幾種符號時，要照順序：<b>① 括號 → ② 乘、除 → ③ 加、減</b>。同一種就由左而右算。',art:ART.stairs,
+   qs:[C('20 ＋ 4 × 5 − 7，要先算哪一個？',['20 ＋ 4','4 × 5','5 − 7'],1,'先乘除、後加減。'),M('算過的寫答案，還沒算的照抄：',[{pre:'＝ 20 ＋',a:20,post:'− 7'}],'4 × 5 ＝ 20。'),N('20 ＋ 20 − 7 ＝ ?',33,'','由左而右：20 ＋ 20 ＝ 40，40 − 7 ＝ 33。')],
+   key:'沒有括號：先乘除、後加減。'},
+  {title:'有括號，先算括號',story:'算式裡有 <b>( )</b> 括號，括號裡面的要<b>最先</b>算。',art:ART.paren,
+   qs:[C('3 × (9 − 6) ＋ 8，要先算哪一個？',['3 × 9','9 − 6','6 ＋ 8'],1,'括號裡的要最先算。'),M('先算括號：',[{pre:'＝ 3 ×',a:3,post:'＋ 8'}],'9 − 6 ＝ 3。'),M('再算乘：',[{pre:'＝',a:9,post:'＋ 8'}],'3 × 3 ＝ 9。'),N('最後：9 ＋ 8 ＝ ?',17)],
+   key:'① 括號 → ② 乘 → ③ 加減。算過的寫答案，還沒算的照抄。'}
+ ],
+ drills:()=>{
+  const op=()=>G.pick(['＋','−']),calc=(x,o,y)=>o==='＋'?x+y:x-y;
+  /* a × (b ± c) ± d */
+  const t1=()=>{let a,b,c,o1,r,dd,o2,f;do{a=G.int(2,9);o1=op();b=G.int(2,12);c=G.int(1,8);r=calc(b,o1,c);dd=G.int(5,20);o2=op();f=calc(a*r,o2,dd);}while(r<1||r>9||f<0);
+   return{story:`算一算：<b>${a} × (${b} ${o1} ${c}) ${o2} ${dd}</b>`,art:()=>formula(`${a} × (${b} ${o1} ${c}) ${o2} ${dd}`),qs:[C('先算哪一個？',[`${a} × ${b}`,`${b} ${o1} ${c}`,`${c} ${o2} ${dd}`],1,'有括號，先算括號。'),M('先算括號：',[{pre:`＝ ${a} ×`,a:r,post:`${o2} ${dd}`}]),M('再算乘：',[{pre:'＝',a:a*r,post:`${o2} ${dd}`}]),N(`${a*r} ${o2} ${dd} ＝ ?`,f)]};};
+  /* a + b × (c + d) */
+  const t2=()=>{let a,b,c,dd,r;do{a=G.int(5,30);b=G.int(2,9);c=G.int(1,6);dd=G.int(1,6);r=c+dd;}while(r>9);
+   return{story:`算一算：<b>${a} ＋ ${b} × (${c} ＋ ${dd})</b>`,art:()=>formula(`${a} ＋ ${b} × (${c} ＋ ${dd})`),qs:[C('先算哪一個？',[`${a} ＋ ${b}`,`${b} × ${c}`,`${c} ＋ ${dd}`],2,'有括號，先算括號。'),M('先算括號：',[{pre:`＝ ${a} ＋ ${b} ×`,a:r}]),M('再算乘：',[{pre:`＝ ${a} ＋`,a:b*r}]),N(`${a} ＋ ${b*r} ＝ ?`,a+b*r)]};};
+  /* a − (b + c) × d */
+  const t3=()=>{let b,c,dd,r;do{b=G.int(1,6);c=G.int(1,6);r=b+c;dd=G.int(2,9);}while(r>9);const a=Math.ceil((r*dd+1)/10)*10;
+   return{story:`算一算：<b>${a} − (${b} ＋ ${c}) × ${dd}</b>`,art:()=>formula(`${a} − (${b} ＋ ${c}) × ${dd}`),qs:[C('先算哪一個？',[`${a} − ${b}`,`${b} ＋ ${c}`,`${c} × ${dd}`],1,'有括號，先算括號。'),M('先算括號：',[{pre:`＝ ${a} −`,a:r,post:`× ${dd}`}]),M('再算乘：',[{pre:`＝ ${a} −`,a:r*dd}]),N(`${a} − ${r*dd} ＝ ?`,a-r*dd)]};};
+  /* a ± b × c ± d (no brackets) */
+  const t4=()=>{let a,b,c,dd,o1,o2,f;do{a=G.int(10,50);b=G.int(2,9);c=G.int(2,9);dd=G.int(1,9);o1=op();o2=op();f=calc(calc(a,o1,b*c),o2,dd);}while(calc(a,o1,b*c)<0||f<0);
+   return{story:`算一算：<b>${a} ${o1} ${b} × ${c} ${o2} ${dd}</b>`,art:()=>formula(`${a} ${o1} ${b} × ${c} ${o2} ${dd}`),qs:[C('先算哪一個？',[`${a} ${o1} ${b}`,`${b} × ${c}`,`${c} ${o2} ${dd}`],1,'先乘除、後加減。'),M('先算乘：',[{pre:`＝ ${a} ${o1}`,a:b*c,post:`${o2} ${dd}`}]),M('由左而右：',[{pre:'＝',a:calc(a,o1,b*c),post:`${o2} ${dd}`}]),N(`${calc(a,o1,b*c)} ${o2} ${dd} ＝ ?`,f)]};};
+  t1.sk=t2.sk=t3.sk='有括號：先算括號';t4.sk='沒括號：先乘除、後加減';
+  return G.shuffle([t1,t1,t2,t3,t4,t4]);}},
+
+{no:7,name:'擴、約分與加減',color:'var(--u7)',topics:['看圖數一數','擴分','分母一樣的加減','分母不一樣：先通分'],glyph:F(1,3)+'&nbsp;+&nbsp;'+F(1,6),
+ learn:()=>[
+  {title:'擴分：數一數',story:`上面是 ${F(1,3)}。下面切成 <b>6</b> 格，塗色一樣長。`,art:()=>ART.eqBars(1,3,6),
+   qs:[M('數一數，下面塗色有幾格？',[{pre:F(1,3)+' ＝',a:2,den:6}],'上下一樣長，塗色一樣多。'),C('分母 3 × 2 ＝ 6，分子要怎麼變？',['也乘 2','加 2','不變'],0,'分母乘幾，分子也乘幾。')],
+   key:'擴分：分母乘幾，分子也乘幾，分數一樣大。'},
+  {title:'分母一樣的加法',story:`一盒蛋糕切成 5 塊。哥哥吃 2 塊（${F(2,5)}），妹妹吃 1 塊（${F(1,5)}）。`,art:()=>ART.sameAdd(2,1,5),
+   qs:[M('分母不變，只算分子：',[{pre:F(2,5)+' ＋ '+F(1,5)+' ＝',a:3,den:5}],'2 ＋ 1 ＝ 3。')],
+   key:'分母一樣：分母不變，只算分子。'},
+  {title:'分母不一樣，先通分',story:`${F(1,3)} ＋ ${F(1,6)}：分母不一樣。把 ${F(1,3)} 切細成 6 格，變成 ${F(2,6)}，再和 ${F(1,6)} 合起來。`,art:ART.multAdd,
+   qs:[N('分母 3 × ? ＝ 6',2),M('分子也乘 2：',[{pre:F(1,3)+' ＝',a:2,den:6}]),M('分母一樣了，分子相加：',[{pre:F(2,6)+' ＋ '+F(1,6)+' ＝',a:3,den:6}])],
+   key:'分母不一樣：看分母乘幾，分子也乘幾；變一樣再加減。'}
+ ],
+ drills:()=>{
+  const BASE=[[1,2],[1,3],[2,3],[1,4],[3,4],[2,5],[3,5],[1,5]];
+  const expand=()=>{let a,b,k;do{[a,b]=G.pick(BASE);k=G.int(2,4);}while(b*k>12);return{story:`擴分：${F(a,b)} ＝ ${F('（　）',b*k)}`,art:()=>ART.eqBars(a,b,b*k,true),qs:[N(`分母：${b} × ? ＝ ${b*k}`,k),M(`分子也乘 ${k}：${a} × ${k}`,[{pre:F(a,b)+' ＝',a:a*k,den:b*k}])]};};
+  const same=()=>{const [a,b]=G.pick(BASE.filter(x=>x[1]<=4));const k=G.int(2,3);let w=[[a,b*k],[a*k,b*k+1],[a+1,b*k]].filter(([n,m])=>n<m&&n*b!==a*m);const opts=[F(a*k,b*k),...w.slice(0,2).map(([n,m])=>F(n,m))];
+   return{story:`哪一個和 ${F(a,b)} 一樣大？`,art:()=>ART.eqBars(a,b,b*k,true),qs:[CS(`和 ${F(a,b)} 一樣大的是？`,opts,0,`分母和分子都乘 ${k}。`)]};};
+  const sameD=()=>{const dd=G.int(4,9),o=G.pick(['＋','−']);let x,y;do{x=G.int(1,dd-1);y=G.int(1,dd-1);}while(o==='＋'?x+y>=dd:x<=y);const r=o==='＋'?x+y:x-y;
+   return{story:`算一算：${F(x,dd)} ${o} ${F(y,dd)}`,art:()=>S(420,90,fbar(30,20,300,48,dd,o==='＋'?x+y:x,'fa'),'分數條'),qs:[M(`分母一樣：分母不變，分子 ${x} ${o} ${y}`,[{pre:`${F(x,dd)} ${o} ${F(y,dd)} ＝`,a:r,den:dd}])]};};
+  const diffD=()=>{let b,k,L,x,y,o,r;do{[b,L]=G.pick([[2,4],[2,6],[2,8],[3,6],[3,9],[4,8]]);k=L/b;x=G.int(1,b-1);y=G.int(1,L-1);o=G.pick(['＋','−']);r=o==='＋'?x*k+y:x*k-y;}while(r<=0||r>=L);
+   return{story:`算一算：${F(x,b)} ${o} ${F(y,L)}`,art:()=>twoBars(x,b,y,L),qs:[N(`分母：${b} × ? ＝ ${L}`,k),M(`分子也乘 ${k}：`,[{pre:F(x,b)+' ＝',a:x*k,den:L}]),M('分母一樣了，再算分子：',[{pre:`${F(x*k,L)} ${o} ${F(y,L)} ＝`,a:r,den:L}])]};};
+  expand.sk='擴分';same.sk='找一樣大的分數';sameD.sk='分母一樣的加減';diffD.sk='分母不一樣的加減';
+  return G.shuffle([expand,expand,same,sameD,sameD,diffD,diffD]);}},
+
+{no:8,name:'面積',color:'var(--u8)',topics:['找出「高」','平行四邊形＝底×高','三角形＝底×高÷2','梯形的面積'],glyph:'底 × 高 ÷ 2',
+ learn:()=>[
+  {title:'平行四邊形的面積',story:'停車格是平行四邊形：底 <b>6</b> 公尺、高 <b>4</b> 公尺。把左邊切下來，移到右邊……',art:ART.para,
+   qs:[C('移過去以後，變成什麼形狀？',['長方形','三角形','圓形'],0),C('「高」是哪一條？',['和底垂直的虛線','斜斜的那條邊'],0,'高一定要和底垂直，有直角記號。'),N('面積 = 底 × 高 = 6 × 4 = ?',24,'平方公尺')],
+   key:'平行四邊形面積 = 底 × 高；斜斜的邊不是高。'},
+  {title:'三角形的面積',story:'三角旗的底 <b>6</b> 公分、高 <b>3</b> 公分。兩個一樣的三角形，可以拼成平行四邊形。',art:ART.tri,
+   qs:[N('先乘：6 × 3 = ?',18),N('三角形是一半，再 ÷ 2：18 ÷ 2 = ?',9,'平方公分')],
+   key:'三角形面積 = 底 × 高 ÷ 2（別忘了 ÷ 2）。'},
+  {title:'梯形的面積',story:'菜園是梯形：上底 <b>2</b>、下底 <b>4</b>、高 <b>3</b> 公尺。兩個一樣的梯形拼一拼……',art:ART.trap,
+   qs:[N('① 括號：2 ＋ 4 = ?',6),N('② 乘：6 × 3 = ?',18),N('③ ÷ 2：18 ÷ 2 = ?',9,'平方公尺')],
+   key:'梯形面積 = (上底 + 下底) × 高 ÷ 2：① 括號 ② 乘 ③ ÷2。'}
+ ],
+ drills:()=>{
+  const findH=()=>{const b=G.int(4,9),hh=G.int(2,6),s=hh+G.int(1,2);const sw=G.int(0,1);const L1=sw?'ㄆ':'ㄅ',L2=sw?'ㄅ':'ㄆ';
+   return{story:'找出平行四邊形的「高」。',art:()=>S(380,210,`<path d="M40 170 L280 170 L350 60 L110 60Z" class="fb st"/><line x1="110" y1="60" x2="110" y2="170" class="dash"/><path d="M110 158 h12 v12" class="st1 no"/><text x="96" y="122" class="t" text-anchor="end">${L1}</text><text x="328" y="122" class="t">${L2}</text>${T(160,196,'底')}`,'找高'),qs:[C('高是哪一條？',['ㄅ','ㄆ'],sw?1:0,'和底垂直、有直角記號 ∟ 的才是高。')]};};
+  const para=()=>{const b=G.int(3,9),hh=G.int(2,9),s=hh+G.int(1,2);return{story:`平行四邊形：底 <b>${b}</b> 公分、高 <b>${hh}</b> 公分、斜邊 <b>${s}</b> 公分。面積是多少？`,art:()=>paraV(b,hh,s),qs:[M('底和高是多少？',[{pre:'底 ＝',a:b,post:'公分'},{pre:'高 ＝',a:hh,post:'公分'}],`${s} 公分是斜邊，不要用。`),N(`底 × 高：${b} × ${hh} = ?`,b*hh,'平方公分')]};};
+  const tri=()=>{let b,hh;do{b=G.int(2,9);hh=G.int(2,9);}while((b*hh)%2||b*hh>18);return{story:`三角形：底 <b>${b}</b> 公分、高 <b>${hh}</b> 公分。面積是多少？`,art:()=>triV(b,hh),qs:[M('把數字填進公式：底 × 高 ÷ 2',[{pre:'＝',a:b},{pre:'×',a:hh,post:'÷ 2'}]),N(`先乘：${b} × ${hh} = ?`,b*hh),N(`再 ÷ 2：${b*hh} ÷ 2 = ?`,b*hh/2,'平方公分','別忘了三角形要 ÷ 2。')]};};
+  const trap=()=>{let a,b,hh;do{a=G.int(1,5);b=a+G.int(1,4);hh=G.int(2,6);}while(((a+b)*hh)%2||(a+b)>9||(a+b)*hh>18);return{story:`梯形：上底 <b>${a}</b>、下底 <b>${b}</b>、高 <b>${hh}</b> 公分。面積是多少？`,art:()=>trapV(a,b,hh),qs:[M('填進公式：（上底＋下底）× 高 ÷ 2',[{pre:'＝（',a},{pre:'＋',a:b},{pre:'）×',a:hh,post:'÷ 2'}]),N(`① 括號：${a} ＋ ${b} = ?`,a+b),N(`② 乘：${a+b} × ${hh} = ?`,(a+b)*hh),N(`③ ÷ 2：${(a+b)*hh} ÷ 2 = ?`,(a+b)*hh/2,'平方公分')]};};
+  findH.sk='找出高';para.sk='平行四邊形面積';tri.sk='三角形面積';trap.sk='梯形面積';
+  return G.shuffle([findH,para,para,tri,tri,trap,trap]);}},
+
+{no:9,name:'乘以幾分之一',color:'var(--u9)',topics:['整數÷整數寫成分數','×½ 就是 ÷2','×⅓ 就是 ÷3','應用題'],glyph:'6 × '+F(1,2)+' = 6 ÷ 2',
+ learn:()=>[
+  {title:'除法寫成分數',story:'<b>3</b> 個披薩平分給 <b>4</b> 個人，每人分到 3 ÷ 4 個。',art:ART.pizzas,
+   qs:[C('3 ÷ 4 寫成分數是哪一個？',[F(4,3),F(3,4)],1,'被除數 3 寫上面，除數 4 寫下面。'),FQ('再寫一次：3 ÷ 4 ＝ ?',3,4,false,'上面寫 3，下面寫 4。',true)],
+   key:'整數 ÷ 整數可以寫成分數：被除數寫上面，除數寫下面。'},
+  {title:`× ${F(1,2)} 就是 ÷ 2`,story:'8 片吐司的一半，就是 8 × '+F(1,2)+'。',art:ART.toast,
+   qs:[C(`8 × ${F(1,2)} 和 8 ÷ 2 的答案？`,['一樣','不一樣'],0),N('8 ÷ 2 = ?',4,'片')],
+   key:`× ${F(1,2)} 就是 ÷ 2；× ${F(1,3)} 就是 ÷ 3。`},
+  {title:`× ${F(1,3)} 就是 ÷ 3`,story:`桌上有 <b>12</b> 顆糖，妹妹拿走它的 ${F(1,3)}。`,art:ART.candies,
+   qs:[M(`12 × ${F(1,3)} 改成除法：`,[{pre:'12 ÷',a:3}]),N('12 ÷ 3 = ?',4,'顆','3 × 4 ＝ 12。')],
+   key:`× 幾分之一，就改成 ÷ 幾。`}
+ ],
+ drills:()=>{
+  const pickAB=()=>{let a,b;do{a=G.int(1,8);b=G.int(2,9);}while(a>=b);return[a,b];};
+  const divC=()=>{const [a,b]=pickAB();return{story:`${a} ÷ ${b} 寫成分數是哪一個？`,art:()=>formula(`${a} ÷ ${b}`),qs:[CS(`${a} ÷ ${b} ＝ ?`,[F(a,b),F(b,a)],0,'被除數寫上面，除數寫下面。')]};};
+  const divF=()=>{const [a,b]=pickAB();return{story:`把 ${a} ÷ ${b} 寫成分數。`,art:()=>formula(`${a} ÷ ${b}`),qs:[FQ(`${a} ÷ ${b} ＝ ?`,a,b,false,`上面寫 ${a}，下面寫 ${b}。`,true)]};};
+  const mul=()=>{const n=G.int(2,9),k=G.int(2,9),NN=n*k;return{story:`算一算：${NN} × ${F(1,n)}`,art:()=>groupsV(NN,n),qs:[M('改成除法再算：',[{pre:`${NN} × ${F(1,n)} ＝ ${NN} ÷`,a:n},{pre:'＝',a:k}],`× ${F(1,n)} 就是 ÷ ${n}。`)]};};
+  const app=()=>{const n=G.pick([2,3,4]),k=G.int(2,9),NN=n*k;const it=G.pick([['1 袋米重','公斤','袋米重幾公斤'],['1 條繩子長','公尺','條繩子長幾公尺'],['1 盒餅乾有','片','盒餅乾有幾片']]);
+   return{story:`${it[0]} <b>${NN}</b> ${it[1]}，${F(1,n)} ${it[2]}？`,art:()=>groupsV(NN,n),qs:[CS('① 列式：',[`${NN} × ${F(1,n)}`,`${NN} × ${n}`,`${NN} ＋ ${n}`],0),M('② 改成除法：',[{pre:`${NN} ÷`,a:n},{pre:'＝',a:k,post:it[1]}])]};};
+  divC.sk=divF.sk='除法寫成分數';mul.sk='×幾分之一＝÷幾';app.sk='應用題';
+  return G.shuffle([divC,divF,divF,mul,mul,app,app]);}},
+
+{no:10,name:'扇形',color:'var(--u10)',topics:['是不是扇形','半圓 180°、整圓 360°','塗色＝360－白色','幾分之幾圓'],glyph:S(60,44,'<path d="M8 38 L52 38 A44 44 0 0 0 30 0Z" class="fa st1"/>','扇形'),
+ learn:()=>[
+  {title:'認識扇形',story:'一片披薩的形狀就是 <b>扇形</b>：頂點在圓心，2 條半徑，加上 1 條弧。',art:ART.sector,
+   qs:[C('扇形尖尖的頂點在哪裡？',['圓心','圓的外面'],0),CS('扇形是由什麼圍成的？',['2 條半徑和 1 條弧','3 條直線'],0)],
+   key:'扇形 = 頂點在圓心 + 2 條半徑 + 1 條弧。'},
+  {title:'半圓和一整個圓',story:'兩條半徑夾成的角叫 <b>圓心角</b>。看半徑轉一圈：',art:ART.sweep,anim:sweepAnim,
+   qs:[N('半圓的圓心角是幾度？',180,'度'),N('一整個圓是幾度？',360,'度')],
+   key:'半圓 180°，一整個圓 360°。'},
+  {title:'塗色的圓心角',story:'白色的角是 <b>120°</b>，塗色的角是幾度？',art:()=>ART.white(120),
+   qs:[N('一整圈是幾度？',360,'度'),N('塗色 ＝ 360 − 白色：360 − 120 = ?',240,'度')],
+   key:'塗色的圓心角 ＝ 360 − 白色的角。'},
+  {title:'幾分之幾圓',story:'蛋糕 <b>平分成 6 塊</b>，塗色的是吃掉的。',art:ART.cake6,
+   qs:[N('平分成幾份？',6,'份'),N('塗了幾份？',1,'份'),FQ('是幾分之幾圓？（平分幾份→分母，塗幾份→分子）',1,6,false,'',true)],
+   key:'平分幾份 → 分母；塗幾份 → 分子。'}
+ ],
+ drills:()=>{
+  const isS=()=>{const k=G.pick(['sector','sector','off','seg','tri']);const why={sector:'頂點在圓心，2 條半徑和 1 條弧。',off:'頂點不在圓心。',seg:'沒有 2 條半徑。',tri:'第 3 條不是弧，是直線。'}[k];
+   return{story:'虛線是圓。塗色的圖形是不是扇形？',art:()=>shp[k]().replace('viewBox="0 0 150 140"','viewBox="0 0 150 140" style="max-width:320px"'),qs:[C('是扇形嗎？',['○ 是','× 不是'],k==='sector'?0:1,'頂點在圓心？第 3 條是弧？')]};};
+  const half=()=>{const t=G.int(0,1);return{story:t?'一整個圓的圓心角是幾度？':'半圓的圓心角是幾度？',art:()=>sectorV(t?360:180,{lab:false}),qs:[N(t?'一整個圓 ＝ ? 度':'半圓 ＝ ? 度',t?360:180,'度')]};};
+  const white=()=>{const w=G.pick([30,60,90,120,150,180]);return{story:`白色的角是 <b>${w}°</b>，塗色的圓心角是幾度？`,art:()=>ART.white(w),qs:[N('一整圈是幾度？',360,'度'),N(`360 − ${w} = ?`,360-w,'度','塗色 ＝ 360 − 白色。')]};};
+  const frac=()=>{const n=G.pick([3,4,6,8]),k=G.int(1,n-1);return{story:'數一數，塗色是幾分之幾圓？',art:()=>pieV(n,k),qs:[M('數一數：',[{pre:'平分',a:n,post:'份'},{pre:'塗',a:k,post:'份'}]),FQ('是幾分之幾圓？',k,n,false,'平分幾份 → 分母；塗幾份 → 分子。',true)]};};
+  isS.sk='是不是扇形';half.sk='半圓與整圓';white.sk='塗色＝360－白色';frac.sk='幾分之幾圓';
+  return G.shuffle([isS,isS,half,white,white,frac,frac]);}}
+];
+
+/* ================= storage ================= */
+let store={};try{store=JSON.parse(localStorage.getItem('anim610-v1')||'{}')||{};}catch(e){store={};}
+const save=()=>{try{localStorage.setItem('anim610-v1',JSON.stringify(store));}catch(e){}};
+const starsHTML=n=>`<span class="stars" aria-label="${n} 個笑臉">${[0,1,2].map(i=>ICON.star.replace('<svg',`<svg class="${i<n?'on':''}"`)).join('')}</span>`;
+
+/* ================= speech ================= */
+function toSpeech(el){const c=el.cloneNode(true);c.querySelectorAll('svg,button').forEach(x=>x.remove());c.querySelectorAll('.fr').forEach(f=>f.replaceWith(f.getAttribute('aria-label')||''));c.querySelectorAll('.box').forEach(b=>b.replaceWith('多少'));
+  return c.textContent.replace(/×/g,'乘').replace(/÷/g,'除以').replace(/[＝=]/g,'等於').replace(/−/g,'減').replace(/[+＋]/g,'加').replace(/○/g,'圈圈').replace(/＞/g,'大於').replace(/＜/g,'小於').replace(/\?/g,'多少').replace(/°/g,'度').replace(/→/g,'，再').replace(/\s+/g,' ');}
+function speak(t){try{const s=speechSynthesis;s.cancel();const u=new SpeechSynthesisUtterance(t.replace(/乘/g,'成').replace(/長方形/g,'常方形'));u.lang='zh-TW';u.rate=.82;const v=s.getVoices().find(v=>/zh[-_]TW/i.test(v.lang))||s.getVoices().find(v=>/^zh/i.test(v.lang));if(v)u.voice=v;s.speak(u);}catch(e){}}
+const sayBtn=el=>{const b=h(`<button class="say" type="button" aria-label="唸給我聽">${ICON.say}</button>`);b.onclick=()=>speak(toSpeech(el));return b;};
+
+/* ================= question widget ================= */
+let keyHandler=null;
+document.addEventListener('keydown',e=>{if(keyHandler)keyHandler(e);});
+const ansText=q=>q.t==='choice'?q.opts[q.a]:q.t==='num'?`${q.a}${q.unit?' '+q.unit:''}`:q.t==='frac'?F(q.n,q.d):q.parts.map(p=>`${p.pre||''} ${p.den?F(p.a,p.den):p.a}`).join('　');
+function ask(q,host,u,done){
+  const w=h(`<div class="q"><div class="qp"><div class="t">${q.p}</div></div><div class="qa"></div><div class="fb" aria-live="polite"></div></div>`);
+  $('.qp',w).prepend(sayBtn($('.qp .t',w)));host.append(w);
+  const qa=$('.qa',w),fb=$('.fb',w);let tries=0,over=false;
+  const msg=(c,t)=>{fb.innerHTML=`<div class="${c}">${c==='ok'?ICON.check:ICON.bulb}<span>${t}</span></div>`;};
+  const win=()=>{over=true;keyHandler=null;w.classList.add('done');const p=$('.pad',w);if(p)p.remove();msg('ok',OK[Math.floor(Math.random()*OK.length)]);setTimeout(()=>done(tries===0),650);};
+  const lose=choice=>{tries++;if(tries===1)msg('bad','再想一想。'+(q.hint?'<br>提示：'+q.hint:''));else msg('bad',`答案是 <b>${ansText(q)}</b>，${choice?'請點它。':'請你把它填進去。'}`);};
+  if(q.t==='choice'){
+    q.opts.forEach((o,i)=>{const b=h(`<button class="opt" type="button">${o}</button>`);b.onclick=()=>{if(over)return;if(i===q.a){b.classList.add('ok');$$('.opt',qa).forEach(x=>x.classList.remove('show'));win();}else{b.classList.remove('bad');void b.offsetWidth;b.classList.add('bad');lose(true);if(tries>=2)$$('.opt',qa)[q.a].classList.add('show');}};qa.append(b);});
+    keyHandler=null;w.scrollIntoView({block:'nearest',behavior:'smooth'});return;}
+  /* typed answers: slots shown as boxes, filled with the on-screen pad */
+  const slots=[];const box=()=>{slots.push('');return `<button type="button" class="box" data-i="${slots.length-1}" aria-label="答案格"></button>`;};
+  if(q.t==='num')qa.innerHTML=`<span class="part">${box()}${q.unit?`<span>${q.unit}</span>`:''}</span>`;
+  else if(q.t==='multi')qa.innerHTML=q.parts.map(p=>`<span class="part">${p.pre?`<span>${p.pre}</span>`:''}${p.den?`<span class="fr">${box()}<span>${p.den}</span></span>`:box()}${p.post?`<span>${p.post}</span>`:''}</span>`).join('');
+  else qa.innerHTML=`<span class="part"><span class="fr">${box()}${box()}</span></span>`;
+  const boxes=$$('.box',qa);let act=0;
+  const paint=()=>boxes.forEach((b,i)=>{b.textContent=slots[i];b.classList.toggle('act',i===act&&!over);});
+  boxes.forEach((b,i)=>b.onclick=()=>{if(over)return;act=i;paint();});
+  const pad=h(`<div class="pad">${[7,8,9].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" data-k="del" aria-label="刪掉">⌫</button>${[4,5,6].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" data-k="nx" aria-label="下一格">→</button>${[1,2,3].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" data-k="0">0</button><button type="button" class="go" data-k="go">檢查</button></div>`);
+  w.insertBefore(pad,fb);
+  const press=k=>{if(over)return;const b=boxes[act];
+    if(/^\d$/.test(k)){if(b.classList.contains('bad')||b.classList.contains('ok')){slots[act]='';b.classList.remove('bad','ok');}if(slots[act].length<4)slots[act]+=k;}
+    else if(k==='del'){slots[act]=slots[act].slice(0,-1);b.classList.remove('bad');}
+    else if(k==='nx'){act=(act+1)%boxes.length;}
+    else if(k==='go')check();
+    paint();};
+  $$('button',pad).forEach(b=>b.onclick=()=>press(b.dataset.k));
+  keyHandler=e=>{if(/^\d$/.test(e.key))press(e.key);else if(e.key==='Backspace')press('del');else if(e.key==='Tab'){e.preventDefault();press('nx');}else if(e.key==='Enter')press('go');};
+  function check(){
+    if(slots.some(s=>s==='')){const i=slots.findIndex(s=>s==='');act=i;paint();msg('info','還有空格喔，先填好再按「檢查」。');return;}
+    const v=slots.map(Number);let ok;boxes.forEach(b=>b.classList.remove('ok','bad'));
+    if(q.t==='num'){ok=v[0]===q.a;boxes[0].classList.add(ok?'ok':'bad');}
+    else if(q.t==='multi'){ok=true;q.parts.forEach((p,i)=>{const o=v[i]===p.a;if(!o)ok=false;boxes[i].classList.add(o?'ok':'bad');});}
+    else{ok=q.exact?(v[0]===q.n&&v[1]===q.d):(v[1]!==0&&v[0]*q.d===q.n*v[1]&&(!q.simplest||gcd(v[0],v[1])===1));boxes.forEach(b=>b.classList.add(ok?'ok':'bad'));
+      if(!ok&&q.simplest&&v[1]!==0&&v[0]*q.d===q.n*v[1]){tries++;msg('bad','大小對了，但還可以再約分喔！');return;}}
+    if(ok)win();else{boxes.forEach(b=>{if(b.classList.contains('bad')){b.style.animation='none';void b.offsetWidth;b.style.animation='';}});act=Math.max(0,boxes.findIndex(b=>b.classList.contains('bad')));lose(false);paint();}
+  }
+  paint();w.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+/* ================= screens ================= */
+const app=$('#app');
+let L=null; /* current lesson state */
+function home(){
+  saveOpen();keyHandler=null;try{speechSynthesis.cancel();}catch(e){}
+  try{if(location.hash)history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  document.title='5A 小步走複習站 B組';
+  app.innerHTML=`<div class="wrap"><section class="hero"><div><div class="herotop"><div><h1>5A 小步走複習站 B組</h1><p>練習複習 B組・五上數學第 6 到第 10 單元${store.name?`・${esc(store.name)}，加油！`:'。點一個單元開始。'}</p></div><span class="toprow">${/github\.io$/.test(location.hostname)?`<a class="btn ghost" href="../">${ICON.home}潛能教室</a>`:''}<button class="btn ghost" type="button" id="rec">學習紀錄</button></span></div>
+   <div class="flow"><span>看動畫</span><i>→</i><span>回答問題</span><i>→</i><span>答對才往下</span><i>→</i><span>練習計算</span></div></div>
+</section>
+   <div class="units">${UNITS.map((u,i)=>`<button class="unit" type="button" data-u="${i}" style="--u:${u.color}"><span class="top"><span class="no">第 ${u.no} 單元</span></span><span class="nm">${u.name}</span><span class="gl">${u.glyph}</span><ul>${u.topics.map(t=>`<li>${t}</li>`).join('')}</ul><span class="go">${starsHTML(store['u'+u.no]||0)}<span>開始 ›</span></span></button>`).join('')}</div>
+   <p class="foot">每個單元：先看動畫學重點，再做計算練習（題目照簡易複習單）。按喇叭可以聽題目。學習紀錄存在這台平板上。</p></div>`;
+  $$('[data-u]',app).forEach(b=>b.onclick=()=>start(+b.dataset.u));$('#rec').onclick=records;
+}
+function start(ui,onlyDrill){
+  const u=UNITS[ui];const learn=onlyDrill?[]:u.learn().map(c=>Object.assign({kind:'learn'},c));
+  const drills=u.drills().map((g,i,a)=>Object.assign({kind:'drill',title:`練習 ${i+1} / ${a.length}`,skill:g.sk||'計算練習'},g()));
+  saveOpen();
+  L={ui,u,cards:[...learn,...drills],i:0,first:0,total:0,full:!onlyDrill,t0:Date.now(),sk:{},saved:false};
+  try{history.replaceState(null,'','#u'+u.no);}catch(e){}document.title=`第${u.no}單元 ${u.name}`;
+  card();
+}
+function card(){
+  const {u,cards,i}=L;const c=cards[i];keyHandler=null;try{speechSynthesis.cancel();}catch(e){}
+  app.innerHTML=`<div class="bar" style="--u:${u.color}"><div class="in"><button class="ib" type="button" id="home" aria-label="回單元選單">${ICON.home}</button><span class="badge">第 ${u.no} 單元</span><span class="utitle">${u.name}</span>
+   <span class="dots" aria-label="第 ${i+1} 步，共 ${cards.length} 步">${cards.map((x,k)=>`<i class="${x.kind==='drill'?'drill ':''}${k<i?'done':k===i?'cur':''}"></i>`).join('')}</span></div></div>
+   <div class="wrap" style="--u:${u.color}"><div class="stage">
+    <div class="artbox"><div class="art"></div><div class="artfoot"><span class="kind">${c.kind==='learn'?'看動畫・學重點':'練習計算'}</span>${c.kind==='learn'?`<button class="btn ghost small" type="button" id="replay">${ICON.replay}再看一次</button>`:''}</div></div>
+    <div class="talk"><h2>${c.title}</h2><div class="story"><div class="t">${c.story}</div></div><div class="qs" style="display:flex;flex-direction:column;gap:.8rem"></div></div>
+   </div></div>`;
+  $('#home').onclick=home;
+  const art=$('.art',app);const draw=()=>{art.innerHTML=c.art();if(c.anim)c.anim(art);};draw();
+  const rp=$('#replay');if(rp)rp.onclick=draw;
+  $('.story',app).prepend(sayBtn($('.story .t',app)));
+  const host=$('.qs',app);let k=0;
+  const nextQ=()=>{if(k>=c.qs.length){finishCard(host,c);return;}ask(c.qs[k],host,u,first=>{L.total++;if(first)L.first++;const sk=c.kind==='learn'?'看動畫：'+c.title:c.skill;const o=L.sk[sk]||(L.sk[sk]={n:0,ok:0,d:c.kind==='drill'?1:0});o.n++;if(first)o.ok++;snap();k++;nextQ();});};
+  setTimeout(nextQ,c.kind==='learn'?500:0);
+  window.scrollTo({top:0});
+}
+function finishCard(host,c){
+  if(c.key)host.append(h(`<div class="key"><b class="lab">記住</b>${c.key}</div>`));
+  const last=L.i===L.cards.length-1;
+  const nb=h(`<button class="btn next" type="button">${last?'完成！':'下一步'}${ICON.next}</button>`);
+  nb.onclick=()=>{if(last)end();else{L.i++;card();}};host.append(nb);nb.scrollIntoView({block:'nearest',behavior:'smooth'});
+  setTimeout(()=>nb.focus({preventScroll:true}),50);
+}
+function end(){
+  keyHandler=null;const {u,ui}=L;const r=L.total?L.first/L.total:1;const st=r>=.9?3:r>=.7?2:1;
+  const k='u'+u.no;if(st>(store[k]||0)){store[k]=st;}logSession(true,st);
+  app.innerHTML=`<div class="wrap" style="--u:${u.color}"><div class="endcard"><div class="big">${[0,1,2].map(i=>ICON.star.replace('<svg',`<svg class="${i<st?'on':''}"`)).join('')}</div>
+   <h2>第 ${u.no} 單元完成了！</h2><p>${L.total} 題裡，一次就答對 ${L.first} 題。${st===3?'太厲害了！':st===2?'很不錯，再練一次會更熟！':'多練幾次就會越來越快喔！'}</p>
+   <div class="row"><button class="btn" type="button" id="again">${ICON.replay}再練一次計算</button><button class="btn ghost" type="button" id="re">從頭再看一次</button><button class="btn ghost" type="button" id="hm">${ICON.home}回單元選單</button><button class="btn ghost" type="button" id="rec">學習紀錄</button></div></div></div>`;
+  $('#again').onclick=()=>start(ui,true);$('#re').onclick=()=>start(ui);$('#hm').onclick=home;$('#rec').onclick=records;
+}
+
+/* ================= learning record ================= */
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+store.log=Array.isArray(store.log)?store.log:[];
+function logSession(done,st){if(!L||L.saved||!L.total)return;L.saved=true;
+  store.log.push({t:L.t0,u:L.u.no,full:L.full,n:L.total,ok:L.first,st:done?st:0,sec:Math.round((Date.now()-L.t0)/1000),done,sk:L.sk});
+  if(store.log.length>300)store.log=store.log.slice(-300);delete store.open;save();}
+function saveOpen(){if(L&&!L.saved&&L.total)logSession(false,0);}
+window.addEventListener('pagehide',saveOpen);
+/* keep a live snapshot so a closed tab still leaves a record */
+function snap(){if(L&&!L.saved&&L.total){store.open={t:L.t0,u:L.u.no,full:L.full,n:L.total,ok:L.first,st:0,sec:Math.round((Date.now()-L.t0)/1000),done:false,sk:L.sk};save();}}
+if(store.open){store.log.push(store.open);delete store.open;save();}
+const fmtT=t=>{const x=new Date(t),p=n=>String(n).padStart(2,'0');return `${x.getMonth()+1}/${x.getDate()} ${p(x.getHours())}:${p(x.getMinutes())}`;};
+const fmtD=sec=>sec<60?`${sec} 秒`:`${Math.floor(sec/60)} 分 ${sec%60} 秒`;
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+function unitStats(no){const ss=store.log.filter(x=>x.u===no);const sk={};
+  ss.slice(-5).forEach(x=>Object.entries(x.sk||{}).forEach(([k,v])=>{if(!v.d)return;const o=sk[k]||(sk[k]={n:0,ok:0});o.n+=v.n;o.ok+=v.ok;}));
+  const n=ss.reduce((a,x)=>a+x.n,0),ok=ss.reduce((a,x)=>a+x.ok,0);const last=ss[ss.length-1];
+  const weak=Object.entries(sk).filter(([,v])=>v.ok<v.n).sort((a,b)=>(a[1].ok/a[1].n)-(b[1].ok/b[1].n)).slice(0,3);
+  const good=Object.entries(sk).filter(([,v])=>v.ok===v.n&&v.n>=2).map(([k])=>k);
+  return{ss,n,ok,last,weak,good,sk,done:ss.filter(x=>x.done).length};}
+function records(){
+  saveOpen();L=null;keyHandler=null;try{if(location.hash)history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  document.title='學習紀錄｜5A 小步走複習站 B組';
+  const all=store.log,tot=all.reduce((a,x)=>a+x.n,0),ok=all.reduce((a,x)=>a+x.ok,0),sec=all.reduce((a,x)=>a+x.sec,0);
+  app.innerHTML=`<div class="bar"><div class="in"><button class="ib" type="button" id="home" aria-label="回首頁">${ICON.home}</button><span class="utitle">學習紀錄</span></div></div>
+  <div class="wrap rec">
+   <div class="who"><label for="nm">練習的人</label><input id="nm" type="text" maxlength="12" placeholder="寫名字" value="${esc(store.name||'')}" autocomplete="off"><span class="muted">紀錄存在這台平板上</span></div>
+   <div class="sum"><div><b>${all.length}</b><span>練習次數</span></div><div><b>${tot}</b><span>做過的題目</span></div><div><b>${pct(ok,tot)}%</b><span>一次就答對</span></div><div><b>${Math.round(sec/60)}</b><span>練習分鐘</span></div></div>
+   <div class="ucards">${UNITS.map(u=>{const S2=unitStats(u.no);return `<div class="ucard" style="--u:${u.color}"><div class="uh"><span class="badge">第 ${u.no} 單元</span><b>${u.name}</b>${starsHTML(store['u'+u.no]||0)}</div>
+     ${S2.ss.length?`<div class="meter"><i style="width:${pct(S2.ok,S2.n)}%"></i></div><div class="muted">練習 ${S2.ss.length} 次（完成 ${S2.done} 次）・一次答對 ${pct(S2.ok,S2.n)}%・最近 ${fmtT(S2.last.t)}</div>
+     ${S2.weak.length?`<div class="weak"><b>要再練：</b>${S2.weak.map(([k,v])=>`${esc(k)}（${v.ok}/${v.n}）`).join('、')}</div>`:(Object.keys(S2.sk).length?'<div class="good">最近的計算題都一次答對！</div>':'')}
+     ${S2.good.length?`<div class="muted">已經很熟：${S2.good.map(esc).join('、')}</div>`:''}
+     <button class="btn small" type="button" data-go="${u.no}">${S2.weak.length?'去練這個單元':'再練一次'}</button>`:`<div class="muted">還沒有練習</div><button class="btn small" type="button" data-go="${u.no}">開始</button>`}</div>`;}).join('')}</div>
+   <h2 class="rh">最近的練習</h2>
+   ${all.length?`<div class="scroll"><table class="log"><thead><tr><th>時間</th><th>單元</th><th>方式</th><th>題數</th><th>一次答對</th><th>笑臉</th><th>用時</th><th>錯比較多的</th></tr></thead><tbody>${all.slice(-30).reverse().map(x=>{const u=UNITS.find(v=>v.no===x.u);const miss=Object.entries(x.sk||{}).filter(([,v])=>v.ok<v.n).map(([k])=>k);return `<tr><td>${fmtT(x.t)}</td><td>第 ${x.u} 單元 ${u?u.name:''}</td><td>${x.full?'看動畫＋練習':'只練計算'}${x.done?'':'（未完成）'}</td><td class="n">${x.n}</td><td class="n">${x.ok}（${pct(x.ok,x.n)}%）</td><td>${x.done?starsHTML(x.st):'—'}</td><td class="n">${fmtD(x.sec)}</td><td>${miss.length?miss.map(esc).join('、'):'—'}</td></tr>`;}).join('')}</tbody></table></div>`:'<p class="muted">還沒有練習紀錄。做完一個單元就會出現在這裡。</p>'}
+   <div class="row recbtns"><button class="btn ghost" type="button" id="copy">複製紀錄文字</button><button class="btn ghost" type="button" id="clr">清除紀錄</button><span id="msg" class="muted" aria-live="polite"></span></div>
+  </div>`;
+  $('#home').onclick=home;
+  $('#nm').oninput=e=>{store.name=e.target.value.trim();save();};
+  $$('[data-go]',app).forEach(b=>b.onclick=()=>start(UNITS.findIndex(u=>u.no===+b.dataset.go)));
+  $('#copy').onclick=()=>{const lines=[`5A 小步走複習站 B組 學習紀錄${store.name?'－'+store.name:''}`];
+    UNITS.forEach(u=>{const S2=unitStats(u.no);if(!S2.ss.length)return;lines.push(`第${u.no}單元 ${u.name}：練習${S2.ss.length}次，一次答對${pct(S2.ok,S2.n)}%，最好${store['u'+u.no]||0}個笑臉${S2.weak.length?'；要再練：'+S2.weak.map(([k,v])=>`${k}(${v.ok}/${v.n})`).join('、'):''}`);});
+    lines.push('','時間｜單元｜題數｜一次答對｜用時');all.slice(-30).forEach(x=>lines.push(`${fmtT(x.t)}｜第${x.u}單元｜${x.n}題｜${x.ok}題｜${fmtD(x.sec)}${x.done?'':'（未完成）'}`));
+    const txt=lines.join('\n');const m=$('#msg');
+    try{navigator.clipboard.writeText(txt).then(()=>m.textContent='已複製，可以貼到紀錄表或 IEP。',()=>{m.textContent='這裡不能自動複製，請改用下方文字。';showTxt(txt);});}catch(e){showTxt(txt);}};
+  const showTxt=t=>{if($('#rtxt'))return;$('.recbtns').after(h(`<textarea id="rtxt" class="rtxt" readonly rows="8">${esc(t)}</textarea>`));};
+  let armed=false;$('#clr').onclick=e=>{const b=e.currentTarget;if(!armed){armed=true;b.textContent='確定要清除全部紀錄？再按一次';b.classList.add('danger');setTimeout(()=>{armed=false;if(b.isConnected){b.textContent='清除紀錄';b.classList.remove('danger');}},4000);return;}
+    store.log=[];UNITS.forEach(u=>delete store['u'+u.no]);save();records();};
+  window.scrollTo({top:0});
+}
+function route(){if(location.hash==='#records'){records();return;}const m=location.hash.match(/^#u(\d+)$/);const i=m?UNITS.findIndex(u=>u.no===+m[1]):-1;if(i>=0)start(i);else home();}
+window.addEventListener('hashchange',()=>{if(!L||location.hash!=='#u'+L.u.no)route();});
+window.__T={UNITS,get L(){return L;},start,home,go:(ui,i)=>{start(ui);L.i=i;card();}};
+route();
+}
+</script>
+</body>
+</html>
