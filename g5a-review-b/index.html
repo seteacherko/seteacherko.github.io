@@ -211,7 +211,8 @@ window.addEventListener('error',function(e){window.__bootErr(e.message+(e.lineno
 window.addEventListener('load',function(){setTimeout(function(){window.__bootErr('畫面沒有內容');},1500);});
 </script>
 <script>
-{
+(function(){
+'use strict';
 /* ================= helpers ================= */
 const $=(s,el=document)=>el.querySelector(s);
 const $$=(s,el=document)=>[...el.querySelectorAll(s)];
@@ -681,7 +682,7 @@ function route(){if(location.hash==='#records'){records();return;}const m=locati
 window.addEventListener('hashchange',()=>{if(!L||location.hash!=='#u'+L.u.no)route();});
 window.__T={UNITS,get L(){return L;},start,home,go:(ui,i)=>{start(ui);L.i=i;card();}};
 route();
-}
+})();
 </script>
 </body>
 </html>
