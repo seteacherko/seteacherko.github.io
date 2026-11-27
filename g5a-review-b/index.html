@@ -203,6 +203,13 @@ table.log td.n{text-align:right}
 </head>
 <body>
 <div id="app"></div>
+<noscript><p style="padding:2rem;font-size:1.2rem">這個教材需要開啟 JavaScript 才能使用。</p></noscript>
+<script>
+/* if anything goes wrong while starting, show the reason instead of a blank page */
+window.__bootErr=function(msg){var a=document.getElementById('app');if(a&&!a.children.length){a.innerHTML='<div style="max-width:640px;margin:3rem auto;padding:1.4rem;border:3px solid #A84E00;border-radius:18px;background:#FFEFD9;color:#5a2a00;font-size:1.05rem;line-height:1.7"><b style="font-size:1.3rem">教材沒有順利打開</b><br>請重新整理一次。如果還是一樣，請把這個畫面截圖給老師。<br><small style="word-break:break-all">'+String(msg).replace(/</g,'&lt;')+'<br>'+navigator.userAgent+'</small></div>';}};
+window.addEventListener('error',function(e){window.__bootErr(e.message+(e.lineno?' (line '+e.lineno+')':''));});
+window.addEventListener('load',function(){setTimeout(function(){window.__bootErr('畫面沒有內容');},1500);});
+</script>
 <script>
 {
 /* ================= helpers ================= */
@@ -566,12 +573,13 @@ function ask(q,host,u,done){
 
 /* ================= screens ================= */
 const app=$('#app');
+const ON_SITE=/github\.io$/.test(location.hostname);
 let L=null; /* current lesson state */
 function home(){
   saveOpen();keyHandler=null;try{speechSynthesis.cancel();}catch(e){}
   try{if(location.hash)history.replaceState(null,'',location.pathname+location.search);}catch(e){}
   document.title='5A 小步走複習站 B組';
-  app.innerHTML=`<div class="wrap"><section class="hero"><div><div class="herotop"><div><h1>5A 小步走複習站 B組</h1><p>練習複習 B組・五上數學第 6 到第 10 單元${store.name?`・${esc(store.name)}，加油！`:'。點一個單元開始。'}</p></div><span class="toprow">${/github\.io$/.test(location.hostname)?`<a class="btn ghost" href="../">${ICON.home}潛能教室</a>`:''}<button class="btn ghost" type="button" id="rec">學習紀錄</button></span></div>
+  app.innerHTML=`<div class="wrap"><section class="hero"><div><div class="herotop"><div><h1>5A 小步走複習站 B組</h1><p>練習複習 B組・五上數學第 6 到第 10 單元${store.name?`・${esc(store.name)}，加油！`:'。點一個單元開始。'}</p></div><span class="toprow">${ON_SITE?`<a class="btn ghost" href="../">${ICON.home}潛能教室</a>`:''}<button class="btn ghost" type="button" id="rec">學習紀錄</button></span></div>
    <div class="flow"><span>看動畫</span><i>→</i><span>回答問題</span><i>→</i><span>答對才往下</span><i>→</i><span>練習計算</span></div></div>
 </section>
    <div class="units">${UNITS.map((u,i)=>`<button class="unit" type="button" data-u="${i}" style="--u:${u.color}"><span class="top"><span class="no">第 ${u.no} 單元</span></span><span class="nm">${u.name}</span><span class="gl">${u.glyph}</span><ul>${u.topics.map(t=>`<li>${t}</li>`).join('')}</ul><span class="go">${starsHTML(store['u'+u.no]||0)}<span>開始 ›</span></span></button>`).join('')}</div>
